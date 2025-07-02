@@ -1,0 +1,26 @@
+/* Default styles for desktop view */
+body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .landing-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    background-image: url('desktop-image.jpg'); /* Default desktop background */
+    background-size: cover;
+    background-position: center;
+  }
+
+  @media (max-width: 768px) {
+    /* Mobile view */
+    .landing-page {
+      background-image: url('green.png'); /* Mobile background */
+    }
+  }
+
+   /* url('{{ asset('storage/images/your-background-image.png') }}')  */
