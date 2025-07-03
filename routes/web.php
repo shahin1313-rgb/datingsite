@@ -62,10 +62,12 @@ Route::middleware('auth')->group(function () {
 Route::post('/report', [ReportController::class, 'store'])->name('report.store')->middleware('auth');
 
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+// Route::middleware(['auth', 'admin'])->group(function () {
+//     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+// });
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
-
 Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
 
 Route::patch('/admin/toggle-ban/{id}', [AdminController::class, 'toggleBan'])->name('admin.toggleBan');
