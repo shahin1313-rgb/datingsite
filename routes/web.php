@@ -12,6 +12,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Admin\AdmineLteController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -66,7 +68,7 @@ Route::post('/report', [ReportController::class, 'store'])->name('report.store')
 //     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
 // });
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/', [AdmineLteController::class, 'index'])->name('admin.dashboard');
 });
 Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
 
