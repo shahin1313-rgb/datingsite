@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Admin\AdmineLteController;
+use App\Http\Controllers\Admin\AdminMessageController;
 
 
 Route::get('/', function () {
@@ -74,6 +75,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/users/{user}', [AdmineLteController::class, 'showUser'])->name('admin.users.show');
 
     Route::delete('/users/{user}', [AdmineLteController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('/messages', [AdminMessageController::class, 'index'])->name('admin.messages');
 });
 Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
 
