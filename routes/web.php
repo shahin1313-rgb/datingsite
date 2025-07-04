@@ -78,12 +78,17 @@ Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->n
 Route::patch('/admin/toggle-ban/{id}', [AdminController::class, 'toggleBan'])->name('admin.toggleBan');
 
 ///// Report h
-Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.reports');
-Route::delete('/admin/reports/{id}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
-///
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
-Route::get('/admin/reports', [AdminController::class, 'showReports'])->name('admin.reports')->middleware('admin');
+    // نمایش لیست گزارش‌ها
+    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.reports');
 
+    // بررسی گزارش (تغییر وضعیت به resolved)
+    Route::post('/reports/{report}/resolve', [ReportController::class, 'resolve'])->name('admin.reports.resolve');
+
+    // حذف گزارش
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
+});
 
 Route::middleware('guest')->group(function () {
 

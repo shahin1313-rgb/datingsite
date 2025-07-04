@@ -9,18 +9,28 @@ use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
+
     public function index()
     {
-        $reports = Report::with('user', 'reported_id')->paginate(10);
+        $reports = Report::with(['reporter', 'reported'])
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
         return view('admin.reports', compact('reports'));
     }
-
     public function destroy($id)
     {
         Report::findOrFail($id)->delete();
         return redirect()->route('admin.reports')->with('success', 'Report deleted.');
     }
 
+    public function resolve(Report $report)
+    {
+        $report->status = 'resolved';
+        $report->save();
+
+        return redirect()->back()->with('status', 'گزارش بررسی شد.');
+    }
     public function store(Request $request)
     {
 
@@ -28,6 +38,7 @@ class ReportController extends Controller
         $request->validate([
             'reported_id' => 'required|exists:users,id',
         ]);
+
 
 
 
