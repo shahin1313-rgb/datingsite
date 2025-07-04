@@ -8,6 +8,24 @@
 @section('content')
     <div class="container mt-4">
         <h2 class="mb-4">لیست پیام‌ها</h2>
+        <form method="GET" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <input type="text" name="sender" value="{{ request('sender') }}" class="form-control"
+                    placeholder="نام فرستنده">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="receiver" value="{{ request('receiver') }}" class="form-control"
+                    placeholder="نام گیرنده">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date" value="{{ request('date') }}" class="form-control">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary" type="submit">فیلتر</button>
+                <a href="{{ route('admin.messages') }}" class="btn btn-secondary">پاک‌کردن</a>
+            </div>
+        </form>
+
 
         <div class="table-responsive">
             <table class="table table-bordered table-hover align-middle">
