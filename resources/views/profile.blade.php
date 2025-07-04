@@ -38,10 +38,12 @@
 
 
                                 @if (auth()->check() && auth()->id() !== $user->id)
-                                    <!-- Show Report Button Only If Logged In & Not Reporting Self -->
-                                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#reportModal">
-                                        Report User
-                                    </button>
+                                    <form action="{{ route('report.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="reported_id" value="{{ $user->id }}">
+
+                                        <button type="submit" class="btn btn-danger btn-sm">گزارش</button>
+                                    </form>
                                 @endif
 
                                 <!-- Report Modal -->

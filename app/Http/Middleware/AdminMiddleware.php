@@ -23,8 +23,4 @@ class AdminMiddleware
         }
         return redirect('/home')->with('error', 'Unauthorized access.');
     }
-
-
-
-    }
-
+}

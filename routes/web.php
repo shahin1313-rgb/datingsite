@@ -69,6 +69,9 @@ Route::post('/report', [ReportController::class, 'store'])->name('report.store')
 // });
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [AdmineLteController::class, 'index'])->name('admin.dashboard');
+    Route::get('/users', [AdmineLteController::class, 'indexUser'])->name('admin.users');
+    Route::post('/users/{user}/ban', [AdmineLteController::class, 'ban'])->name('admin.users.ban');
+    Route::delete('/users/{user}', [AdmineLteController::class, 'destroy'])->name('admin.users.destroy');
 });
 Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
 

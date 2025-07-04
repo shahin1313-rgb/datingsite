@@ -54,21 +54,26 @@ class User extends Authenticatable
     {
         return $this->hasMany(Message::class, 'receiver_id');
     }
+    public function isAdmin()
+    {
+        return $this->role === 'admin'; // فرض بر اینکه ستون `role` دارید
+    }
+
 
     public function unreadMessagesCount()
-{
-    return $this->receivedMessages()->whereNull('read_at')->count();
-}
+    {
+        return $this->receivedMessages()->whereNull('read_at')->count();
+    }
 
-public function reportsMade()
-{
-    return $this->hasMany(Report::class, 'reporter_id');
-}
+    public function reportsMade()
+    {
+        return $this->hasMany(Report::class, 'reporter_id');
+    }
 
-public function reportsReceived()
-{
-    return $this->hasMany(Report::class, 'reported_id');
-}
+    public function reportsReceived()
+    {
+        return $this->hasMany(Report::class, 'reported_id');
+    }
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -91,6 +96,4 @@ public function reportsReceived()
             'password' => 'hashed',
         ];
     }
-
-
 }

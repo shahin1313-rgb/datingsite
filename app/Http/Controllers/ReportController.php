@@ -23,16 +23,21 @@ class ReportController extends Controller
 
     public function store(Request $request)
     {
+
+
         $request->validate([
             'reported_id' => 'required|exists:users,id',
-            'reason' => 'required|string|max:500',
         ]);
+
+
 
         Report::create([
             'reporter_id' => Auth::id(),
             'reported_id' => $request->reported_id,
             'reason' => $request->reason,
         ]);
+
+
 
         return back()->with('success', 'User reported successfully.');
     }

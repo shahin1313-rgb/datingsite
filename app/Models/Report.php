@@ -10,6 +10,10 @@ class Report extends Model
     use HasFactory;
 
     protected $fillable = ['reporter_id', 'reported_id', 'reason'];
+    // در مدل Report
+    protected $attributes = [
+        'reason' => 'unspecified'
+    ];
 
     public function reporter()
     {
