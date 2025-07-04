@@ -11,6 +11,28 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
+    <form method="GET" action="{{ route('admin.users') }}" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" name="name" class="form-control" placeholder="نام" value="{{ request('name') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="email" class="form-control" placeholder="ایمیل"
+                    value="{{ request('email') }}">
+            </div>
+            <div class="col-md-3">
+                <select name="banned" class="form-control">
+                    <option value="">-- وضعیت --</option>
+                    <option value="1" {{ request('banned') == '1' ? 'selected' : '' }}>بن شده</option>
+                    <option value="0" {{ request('banned') == '0' ? 'selected' : '' }}>فعال</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">جستجو</button>
+                <a href="{{ route('admin.users') }}" class="btn btn-secondary">ریست</a>
+            </div>
+        </div>
+    </form>
 
     <table class="table table-bordered">
         <thead>

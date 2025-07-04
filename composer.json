@@ -10,7 +10,8 @@
         "jeroennoten/laravel-adminlte": "^3.15",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
-        "laravel/ui": "^4.6"
+        "laravel/ui": "^4.6",
+        "morilog/jalali": "^3.4"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",
