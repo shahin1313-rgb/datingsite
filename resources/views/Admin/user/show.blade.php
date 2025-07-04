@@ -1,12 +1,21 @@
-@extends('layouts.app') {{-- فرض بر اینکه layout کلی داری و بوت‌استرپ اضافه شده --}}
+@extends('adminlte::page')
+
+@section('title', 'پنل ادمین')
+
+
+
 
 @section('content')
     <div class="container mt-5">
         <div class="card shadow-lg mb-4">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-4">
-                    <img src="{{ $user->avatar_url ?? asset('images/default-avatar.png') }}" alt="avatar"
-                        class="rounded-circle border border-primary shadow" width="128" height="128">
+                    {{--
+                    <img src="{{ $user->profile_picture ?? asset('images/default-avatar.png') }}" alt="avatar"
+                        class="rounded-circle border border-primary shadow" width="128" height="128"> --}}
+                    <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('images/default-avatar.png') }}"
+                        alt="avatar" class="rounded-circle border border-primary shadow" width="128" height="128">
+
                     <div class="ms-4">
                         <h2 class="h4 fw-bold text-dark">{{ $user->name }}</h2>
                         <p class="mb-1 text-muted">{{ $user->email }}</p>
