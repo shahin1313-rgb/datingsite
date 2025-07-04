@@ -48,6 +48,10 @@
             @foreach ($users as $user)
                 <tr @if ($user->banned) class="table-danger" @endif>
                     <td>{{ $user->id }}</td>
+                    <td>
+                        <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-info btn-sm">مشاهده پروفایل</a>
+                    </td>
+
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->banned ? 'بن شده' : 'فعال' }}</td>

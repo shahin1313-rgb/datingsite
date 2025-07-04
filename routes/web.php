@@ -71,6 +71,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [AdmineLteController::class, 'index'])->name('admin.dashboard');
     Route::get('/users', [AdmineLteController::class, 'indexUser'])->name('admin.users');
     Route::post('/users/{user}/ban', [AdmineLteController::class, 'ban'])->name('admin.users.ban');
+    Route::get('/users/{user}', [AdmineLteController::class, 'showUser'])->name('admin.users.show');
+
     Route::delete('/users/{user}', [AdmineLteController::class, 'destroy'])->name('admin.users.destroy');
 });
 Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
@@ -81,7 +83,7 @@ Route::patch('/admin/toggle-ban/{id}', [AdminController::class, 'toggleBan'])->n
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // نمایش لیست گزارش‌ها
-    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.reports');
+    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
 
     // بررسی گزارش (تغییر وضعیت به resolved)
     Route::post('/reports/{report}/resolve', [ReportController::class, 'resolve'])->name('admin.reports.resolve');
@@ -89,6 +91,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // حذف گزارش
     Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
 });
+
 
 Route::middleware('guest')->group(function () {
 

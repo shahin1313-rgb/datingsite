@@ -15,9 +15,30 @@ class AdmineLteController extends Controller
 
     public function indexUser()
     {
-        $users = User::paginate(10); // Fetch users with pagination
+        $query = User::query();
+
+        if (request('name')) {
+            $query->where('name', 'like', '%' . request('name') . '%');
+        }
+
+        if (request('email')) {
+            $query->where('email', 'like', '%' . request('email') . '%');
+        }
+
+        if (request()->filled('banned')) {
+            $query->where('banned', request('banned'));
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+
         return view('admin.user.index', compact('users'));
     }
+
+    public function showUser(User $user)
+    {
+        return view('admin.user.show', compact('user'));
+    }
+
 
     public function ban($id)
     {
