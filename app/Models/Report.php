@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Report extends Model
 {
     use HasFactory;
+    protected $table = 'reports';
+
 
     protected $fillable = ['reporter_id', 'reported_id', 'reason'];
     // در مدل Report

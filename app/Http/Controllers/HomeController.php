@@ -27,15 +27,18 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function show($id){
+    public function show($id)
+    {
         // Fetch the user by ID
         $user = User::findOrFail($id);
+
 
         // Pass the user data to the view
         return view('profile', compact('user'));
     }
 
-    public function showname($name){
+    public function showname($name)
+    {
         // Fetch the user by ID
         $user = User::findOrFail($name);
 

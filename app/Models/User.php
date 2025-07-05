@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'date_of_birth',
         'gender',
+        'visits_count',
         'city',
         'bio',
         'profile_picture',

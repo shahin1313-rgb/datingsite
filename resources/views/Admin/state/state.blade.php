@@ -51,7 +51,7 @@
         <div class="col-md-3">
             <div class="small-box bg-danger">
                 <div class="inner">
-                    {{-- <h3>{{ $visitCount }}</h3> --}}
+                    <h3>{{ $visitCount }}</h3>
                     <p>بازدیدهای سایت</p>
                 </div>
                 <div class="icon">
