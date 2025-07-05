@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 // use bdbdIlluminate\Foundation\Auth\User;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
@@ -48,8 +49,9 @@ class ProfileController extends Controller
     {
         // Get the search parameters from the request
         $city = $request->input('city');
-        $minAge = $request->input('min_age');
-        $maxAge = $request->input('max_age');
+        // مقدارهای پیش‌فرض
+        $minAge = $request->input('min_age', 18); // پیش‌فرض: 18 سال
+        $maxAge = $request->input('max_age', 99); // پیش‌فرض: 99 سال
 
         // Start building the query
         $query = User::query();
@@ -60,9 +62,14 @@ class ProfileController extends Controller
         }
 
 
-if ($minAge && $maxAge) {
-    $query->whereBetween('age', [$minAge, $maxAge]);
-}
+        // اگر کاربر مقدار min و max age را وارد کرده
+        if ($minAge && $maxAge) {
+            $currentYear = Carbon::now()->year;
+            $minBirthYear = $currentYear - $maxAge; // دقت کن: برعکس چون سال تولد کمتر یعنی فرد بزرگتر است
+            $maxBirthYear = $currentYear - $minAge;
+
+            $query->whereBetween('birth_year', [$minBirthYear, $maxBirthYear]);
+        }
 
         // Execute the query and paginate the results
         $profiles = $query->paginate(3);
