@@ -14,10 +14,16 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Admin\AdmineLteController;
 use App\Http\Controllers\Admin\AdminMessageController;
+use App\Http\Controllers\Admin\AdminStateController;
 
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+
+Route::get('/test-modal', function () {
+    return view('test-modal');
 });
 
 // Auth::routes();
@@ -73,6 +79,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/users', [AdmineLteController::class, 'indexUser'])->name('admin.users');
     Route::post('/users/{user}/ban', [AdmineLteController::class, 'ban'])->name('admin.users.ban');
     Route::get('/users/{user}', [AdmineLteController::class, 'showUser'])->name('admin.users.show');
+    Route::get('/statedashboard', [AdminStateController::class, 'index'])->name('statedashboard');
 
     Route::delete('/users/{user}', [AdmineLteController::class, 'destroy'])->name('admin.users.destroy');
     Route::get('/messages', [AdminMessageController::class, 'index'])->name('admin.messages');

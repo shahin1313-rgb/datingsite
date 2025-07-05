@@ -339,6 +339,26 @@ return [
             'icon' => 'fas fa-fw fa-lock',
         ],
         [
+            'text' => 'کاربرها',
+            'url' => 'admin/users',
+            'icon' => 'fas fa-fw fa-user',
+        ],
+        [
+            'text' => 'گزارش',
+            'url' => 'admin/reports',
+            'icon' => 'fas fa-fw fa-shield-alt',
+        ],
+        [
+            'text' => 'پیام ها',
+            'url' => 'admin/messages',
+            'icon' => 'fas fa-fw fa-envelope',
+        ],
+        [
+            'text' => 'آمار',
+            'url' => 'admin/statedashboard',
+            'icon' => 'fas fa-fw fa-chart-bar',
+        ],
+        [
             'text' => 'multilevel',
             'icon' => 'fas fa-fw fa-share',
             'submenu' => [
