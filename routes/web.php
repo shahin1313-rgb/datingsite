@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Admin\AdmineLteController;
 use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminStateController;
+use App\Http\Controllers\TicketController;
 
 
 Route::get('/', function () {
@@ -99,6 +100,15 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // حذف گزارش
     Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets');
+    Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('admin.tickets.destroy');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
 });
 
 
