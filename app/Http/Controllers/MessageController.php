@@ -29,15 +29,14 @@ class MessageController extends Controller
                 return $message->sender_id == $userId ? $message->receiver_id : $message->sender_id;
             });
 
-            // Count unread messages for each contact
-    $unreadCounts = [];
-    foreach ($contacts as $contactUserId => $messages) {
-        $unreadCounts[$contactUserId] = $messages->where('receiver_id', $userId)->where('is_read', false)->count();
-    }
+        // Count unread messages for each contact
+        $unreadCounts = [];
+        foreach ($contacts as $contactUserId => $messages) {
+            $unreadCounts[$contactUserId] = $messages->where('receiver_id', $userId)->where('is_read', false)->count();
+        }
 
 
-        return view('messages.index', compact('contacts','unreadCounts'));
-
+        return view('messages.index', compact('contacts', 'unreadCounts', 'authUser'));
     }
 
     // Show messaging box for a specific user
@@ -59,10 +58,10 @@ class MessageController extends Controller
 
 
         // Mark unread messages as read
-    // Message::where('sender_id', $id)
-    // ->where('receiver_id', $authId)
-    // ->where('is_read', false)
-    // ->update(['is_read' => true]);
+        // Message::where('sender_id', $id)
+        // ->where('receiver_id', $authId)
+        // ->where('is_read', false)
+        // ->update(['is_read' => true]);
 
         // Get messages between the authenticated user and the selected user
         $messages = Message::where(function ($query) use ($authUser, $user) {
@@ -81,6 +80,9 @@ class MessageController extends Controller
         $request->validate([
             'message' => 'required|string|max:1000',
         ]);
+        if ($user->isBlockedBy(auth()->id()) || auth()->user()->hasBlocked($user->id)) {
+            return back()->with('error', 'Cannot send message to this user.');
+        }
 
         // Create a new message
         Message::create([

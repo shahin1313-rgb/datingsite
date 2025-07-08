@@ -75,6 +75,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class, 'reported_id');
     }
+
+    public function blockedUsers()
+    {
+        return $this->hasMany(Block::class, 'blocker_id');
+    }
+
+    public function hasBlocked($userId)
+    {
+        return $this->blockedUsers()->where('blocked_id', $userId)->exists();
+    }
+
+    public function isBlockedBy($userId)
+    {
+        return Block::where('blocker_id', $userId)->where('blocked_id', $this->id)->exists();
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

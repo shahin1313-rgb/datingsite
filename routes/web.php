@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\AdmineLteController;
 use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminStateController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\BlockController;
 
 
 Route::get('/', function () {
@@ -109,6 +110,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/block/{id}', [BlockController::class, 'block'])->name('user.block');
+    Route::post('/unblock/{id}', [BlockController::class, 'unblock'])->name('user.unblock');
 });
 
 
