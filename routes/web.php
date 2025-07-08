@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminStateController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\BlockController;
+use App\Http\Controllers\Admin\PhotoController;
 
 
 Route::get('/', function () {
@@ -101,6 +102,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // حذف گزارش
     Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
+});
+
+// Admin routes group
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/photos', [PhotoController::class, 'index'])->name('admin.photos.index');
+    Route::delete('/photos/{id}', [PhotoController::class, 'destroy'])->name('admin.photos.destroy');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
