@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Message;
 use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
@@ -26,6 +27,12 @@ class PhotoController extends Controller
         $user->profile_picture = null;
         $user->save();
 
+        // ارسال پیام به کاربر
+        Message::create([
+            'sender_id' => auth()->id(), // ادمین
+            'receiver_id' => $user->id,
+            'message' => 'عکس شما به دلیل نامناسب بودن توسط مدیریت حذف شد.',
+        ]);
         return redirect()->route('admin.photos.index')->with('success', 'تصویر حذف شد.');
     }
 }

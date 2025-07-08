@@ -354,6 +354,11 @@ return [
             'icon' => 'fas fa-fw fa-envelope',
         ],
         [
+            'text' => 'عکس پروفایل',
+            'url' => 'admin/photos',
+            'icon' => 'fas fa-fw fa-id-card',
+        ],
+        [
             'text' => 'آمار',
             'url' => 'admin/statedashboard',
             'icon' => 'fas fa-fw fa-chart-bar',
