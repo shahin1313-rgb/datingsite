@@ -1,110 +1,85 @@
+@extends('layouts.app')
 
-
-    @extends('layouts.app')
-
-    @section('content')
-
-
-    <div class="container">
-
-
-    <div class="container py-5">
-        <div class="row">
-            <!-- Profile Header -->
-            <div class="col-12 mb-4">
-                <div class="profile-header position-relative mb-4">
-                    <div class="position-absolute top-0 end-0 p-3">
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div class="position-relative d-inline-block">
-
-
-                        <img src="{{asset('storage/' . $user->profile_picture)}}" class="rounded-circle profile-pic" alt="Profile Picture">
-                        <button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 rounded-circle">
-                            <i class="fas fa-camera"></i>
+@section('content')
+    <div class="container mx-auto max-w-2xl py-10 px-4" dir="rtl">
+        <div class="bg-white shadow-lg rounded-3xl overflow-hidden">
+            <!-- Header -->
+            <div class="relative bg-gradient-to-tr from-indigo-500 via-blue-500 to-sky-400 h-40">
+                <div class="absolute -bottom-12 right-6 flex items-center">
+                    <div class="relative">
+                        <img src="{{ asset('storage/' . $user->profile_picture) }}"
+                            class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover" alt="Profile Picture">
+                        <button
+                            class="absolute bottom-0 left-0 bg-white text-indigo-600 rounded-full p-1.5 shadow hover:bg-indigo-100 transition"
+                            title="تغییر تصویر پروفایل">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h6.93a2 2 0 001.664.89l.812-.162a2 2 0 011.415.586l4.242 4.242a2 2 0 010 2.828l-4.242 4.242a2 2 0 01-2.828 0l-4.242-4.242a2 2 0 01-.586-1.415l.162-.812A2 2 0 007 11.07V9z" />
+                            </svg>
                         </button>
-                    </div>
-                    <h3 class="mt-3 mb-1">{{ $user->name }}</h3>
-                    <p class="text-muted mb-3">Senior Product Designer</p>
-                    <div class="d-flex justify-content-center gap-2 mb-4">
-                        <button class="btn btn-outline-primary"><i class="fas fa-envelope me-2"></i>pic update</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Content -->
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-0">
-                        <div class="row g-0 justify-content-center">
+            <!-- Info -->
+            <div class="pt-16 text-center px-6 pb-4">
+                <h2 class="text-xl font-semibold text-gray-800">{{ $user->name }}</h2>
+                <p class="text-sm text-gray-500 mt-1">طراح محصول حرفه‌ای</p>
+            </div>
 
+            <!-- Form -->
+            <div class="px-6 pb-8">
+                <form action="{{ route('profile.update') }}" method="POST" class="space-y-5">
+                    @csrf
 
-                            <!-- Content Area -->
-
-                            <div class="col-lg-9">
-                                <div class="p-4   " >
-                                    <!-- Personal Information -->
-                                    {{-- <div class="mb-4">
-                                        <h5 class="mb-4">Personal Information</h5>
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">First Name</label>
-                                                <input type="text" class="form-control" value="Alex">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Last Name</label>
-                                                <input type="text" class="form-control" value="Johnson">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Email</label>
-                                                <input type="email" class="form-control" value="testnson@example.com">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Phone</label>
-                                                <input type="tel" class="form-control" value="+1 (555) 123-4567">
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label">Bio</label>
-                                                <textarea class="form-control" rows="4">Product designer with 5+ years of experience in creating user-centered digital solutions. Passionate about solving complex problems through simple and elegant designs.</textarea>
-                                            </div>
-                                        </div>
-                                    </div> --}}
-                                    <div class="container mt-5">
-                                        <h1>Edit Profile</h1>
-                                        <form action="{{ route('profile.update') }}" method="POST">
-                                            @csrf
-                                            <div class="form-group mb-3">
-                                                <label for="name">Name</label>
-                                                <input type="text" name="name" class="form-control" value="{{ $user->name }}" required>
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="email">Email</label>
-                                                <input type="email" name="email" class="form-control" value="{{ $user->email }}" required>
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="city">City</label>
-                                                <input type="text" name="city" class="form-control" value="{{ $user->city }}">
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="bio">Bio</label>
-                                                <textarea name="bio" class="form-control" rows="4">{{ $user->bio }}</textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary">Update Profile</button>
-                                        </form>
-                                    </div>
-
-
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-600 mb-1">نام</label>
+                        <input type="text" id="name" name="name" value="{{ $user->name }}"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                            required>
                     </div>
-                </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-600 mb-1">ایمیل</label>
+                        <input type="email" id="email" name="email" value="{{ $user->email }}"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                            required>
+                    </div>
+
+                    <div>
+                        <label for="city" class="block text-sm font-medium text-gray-600 mb-1">شهر</label>
+                        <input type="text" id="city" name="city" value="{{ $user->city }}"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                    </div>
+
+                    <div>
+                        <label for="bio" class="block text-sm font-medium text-gray-600 mb-1">بیوگرافی</label>
+                        <textarea id="bio" name="bio" rows="4"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">{{ $user->bio }}</textarea>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 rounded-xl transition duration-200">
+                            ذخیره تغییرات
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap');
 
-</div>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f8fafc;
+        }
 
+        input,
+        textarea {
+            font-family: inherit;
+        }
+    </style>
 @endsection
