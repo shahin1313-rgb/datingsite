@@ -184,7 +184,6 @@
     <link rel="stylesheet" type="text/css"
         href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.css" />
     <link rel="stylesheet" href="{{ asset('css/styles3.css') }}">
-    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.js"></script>
     <script src="{{ asset('js/slick-carousel.js') }}"></script>
 
