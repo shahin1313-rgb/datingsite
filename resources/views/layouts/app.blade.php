@@ -4,31 +4,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- TailwindCSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
 
-
-    <link rel="stylesheet" href="{{ asset('css/styles2.css') }}">
-
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-
-    <!-- Include any stylesheets passed from the view -->
     @yield('head')
+
     <style>
         html,
         body,
@@ -37,31 +22,21 @@
         h3,
         h4,
         h5 {
-            font-family: "Raleway", sans-serif
+            font-family: 'Raleway', sans-serif;
         }
 
-        /* Basic styling for the loading spinner and main content */
         #loadingSpinner {
-
             border: 16px solid #f3f3f3;
-            /* Light grey */
             border-top: 16px solid #3498db;
-            /* Blue */
             border-radius: 50%;
             width: 120px;
             height: 120px;
             animation: spin 2s linear infinite;
             position: fixed;
-            /* Fixed positioning */
             top: 50%;
-            /* Center vertically */
             left: 50%;
-            /* Center horizontally */
             transform: translate(-50%, -50%);
-            /* Adjust for exact center */
             z-index: 1000;
-            /* Ensure it's on top of other elements */
-
         }
 
         @keyframes spin {
@@ -73,110 +48,67 @@
                 transform: rotate(360deg);
             }
         }
-
-        #mainContent {
-            display: none;
-            /* Initially hidden */
-            padding: 20px;
-            background-color: #ffffff;
-        }
     </style>
-
-    <!-- Scripts -->
-    {{-- <script src="{{ asset('js/loading.js') }}"></script> --}}
-
-    {{-- @vite(['resources/sass/app.scss', 'resources/js/app.js']) --}}
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <script src="{{ asset('js/app.js') }}" defer></script>
-
-    <!-- Slick Carousel CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
 </head>
 
-<body>
+<body class="bg-gray-100 min-h-screen">
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
+        <nav class="bg-white shadow">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <a href="{{ url('/') }}" class="text-xl font-bold text-gray-800">
                     {{ config('app.name', 'Laravel') }}
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
-
-                    </ul>
-
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    {{ Auth::user()->name }}
+                <div class="space-x-4" x-data="{ open: false }">
+                    @guest
+                        @if (Route::has('login'))
+                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-800">{{ __('Login') }}</a>
+                        @endif
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}"
+                                class="text-gray-600 hover:text-gray-800">{{ __('Register') }}</a>
+                        @endif
+                    @else
+                        <div class="relative inline-block text-left" @click.away="open = false">
+                            <button @click="open = !open"
+                                class="inline-flex items-center text-gray-600 hover:text-gray-800">
+                                {{ Auth::user()->name }}
+                                <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.061l-4.24 4.243a.75.75 0 01-1.06 0L5.25 8.28a.75.75 0 01-.02-1.06z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Buy</a>
+                                <a href="{{ route('profile.edit') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ویرایش پروفایل</a>
+                                <a href="{{ route('dashboard') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">لیست
+                                    علاقمندی‌ها</a>
+                                <div class="border-t border-gray-200"></div>
+                                <a href="{{ route('logout') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    {{ __('Logout') }}
                                 </a>
-
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="#">Buy</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('profile.edit') }}">ویرایش پروفایل</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('dashboard') }}">Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="#">لیست علاقمندی‌ها</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('logout') }}"
-                                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                            {{ __('Logout') }}
-                                        </a>
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                            class="d-none">
-                                            @csrf
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        @endguest
-                    </ul>
-
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
+                            </div>
+                        </div>
+                    @endguest
                 </div>
             </div>
         </nav>
 
-        <main class="py-0 px-0 pl-0">
-            {{-- <div id="loadingSpinner" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div> --}}
-            <div id="mainContent" style="display:block;">
+        <main class="p-4">
+            <!-- <div id="loadingSpinner" role="status"></div> -->
+            <div id="mainContent" class="bg-white p-4 rounded shadow">
                 @yield('content')
             </div>
         </main>
     </div>
-
-
-    <!-- قبل از بستن </body> این اسکریپت‌ها را اضافه کنید -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 
 </html>
