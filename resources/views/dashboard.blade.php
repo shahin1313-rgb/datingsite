@@ -156,8 +156,14 @@
                     </a>
                 </nav>
                 <div class="mt-auto">
-                    <a href="{{ route('logout') }}"
-                        class="block p-3 rounded-lg bg-red-600 hover:bg-red-700 text-center">خروج</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-center transition duration-300">
+                            <i class="fa fa-sign-out"></i>
+                            <span>خروج از حساب</span>
+                        </button>
+                    </form>
                 </div>
             </aside>
 
@@ -270,13 +276,28 @@
                     </div>
                 </div>
                 <!-- نظرات اخیر -->
-                <div class="mt-8 animate-slide-in" style="animation-delay: 0.8s;">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">نظرات اخیر</h3>
+                <!-- بازدیدکنندگان اخیر -->
+                <div class="mt-8 animate-slide-in" style="animation-delay: 1.0s;">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">بازدیدکنندگان اخیر</h3>
                     <div class="bg-white card p-6 rounded-xl">
-                        <p class="text-gray-600 mb-2">John: کار عالی!</p>
-                        <p class="text-gray-600">Ali: منتظرم برای آپدیت بعدی</p>
+                        @forelse($recentProfileViews as $view)
+                            <div class="flex items-center space-x-4 space-x-reverse border-b py-2">
+                                <img src="{{ asset('storage/' . ($view->viewer->profile_picture ?? 'default.jpg')) }}"
+                                    class="w-10 h-10 rounded-full" alt="{{ $view->viewer->name }}">
+                                <div>
+                                    <a href="{{ route('profile.show', $view->viewer->id) }}"
+                                        class="text-pink-600 hover:underline font-bold">
+                                        {{ $view->viewer->name }}
+                                    </a>
+                                    <p class="text-sm text-gray-500">{{ $view->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-gray-500">هنوز کسی پروفایل شما را مشاهده نکرده است.</p>
+                        @endforelse
                     </div>
                 </div>
+
 
                 <!-- آمار پایینی -->
                 <div class="mt-8 bg-gray-800 text-white p-6 rounded-xl animate-slide-in" style="animation-delay: 0.9s;">

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 // use bdbdIlluminate\Foundation\Auth\User;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Models\ProfileView;
 
 class ProfileController extends Controller
 {
@@ -41,8 +42,15 @@ class ProfileController extends Controller
 
     public function show($id)
     {
-        $user = User::findOrFail($id); // Fetch the user or return 404 if not found
-        return view('profile', compact('user')); // Pass user data to the profile view
+        $profileUser = User::findOrFail($id);
+
+        if (Auth::check() && Auth::id() !== $profileUser->id) {
+            ProfileView::create([
+                'viewer_id' => Auth::id(),
+                'viewed_id' => $profileUser->id,
+            ]);
+        }
+        return view('profile', compact('profileUser')); // Pass user data to the profile view
     }
 
     public function search(Request $request)

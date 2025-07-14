@@ -27,7 +27,13 @@ class DashboardController extends Controller
             ->take(3)
             ->get();
 
+        $recentProfileViews = Auth::user()
+            ->profileViewsReceived()
+            ->with('viewer')
+            ->take(5)
+            ->get();
+
         // Pass the user data to the view
-        return view('dashboard', compact('user', 'recentUsers'));
+        return view('dashboard', compact('user', 'recentUsers', 'recentProfileViews'));
     }
 }

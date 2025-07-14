@@ -61,6 +61,7 @@ class User extends Authenticatable
     }
 
 
+
     public function unreadMessagesCount()
     {
         return $this->receivedMessages()->whereNull('read_at')->count();
@@ -90,6 +91,17 @@ class User extends Authenticatable
     {
         return Block::where('blocker_id', $userId)->where('blocked_id', $this->id)->exists();
     }
+
+    public function profileViewsReceived()
+    {
+        return $this->hasMany(ProfileView::class, 'viewed_id')->latest();
+    }
+
+    public function profileViewsGiven()
+    {
+        return $this->hasMany(ProfileView::class, 'viewer_id')->latest();
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.
