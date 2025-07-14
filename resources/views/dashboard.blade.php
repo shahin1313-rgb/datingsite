@@ -2,14 +2,17 @@
 
 @section('content')
     <style>
+        html,
         body {
             font-family: 'Vazir', sans-serif;
+            direction: rtl;
             background: linear-gradient(to bottom, #f7fafc, #e2e8f0);
+            text-align: right;
         }
 
         .sidebar {
             background: linear-gradient(180deg, #ff5e62 0%, #f6d365 100%);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
             z-index: 50;
         }
@@ -57,7 +60,7 @@
 
         .animate-slide-in {
             opacity: 0;
-            transform: translateX(20px);
+            transform: translateX(-20px);
             animation: slideIn 0.5s forwards;
         }
 
@@ -91,6 +94,7 @@
 
             .main-content {
                 margin-right: 0 !important;
+                margin-left: 0 !important;
             }
 
             [x-show="openLogoutModal"] {
@@ -119,6 +123,11 @@
         #myOverlay {
             z-index: 9997;
         }
+
+        /* اصلاح جهت اسلایدر برای RTL */
+        .slick-slider {
+            direction: rtl;
+        }
     </style>
 
     <div class="min-h-screen" x-data="{ openLogoutModal: false }">
@@ -126,12 +135,12 @@
             <!-- نوار کناری -->
             <aside class="sidebar w-64 h-screen fixed top-0 right-0 p-6 text-white flex flex-col md:sidebar-open"
                 id="mySidebar">
-                <div class="flex items-center space-x-3 space-x-reverse mb-8">
+                <div class="flex items-center space-x-reverse space-x-3 mb-8">
                     <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}" alt="Profile"
                         class="w-12 h-12 rounded-full profile-img">
                     <div>
                         <span class="text-lg font-bold">سلام، {{ auth()->user()->name ?? 'کاربر' }}</span>
-                        <div class="flex space-x-2 space-x-reverse mt-2">
+                        <div class="flex space-x-reverse space-x-2 mt-2">
                             <a href="{{ route('messages.index') }}" class="text-white hover:text-pink-200"><i
                                     class="fa fa-envelope"></i></a>
                             <a href="{{ route('profile.show', auth()->id()) }}" class="text-white hover:text-pink-200"><i
@@ -142,34 +151,34 @@
                 </div>
                 <nav class="space-y-2">
                     <a href="{{ route('dashboard') }}"
-                        class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg bg-pink-600 hover:bg-pink-700">
+                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg bg-pink-600 hover:bg-pink-700">
                         <i class="fa fa-users"></i><span>نمای کلی</span>
                     </a>
                     <a href="{{ route('profile.show', auth()->id()) }}"
-                        class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-eye"></i><span>پروفایل</span>
                     </a>
                     <a href="{{ route('search') }}"
-                        class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-search"></i><span>جستجو</span>
                     </a>
                     <a href="{{ route('profile.edit') }}"
-                        class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-edit"></i><span>ویرایش پروفایل</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-diamond"></i><span>خرید</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-bell"></i><span>پشتیبانی</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-shield"></i><span>پلیس سایت</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-history"></i><span>تاریخچه</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 rounded-lg hover:bg-pink-500">
+                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-cog"></i><span>تنظیمات</span>
                     </a>
                 </nav>
@@ -180,12 +189,12 @@
             </aside>
 
             <!-- محتوای اصلی -->
-            <main class="main-content md:mr-64 p-6 w-full">
+            <main class="main-content md:mr-64 md:ml-0 p-6 w-full">
                 <button class="md:hidden text-gray-800 p-2 focus:outline-none" onclick="toggleSidebar()">
                     <i class="fa fa-bars text-2xl"></i>
                 </button>
                 <header class="mb-8 animate-slide-in">
-                    <h2 class="text-3xl font-bold text-gray-800"><i class="fa fa-dashboard mr-2"></i> داشبورد من</h2>
+                    <h2 class="text-3xl font-bold text-gray-800"><i class="fa fa-dashboard ml-2"></i> داشبورد من</h2>
                 </header>
 
                 <!-- باکس‌های اطلاعات -->
@@ -234,11 +243,11 @@
                             <table class="w-full text-right">
                                 <tbody>
                                     <tr class="border-b">
-                                        <td class="py-3"><i class="fa fa-user text-blue-500 mr-2"></i> مشاهده جدید</td>
+                                        <td class="py-3"><i class="fa fa-user text-blue-500 ml-2"></i> مشاهده جدید</td>
                                         <td class="py-3 text-gray-600">10 دقیقه قبل</td>
                                     </tr>
                                     <tr class="border-b">
-                                        <td class="py-3"><i class="fa fa-bell text-red-500 mr-2"></i> هشدار سیستم</td>
+                                        <td class="py-3"><i class="fa fa-bell text-red-500 ml-2"></i> هشدار سیستم</td>
                                         <td class="py-3 text-gray-600">15 دقیقه قبل</td>
                                     </tr>
                                 </tbody>
@@ -289,7 +298,7 @@
                     <h3 class="text-2xl font-bold text-gray-800 mb-4">بازدیدکنندگان اخیر</h3>
                     <div class="bg-white card p-6 rounded-xl">
                         @forelse($recentProfileViews as $view)
-                            <div class="flex items-center space-x-4 space-x-reverse border-b py-2">
+                            <div class="flex items-center space-x-reverse space-x-4 border-b py-2">
                                 <img src="{{ asset('storage/' . ($view->viewer->profile_picture ?? 'default.jpg')) }}"
                                     class="w-10 h-10 rounded-full" alt="{{ $view->viewer->name }}">
                                 <div>
@@ -367,6 +376,7 @@
                 arrows: false,
                 dots: true,
                 pauseOnHover: true,
+                rtl: true, // فعال کردن RTL برای اسلایدر
                 responsive: [{
                     breakpoint: 768,
                     settings: {
