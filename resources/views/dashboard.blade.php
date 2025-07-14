@@ -1,10 +1,14 @@
+```blade
 @extends('layouts.app')
 
 @section('content')
     <style>
+        * {
+            font-family: 'Vazir', sans-serif !important;
+        }
+
         html,
         body {
-            font-family: 'Vazir', sans-serif;
             direction: rtl;
             background: linear-gradient(to bottom, #f7fafc, #e2e8f0);
             text-align: right;
@@ -376,7 +380,7 @@
                 arrows: false,
                 dots: true,
                 pauseOnHover: true,
-                rtl: true, // فعال کردن RTL برای اسلایدر
+                rtl: true,
                 responsive: [{
                     breakpoint: 768,
                     settings: {
@@ -405,3 +409,4 @@
         });
     </script>
 @endsection
+```
