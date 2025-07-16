@@ -50,7 +50,9 @@ class ProfileController extends Controller
                 'viewed_id' => $profileUser->id,
             ]);
         }
-        return view('profile', compact('profileUser')); // Pass user data to the profile view
+        return view('profile.show', [
+            'user' => $profileUser
+        ]);
     }
 
     public function search(Request $request)

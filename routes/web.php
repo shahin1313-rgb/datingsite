@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-    Route::get('/profile/{id}', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/id/{id}', [ProfileController::class, 'show'])->name('profile.show');
 
     // Inbox page
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');

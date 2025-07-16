@@ -18,6 +18,8 @@
 
                         @if ($user->profile_picture)
                             <div class="flex justify-center mt-4">
+
+
                                 <img src="{{ asset('storage/' . $user->profile_picture) }}"
                                     class="w-48 h-48 rounded-full border-4 border-white shadow-xl object-cover -mt-16 z-10"
                                     alt="Profile Picture">
