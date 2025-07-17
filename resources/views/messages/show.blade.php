@@ -28,7 +28,7 @@
             </div>
 
             {{-- لیست پیام‌ها --}}
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 pb-24">
                 @foreach ($messages as $message)
                     @php
                         $isOwn = $message->sender_id == auth()->id();
@@ -53,6 +53,8 @@
                         </div>
                     </div>
                 @endforeach
+                <!-- اسکرول خودکار به این نقطه -->
+                <div id="end-of-messages" class="mb-32"></div>
             </div>
 
 
@@ -73,16 +75,14 @@
 
         </div>
     </div>
-
-    {{-- اسکرول خودکار به انتهای پیام‌ها --}}
     <script>
-        const messageContainer = document.querySelector('.overflow-y-auto');
-        messageContainer.scrollTop = messageContainer.scrollHeight;
-
-        const textarea = document.querySelector('textarea');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
+        window.onload = function() {
+            const endOfMessages = document.getElementById('end-of-messages');
+            if (endOfMessages) {
+                endOfMessages.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        };
     </script>
 @endsection
