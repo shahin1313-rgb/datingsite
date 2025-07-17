@@ -34,6 +34,7 @@
                         $isOwn = $message->sender_id == auth()->id();
                     @endphp
 
+
                     <div class="w-full flex {{ $isOwn ? 'justify-end' : 'justify-start' }}">
                         <div class="flex items-start gap-3 {{ $isOwn ? 'flex-row-reverse' : '' }}">
                             <!-- آواتار -->
@@ -48,7 +49,18 @@
                                 <p class="text-sm text-gray-800">{{ $message->message }}</p>
                                 <span class="text-xs text-gray-500 block mt-1">
                                     {{ $message->created_at->diffForHumans() }}
+                                    @if ($message->read_at)
+                                        <span class="text-xs text-green-500">دیده شده</span>
+                                        <i class="fa-solid fa-check-double"></i>
+                                    @elseif($message->created_at)
+                                        <span class="text-xs text-gray-500">ارسال شده</span>
+                                        <i class="fa-solid fa-check"></i>
+                                    @else
+                                        <span class="text-xs text-red-500">در حال ارسال...</span>
+                                    @endif
                                 </span>
+
+
                             </div>
                         </div>
                     </div>
