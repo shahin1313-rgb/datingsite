@@ -115,9 +115,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('admin.tickets.destroy');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+Route::middleware(['auth'])->prefix('dashboard')->name('user.')->group(function () {
+    Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
+    Route::get('tickets/create', [TicketController::class, 'create'])->name('tickets.create');
+    Route::post('tickets', [TicketController::class, 'store'])->name('tickets.store');
 });
+
 
 Route::middleware('auth')->group(function () {
     Route::post('/block/{id}', [BlockController::class, 'block'])->name('user.block');

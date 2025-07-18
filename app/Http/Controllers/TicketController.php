@@ -11,8 +11,14 @@ class TicketController extends Controller
     public function index()
     {
         $tickets = Ticket::with('user')->orderByDesc('created_at')->paginate(10);
-        return view('admin.tickets.index', compact('tickets'));
+        return view('user.tickets.index', compact('tickets'));
     }
+
+    public function create()
+    {
+        return view('user.tickets.create');
+    }
+
 
     public function store(Request $request)
     {
@@ -33,6 +39,6 @@ class TicketController extends Controller
     public function destroy($id)
     {
         Ticket::findOrFail($id)->delete();
-        return redirect()->route('admin.tickets')->with('success', 'تیکت حذف شد.');
+        return redirect()->route('user.tickets')->with('success', 'تیکت حذف شد.');
     }
 }

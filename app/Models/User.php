@@ -60,6 +60,11 @@ class User extends Authenticatable
         return $this->role === 'admin'; // فرض بر اینکه ستون `role` دارید
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(\App\Models\Ticket::class);
+    }
+
 
 
     public function unreadMessagesCount()

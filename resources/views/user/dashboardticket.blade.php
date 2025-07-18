@@ -193,7 +193,7 @@
             </aside>
 
             <!-- محتوای اصلی -->
-            @include('dashboard.main')
+            @include('user.tickets.index')
 
 
         </div>
