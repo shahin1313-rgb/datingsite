@@ -11,12 +11,12 @@ class TicketController extends Controller
     public function index()
     {
         $tickets = Ticket::with('user')->orderByDesc('created_at')->paginate(10);
-        return view('user.tickets.index', compact('tickets'));
+        return view('user.dashboardticket', compact('tickets'));
     }
 
     public function create()
     {
-        return view('user.tickets.create');
+        return view('user.dashboardticketcreate');
     }
 
 
