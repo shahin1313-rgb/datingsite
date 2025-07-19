@@ -123,6 +123,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('user.')->group(function 
 
 
 Route::middleware('auth')->group(function () {
+    Route::get('/police', [BlockController::class, 'index'])->name('police.index');
     Route::post('/block/{id}', [BlockController::class, 'block'])->name('user.block');
     Route::post('/unblock/{id}', [BlockController::class, 'unblock'])->name('user.unblock');
 });

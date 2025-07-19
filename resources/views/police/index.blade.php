@@ -194,7 +194,7 @@
             </aside>
 
             <!-- محتوای اصلی -->
-            @include('dashboard.main')
+            @include('police.list')
 
 
         </div>

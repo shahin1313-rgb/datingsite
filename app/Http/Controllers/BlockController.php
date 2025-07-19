@@ -7,6 +7,15 @@ use App\Models\Block;
 
 class BlockController extends Controller
 {
+
+    public function index()
+    {
+        $users = \App\Models\User::where('id', '!=', auth()->id())->get();
+        $blockedUsers = \App\Models\Block::where('blocker_id', auth()->id())->with('blocked')->get();
+
+        return view('police.index', compact('users', 'blockedUsers'));
+    }
+
     public function block(Request $request, $id)
     {
         if (auth()->user()->id == $id) {
