@@ -10,7 +10,11 @@ class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = Ticket::with('user')->orderByDesc('created_at')->paginate(10);
+        $tickets = Ticket::with(['user', 'replies.user'])
+            ->whereNull('parent_id')
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
         return view('user.dashboardticket', compact('tickets'));
     }
 
@@ -40,5 +44,21 @@ class TicketController extends Controller
     {
         Ticket::findOrFail($id)->delete();
         return redirect()->route('user.tickets')->with('success', 'تیکت حذف شد.');
+    }
+
+    public function reply(Request $request, Ticket $ticket)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        Ticket::create([
+            'user_id' => Auth::id(),
+            'subject' => 'پاسخ به: ' . $ticket->subject,
+            'message' => $request->message,
+            'parent_id' => $ticket->id,
+        ]);
+
+        return back()->with('success', 'پاسخ شما ارسال شد.');
     }
 }

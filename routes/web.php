@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\AdmineLteController;
 use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminStateController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\Admin\AdminTicketController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\Admin\PhotoController;
 
@@ -110,10 +111,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::delete('/photos/{id}', [PhotoController::class, 'destroy'])->name('admin.photos.destroy');
 });
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets');
-    Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('admin.tickets.destroy');
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    Route::get('/tickets', [AdminTicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/{id}', [AdminTicketController::class, 'show'])->name('tickets.show');
+    Route::post('/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('tickets.reply');
+    Route::post('/tickets/{id}/close', [AdminTicketController::class, 'close'])->name('tickets.close');
 });
+
+
+// Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+//     Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets');
+//     Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('admin.tickets.destroy');
+//     Route::post('/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('user.tickets.reply');
+// });
 
 Route::middleware(['auth'])->prefix('dashboard')->name('user.')->group(function () {
     Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');

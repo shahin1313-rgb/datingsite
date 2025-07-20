@@ -6,10 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ticket extends Model
 {
-    protected $fillable = ['user_id', 'subject', 'message', 'status'];
+    protected $fillable = ['user_id', 'subject', 'message', 'status', 'parent_id'];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function replies()
+    {
+        return $this->hasMany(Ticket::class, 'parent_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Ticket::class, 'parent_id');
     }
 }
