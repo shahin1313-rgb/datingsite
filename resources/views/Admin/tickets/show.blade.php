@@ -1,5 +1,4 @@
 @extends('adminlte::page')
-@extends('adminlte::page')
 
 @section('title', 'جزئیات تیکت')
 

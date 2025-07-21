@@ -23,10 +23,9 @@ class AdminTicketController extends Controller
     }
 
     // نمایش جزئیات یک تیکت
-
-    public function show($user_id)
+    public function show($id)
     {
-        $ticket = Ticket::where('user_id', $user_id)->firstOrFail();
+        $ticket = Ticket::with('user', 'replies.user')->findOrFail($id);
         return view('admin.tickets.show', compact('ticket'));
     }
 
