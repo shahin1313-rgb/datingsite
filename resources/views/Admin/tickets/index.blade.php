@@ -40,7 +40,7 @@
                                 <td class="px-4 py-3 text-gray-500 text-sm">{{ $ticket->created_at->format('Y-m-d H:i') }}
                                 </td>
                                 <td class="px-4 py-3 flex gap-2">
-                                    <a href="{{ route('admin.tickets.show', $ticket->id) }}"
+                                    <a href="{{ route('admin.tickets.show', $ticket->user_id) }}"
                                         class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition">
                                         مشاهده
                                     </a>

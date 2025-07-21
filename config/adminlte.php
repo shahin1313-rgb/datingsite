@@ -359,6 +359,11 @@ return [
             'icon' => 'fas fa-fw fa-id-card',
         ],
         [
+            'text' => 'تیکت',
+            'url' => 'admin/tickets',
+            'icon' => 'fas fa-fw fa-ticket-alt',
+        ],
+        [
             'text' => 'آمار',
             'url' => 'admin/statedashboard',
             'icon' => 'fas fa-fw fa-chart-bar',
@@ -474,6 +479,18 @@ return [
                 ],
             ],
         ],
+
+        'Tailwind' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => false,
+                    'location' => 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
+                ],
+            ],
+        ],
+
         'Select2' => [
             'active' => false,
             'files' => [
