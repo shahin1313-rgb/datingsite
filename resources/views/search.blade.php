@@ -1,92 +1,98 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-        <div class="row justify-content-center w-100">
-            <div class="col-md-8">
-                <div class="card">
+    <div class="min-h-screen flex justify-center items-center px-4">
+        <div class="w-full max-w-4xl">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
 
-                    {{-- Header --}}
-                    <div class="card-header">{{ __('Dashboard') }}</div>
+                {{-- Header --}}
+                <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 text-xl font-semibold">
+                    {{ __('Dashboard') }}
+                </div>
 
-                    {{-- Search Form --}}
-                    <h1 class="text-center mt-3">Search Profiles</h1>
+                {{-- Search Form --}}
+                <h1 class="text-2xl text-center mt-6 font-bold">Search Profiles</h1>
 
-                    <form action="{{ route('search') }}" method="GET" class="p-3">
-                        {{-- City --}}
-                        <div class="form-group mb-3">
-                            <label for="city">City:</label>
-                            <input type="text" class="form-control" id="city" name="city"
-                                placeholder="Enter city" value="{{ request('city') }}">
-                        </div>
-
-                        {{-- Age Range --}}
-                        <div class="form-row mb-3">
-                            <div class="col-md-6 mb-2">
-                                <label for="min_age">Min Age:</label>
-                                <input type="number" class="form-control" id="min_age" name="min_age"
-                                    value="{{ request('min_age') }}" placeholder="Minimum age">
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label for="max_age">Max Age:</label>
-                                <input type="number" class="form-control" id="max_age" name="max_age"
-                                    value="{{ request('max_age') }}" placeholder="Maximum age">
-                            </div>
-                        </div>
-
-                        {{-- Search Button --}}
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-
-                    {{-- Search Results --}}
-                    <div class="card align-items-center mx-auto my-4" style="width: 14rem;">
-
-                        @if ($profiles->isEmpty())
-                            <p class="p-3">No profiles found.</p>
-                        @else
-                            <ul class="list-unstyled p-3">
-                                @foreach ($profiles as $profile)
-                                    <li class="mb-4">
-                                        @if ($profile->profile_picture)
-                                            <img class="rounded-circle shadow-4-strong card-img-top mb-2" alt="avatar"
-                                                src="{{ asset('storage/' . $profile->profile_picture) }}" />
-                                        @else
-                                            <p>No profile picture available.</p>
-                                        @endif
-
-                                        <div class="card-body text-center">
-                                            <h5 class="card-title">{{ $profile->name }}</h5>
-                                            <h6>{{ $profile->city }} | Age: {{ $profile->age }} | Born:
-                                                {{ $profile->birth_year }}</h6>
-                                            <p class="card-text">{{ $profile->email }}</p>
-                                            <p class="card-text">{{ $profile->bio }}</p>
-
-                                            <div class="d-flex justify-content-center gap-2 mt-2">
-                                                <a href="{{ route('messages.show', $profile) }}"
-                                                    class="btn btn-primary btn-sm">
-                                                    Send Message
-                                                </a>
-                                                <a href="{{ route('profile.show', $profile->id) }}"
-                                                    class="btn btn-secondary btn-sm">
-                                                    View Profile
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
-
-                            {{-- Pagination --}}
-                            <div class="d-flex justify-content-center mt-3">
-                                {{ $profiles->appends(request()->query())->links('pagination::bootstrap-4') }}
-                            </div>
-                        @endif
-
+                <form action="{{ route('search') }}" method="GET" class="p-6 space-y-4">
+                    {{-- City --}}
+                    <div>
+                        <label for="city" class="block text-gray-700 font-medium mb-1">City:</label>
+                        <input type="text" id="city" name="city" value="{{ request('city') }}"
+                            placeholder="Enter city"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
+                    {{-- Age Range --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="min_age" class="block text-gray-700 font-medium mb-1">Min Age:</label>
+                            <input type="number" id="min_age" name="min_age" value="{{ request('min_age') }}"
+                                placeholder="Minimum age"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="max_age" class="block text-gray-700 font-medium mb-1">Max Age:</label>
+                            <input type="number" id="max_age" name="max_age" value="{{ request('max_age') }}"
+                                placeholder="Maximum age"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    {{-- Search Button --}}
+                    <div class="text-center">
+                        <button type="submit"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-200">
+                            Search
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Search Results --}}
+                <div class="p-6">
+                    @if ($profiles->isEmpty())
+                        <p class="text-center text-gray-500">No profiles found.</p>
+                    @else
+                        <ul class="space-y-6">
+                            @foreach ($profiles as $profile)
+                                <li class="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                                    @if ($profile->profile_picture)
+                                        <img src="{{ asset('storage/' . $profile->profile_picture) }}" alt="avatar"
+                                            class="w-24 h-24 rounded-full shadow-md mb-3 object-cover" />
+                                    @else
+                                        <p class="text-sm text-gray-400">No profile picture available.</p>
+                                    @endif
+
+                                    <div class="text-center">
+                                        <h5 class="text-lg font-bold">{{ $profile->name }}</h5>
+                                        <p class="text-sm text-gray-600">
+                                            {{ $profile->city }} | Age: {{ $profile->age }} | Born:
+                                            {{ $profile->birth_year }}
+                                        </p>
+                                        <p class="text-sm mt-1 text-gray-500">{{ $profile->email }}</p>
+                                        <p class="text-sm mt-1 text-gray-500">{{ $profile->bio }}</p>
+
+                                        <div class="flex justify-center gap-3 mt-4">
+                                            <a href="{{ route('messages.show', $profile) }}"
+                                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                                                Send Message
+                                            </a>
+                                            <a href="{{ route('profile.show', $profile->id) }}"
+                                                class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">
+                                                View Profile
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        {{-- Pagination --}}
+                        <div class="mt-6 flex justify-center">
+                            {{ $profiles->appends(request()->query())->links() }}
+                        </div>
+                    @endif
                 </div>
+
             </div>
         </div>
     </div>
