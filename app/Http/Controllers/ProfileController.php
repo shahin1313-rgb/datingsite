@@ -81,6 +81,21 @@ class ProfileController extends Controller
             $query->whereBetween('birth_year', [$minBirthYear, $maxBirthYear]);
         }
 
+        if ($request->filled('marital_status')) {
+            $query->where('marital_status', $request->marital_status);
+        }
+
+        if ($request->filled('interests')) {
+            $query->where('interests', 'like', '%' . $request->interests . '%');
+        }
+
+        if ($request->has('has_photo')) {
+            $query->whereNotNull('profile_picture');
+        }
+
+        if ($request->has('is_active')) {
+            $query->where('is_active', true);
+        }
         // Execute the query and paginate the results
         $profiles = $query->paginate(3);
 
