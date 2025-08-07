@@ -85,7 +85,7 @@ class ProfileController extends Controller
             $query->where('marital_status', $request->marital_status);
         }
 
-        if ($request->filled('interests')) {
+        if ($request->filled('interested_in')) {
             $query->where('interests', 'like', '%' . $request->interests . '%');
         }
 
