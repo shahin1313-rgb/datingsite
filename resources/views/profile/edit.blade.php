@@ -7,7 +7,7 @@
             <div class="relative bg-gradient-to-tr from-indigo-500 via-blue-500 to-sky-400 h-40">
                 <div class="absolute -bottom-12 right-6 flex items-center">
                     <div class="relative">
-                        <img src="{{ asset('storage/' . $user->profile_picture) }}"
+                        <img src="{{ asset('storage/' . $user->profile_picture) }}?v={{ time() }} "
                             class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover" alt="Profile Picture">
                         <button
                             class="absolute bottom-0 left-0 bg-white text-indigo-600 rounded-full p-1.5 shadow hover:bg-indigo-100 transition"
@@ -77,20 +77,16 @@
                         <textarea id="bio" name="bio" rows="4"
                             class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">{{ $user->bio }}</textarea>
                     </div>
-                    <div class="mt-4">
-                        <label for="profile_picture" class="block text-sm font-medium text-gray-600 mb-1">تصویر
-                            پروفایل</label>
-                        @if ($user->profile_picture)
-                            <div class="mb-2">
-                                <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture"
-                                    class="w-24 h-24 rounded-full object-cover border">
-                            </div>
-                        @endif
-                        <input type="file" name="profile_picture" id="profile_picture"
-                            class="w-full text-sm text-gray-500">
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">تصویر پروفایل</label>
+                        <!-- پیش‌نمایش -->
+                        <img id="preview" src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture"
+                            class="w-24 h-24 rounded-full border-2 border-gray-300 mt-2 object-cover">
+                        <input type="file" id="profile_picture" name="profile_picture" accept="image/*"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" onchange="previewImage(event)">
+
                     </div>
 
-                    {{-- {{ dd($user->profile_picture) }} --}}
 
 
                     <div class="flex justify-end">
@@ -117,4 +113,14 @@
             font-family: inherit;
         }
     </style>
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('preview');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 @endsection
