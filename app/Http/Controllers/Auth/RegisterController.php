@@ -102,56 +102,45 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        // dd($request);
-        // Validate the request data first (including profile_picture)
         $validatedData = $request->validate([
             'name'           => ['required', 'string', 'max:255'],
             'email'          => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password'       => ['required', 'string', 'min:8', 'confirmed'],
-            'age'  => ['required', 'integer', 'min:18', 'max:100'],
-            'gender'         => ['required', 'string'], // Adjust validation as needed
+            'age'            => ['required', 'integer', 'min:18', 'max:100'],
+            'gender'         => ['required', 'string'],
             'bio'            => ['nullable', 'string'],
-            'city' => ['required', 'string', 'max:255'], // Add this line
-            'interested_in'=>['required', 'string'],
-            'salary'=>['required','integer'],
+            'city'           => ['required', 'string', 'max:255'],
+            'interested_in'  => ['required', 'string'],
+            'salary'         => ['required', 'integer'],
+            'marital_status' => ['nullable', 'in:single,married,divorced,widowed'],
             'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
-
-        // Calculate birth year based on the current year and age
         $currentYear = date('Y');
         $birthYear = $currentYear - $validatedData['age'];
-        // Handle the file upload and store it in the 'public' disk under 'profile_pictures'
+
         if ($request->hasFile('profile_picture')) {
             $path = $request->file('profile_picture')->store('profile_pictures', 'public');
-            // Add the file path to the validated data array
             $validatedData['profile_picture'] = $path;
         }
 
-        // Create the user using the create method with mass assignment
         $user = User::create([
-            'name'           => $validatedData['name'],
-            'email'          => $validatedData['email'],
-            'password'       => Hash::make($validatedData['password']),
-            'gender'         => $validatedData['gender'],
-            'age' => $validatedData['age'], // Save age
-            'birth_year' => $birthYear, // Save birth year
-            'city' => $validatedData['city'], // Add this line
-            'interested_in'=>$validatedData['interested_in'],
-            'salary'=>$validatedData['salary'],
-            'bio'            => $validatedData['bio'] ?? null,
+            'name'            => $validatedData['name'],
+            'email'           => $validatedData['email'],
+            'password'        => Hash::make($validatedData['password']),
+            'gender'          => $validatedData['gender'],
+            'age'             => $validatedData['age'],
+            'birth_year'      => $birthYear,
+            'city'            => $validatedData['city'],
+            'interested_in'   => $validatedData['interested_in'],
+            'salary'          => $validatedData['salary'],
+            'marital_status'  => $validatedData['marital_status'] ?? null,
+            'bio'             => $validatedData['bio'] ?? null,
             'profile_picture' => $validatedData['profile_picture'] ?? null,
         ]);
 
-
-        // Optionally, log the user in or perform further actions
         Auth::login($user);
 
         return redirect($this->redirectPath());
-
-        // return View('login');
-        // return view('auth.login');
-
-
     }
 }

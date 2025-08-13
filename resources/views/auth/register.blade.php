@@ -62,6 +62,16 @@
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
+            <label for="marital_status" class="block text-sm font-medium text-gray-700">وضعیت تأهل</label>
+            <select id="marital_status" name="marital_status"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <option value="">انتخاب کنید</option>
+                <option value="single" {{ old('marital_status') == 'single' ? 'selected' : '' }}>مجرد</option>
+                <option value="married" {{ old('marital_status') == 'married' ? 'selected' : '' }}>متأهل</option>
+                <option value="divorced" {{ old('marital_status') == 'divorced' ? 'selected' : '' }}>طلاق‌گرفته</option>
+                <option value="widowed" {{ old('marital_status') == 'widowed' ? 'selected' : '' }}>همسر فوت شده</option>
+            </select>
+
 
             <!-- Bio -->
             <div class="mb-4">

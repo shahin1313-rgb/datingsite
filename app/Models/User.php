@@ -28,6 +28,7 @@ class User extends Authenticatable
         'bio',
         'profile_picture',
         'age',
+        'marital_status',
         'birth_year',
         'role',
         'interested_in',

@@ -39,6 +39,20 @@
                             <h5 class="text-xl font-bold">{{ $user->name }}</h5>
                             <h6 class="text-md text-gray-500">{{ $user->city }}</h6>
                             <p class="mt-2 text-gray-700">{{ $user->email }}</p>
+                            <p><strong>وضعیت تأهل:</strong>
+                                @if ($user->marital_status == 'single')
+                                    مجرد
+                                @elseif($user->marital_status == 'married')
+                                    متأهل
+                                @elseif($user->marital_status == 'divorced')
+                                    مطلقه
+                                @elseif($user->marital_status == 'widowed')
+                                    بیوه
+                                @else
+                                    ثبت نشده
+                                @endif
+                            </p>
+
                             <p class="mt-2"><span class="font-semibold">Interested In:</span>
                                 {{ $user->interested_in }}</p>
                             <p class="mt-2"><span class="font-semibold">Salary:</span> میلیون تومن {{ $user->salary }}
