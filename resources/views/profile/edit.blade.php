@@ -29,7 +29,7 @@
 
             <!-- Form -->
             <div class="px-6 pb-8">
-                <form action="{{ route('profile.update') }}" method="POST" class="space-y-5">
+                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                     @csrf
 
                     <div>
@@ -77,6 +77,21 @@
                         <textarea id="bio" name="bio" rows="4"
                             class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">{{ $user->bio }}</textarea>
                     </div>
+                    <div class="mt-4">
+                        <label for="profile_picture" class="block text-sm font-medium text-gray-600 mb-1">تصویر
+                            پروفایل</label>
+                        @if ($user->profile_picture)
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture"
+                                    class="w-24 h-24 rounded-full object-cover border">
+                            </div>
+                        @endif
+                        <input type="file" name="profile_picture" id="profile_picture"
+                            class="w-full text-sm text-gray-500">
+                    </div>
+
+                    {{-- {{ dd($user->profile_picture) }} --}}
+
 
                     <div class="flex justify-end">
                         <button type="submit"

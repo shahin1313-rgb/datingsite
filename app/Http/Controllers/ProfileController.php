@@ -31,11 +31,16 @@ class ProfileController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'city' => 'nullable|string|max:255',
             'bio' => 'nullable|string|max:1000',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $user->update($request->only('name', 'email', 'city', 'bio'));
-
-        return redirect()->route('dashboard')->with('success', 'Profile updated successfully.');
+        if ($request->hasFile('profile_picture')) {
+            // ذخیره عکس جدید
+            $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+            $validatedData['profile_picture'] = $path;
+        }
+        $user->update($validatedData);
+        return redirect()->route('dashboard')->with('success', 'پروفایل با موفقیت بروزرسانی شد.');
     }
 
 
