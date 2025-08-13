@@ -51,6 +51,26 @@
                         <input type="text" id="city" name="city" value="{{ $user->city }}"
                             class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
                     </div>
+                    <div class="mt-4">
+                        <label for="marital_status" class="block text-sm font-medium text-gray-700">وضعیت تأهل</label>
+                        <select id="marital_status" name="marital_status"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="">انتخاب کنید</option>
+                            <option value="single"
+                                {{ old('marital_status', $user->marital_status) == 'single' ? 'selected' : '' }}>مجرد
+                            </option>
+                            <option value="married"
+                                {{ old('marital_status', $user->marital_status) == 'married' ? 'selected' : '' }}>متأهل
+                            </option>
+                            <option value="divorced"
+                                {{ old('marital_status', $user->marital_status) == 'divorced' ? 'selected' : '' }}>
+                                طلاق‌گرفته</option>
+                            <option value="widowed"
+                                {{ old('marital_status', $user->marital_status) == 'widowed' ? 'selected' : '' }}>همسر فوت
+                                شده</option>
+                        </select>
+                    </div>
+
 
                     <div>
                         <label for="bio" class="block text-sm font-medium text-gray-600 mb-1">بیوگرافی</label>
