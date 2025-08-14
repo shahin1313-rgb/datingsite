@@ -19,6 +19,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\Admin\AdminTicketController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\Admin\PhotoController;
+use App\Http\Controllers\LikeController;
 
 
 Route::get('/', function () {
@@ -151,3 +152,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 });
+
+
+Route::post('/like/{id}', [LikeController::class, 'store'])->name('like.store');
+Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');

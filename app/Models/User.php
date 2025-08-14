@@ -107,6 +107,21 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProfileView::class, 'viewer_id')->latest();
     }
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function likedUsers()
+    {
+        return $this->belongsToMany(User::class, 'likes', 'user_id', 'liked_user_id');
+    }
+
+    public function likedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'likes', 'liked_user_id', 'user_id');
+    }
+
 
 
     /**

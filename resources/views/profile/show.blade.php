@@ -70,6 +70,13 @@
                                     class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
                                     Show
                                 </a>
+                                <form action="{{ route('like.store', $user->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">
+                                        ❤️ لایک
+                                    </button>
+                                </form>
+
 
                                 @if (auth()->check() && auth()->id() !== $user->id)
                                     <form action="{{ route('report.store') }}" method="POST">
