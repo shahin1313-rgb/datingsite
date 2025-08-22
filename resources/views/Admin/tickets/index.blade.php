@@ -1,70 +1,37 @@
-@extends('adminlte::page')
+<!-- resources/views/errors/404.blade.php -->
+<!DOCTYPE html>
+<html lang="en">
 
-@section('content')
-    <div class="max-w-7xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
-        <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-2">
-            <i class="fa fa-ticket-alt text-pink-600"></i>
-            مدیریت تیکت‌ها
-        </h2>
+<head>
+    <meta charset="UTF-8">
+    <title>Page Not Found</title>
+    @vite('resources/css/app.css')
+</head>
 
-        @if ($tickets->isEmpty())
-            <div class="text-center text-gray-500 text-lg">
-                هیچ تیکتی یافت نشد.
-            </div>
-        @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-3 text-right text-gray-600">#</th>
-                            <th class="px-4 py-3 text-right text-gray-600">کاربر</th>
-                            <th class="px-4 py-3 text-right text-gray-600">موضوع</th>
-                            <th class="px-4 py-3 text-right text-gray-600">وضعیت</th>
-                            <th class="px-4 py-3 text-right text-gray-600">تاریخ</th>
-                            <th class="px-4 py-3 text-right text-gray-600">عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($tickets as $ticket)
-                            <tr class="border-b hover:bg-gray-50 transition">
-                                <td class="px-4 py-3">{{ $ticket->id }}</td>
-                                <td class="px-4 py-3">{{ $ticket->user->name ?? 'کاربر حذف‌شده' }}</td>
-                                <td class="px-4 py-3 font-semibold text-gray-800">{{ $ticket->subject }}</td>
-                                <td class="px-4 py-3">
-                                    @if ($ticket->status === 'open')
-                                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm">باز</span>
-                                    @else
-                                        <span class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-sm">بسته</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-gray-500 text-sm">{{ $ticket->created_at->format('Y-m-d H:i') }}
-                                </td>
-                                <td class="px-4 py-3 flex gap-2">
-                                    <a href="{{ route('admin.tickets.show', $ticket->id) }}"
-                                        class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition">
-                                        مشاهده
-                                    </a>
+<body class="h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-pink-200">
 
-                                    @if ($ticket->status === 'open')
-                                        <form action="{{ route('admin.tickets.close', $ticket->id) }}" method="POST"
-                                            onsubmit="return confirm('آیا از بستن این تیکت مطمئن هستید؟')">
-                                            @csrf
-                                            <button type="submit"
-                                                class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition">
-                                                بستن
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+    <div class="text-center p-8 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg max-w-lg w-full">
 
-            <div class="mt-6">
-                {{ $tickets->links('pagination::tailwind') }}
-            </div>
-        @endif
+        <!-- قلب انیمیشنی -->
+        <div class="flex justify-center mb-6">
+            <svg class="w-20 h-20 text-pink-500 animate-pulse" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                    d="M12 21s-6-4.35-9-8.7C.45 9.45 2.7 3 8.1 3c2.25 0 3.9 1.2 3.9 3 0-1.8 1.65-3 3.9-3 5.4 0 7.65 6.45 5.1 9.3-3 4.35-9 8.7-9 8.7z" />
+            </svg>
+        </div>
+
+        <!-- متن 404 -->
+        <h1 class="text-6xl font-extrabold text-gray-800 mb-4">404</h1>
+        <p class="text-gray-600 text-lg mb-6">اوه! صفحه‌ای که دنبالش هستید پیدا نشد 💔</p>
+
+        <!-- دکمه -->
+        <a href="{{ url('/') }}"
+            class="inline-block px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-full shadow-md transition">
+            بازگشت به خانه
+        </a>
     </div>
-@endsection
+
+</body>
+
+</html>

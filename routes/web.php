@@ -156,3 +156,7 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/like/{id}', [LikeController::class, 'store'])->name('like.store');
 Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
+});

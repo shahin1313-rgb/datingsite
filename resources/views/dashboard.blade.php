@@ -169,6 +169,10 @@
                         class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-edit"></i><span>ویرایش پروفایل</span>
                     </a>
+                    <a href="{{ route('likes.index') }}"
+                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
+                        <i class="fa fa-diamond"></i><span>لایک ها</span>
+                    </a>
                     <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
                         <i class="fa fa-diamond"></i><span>خرید</span>
                     </a>
