@@ -127,6 +127,16 @@
     </style>
 
     <div class="min-h-screen" x-data="{ openLogoutModal: false }">
+        <!-- دکمه فلش باز/بستن منو -->
+<div class="fixed top-4 right-4 z-[9999]">
+    <button onclick="toggleSidebar()" class="bg-pink-600 text-white p-2 rounded-full shadow-md hover:bg-pink-700 transition">
+        <svg id="arrowIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+    </button>
+</div>
+
         <div class="flex">
             <!-- نوار کناری -->
             <aside class="sidebar w-64 h-screen fixed top-0 right-0 p-6 text-white flex flex-col md:sidebar-open"
@@ -248,17 +258,30 @@
             });
         });
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('mySidebar');
-            const overlay = document.getElementById('myOverlay');
-            sidebar.classList.toggle('sidebar-open');
-            overlay.classList.toggle('hidden');
-        }
+       
+         function toggleSidebar() {
+        const sidebar = document.getElementById('mySidebar');
+        const overlay = document.getElementById('myOverlay');
+        const arrowIcon = document.getElementById('arrowIcon');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.animate-slide-in').forEach((el, index) => {
-                el.style.animationDelay = `${index * 0.1}s`;
-            });
+        // تغییر وضعیت باز/بسته شدن منو
+        const isOpen = sidebar.classList.toggle('sidebar-open');
+
+        // // نمایش یا مخفی‌سازی پس‌زمینه تیره
+        // overlay.classList.toggle('hidden', !isOpen);
+
+        // چرخش فلش هنگام باز/بسته شدن
+        if (arrowIcon) {
+            arrowIcon.style.transition = 'transform 0.3s ease';
+            arrowIcon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+    }
+
+    // انیمیشن ظاهر شدن المان‌ها
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.animate-slide-in').forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.1}s`;
         });
+    });
     </script>
 @endsection
