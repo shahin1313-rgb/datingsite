@@ -59,7 +59,7 @@
         <nav class="bg-white shadow">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <a href="{{ url('/') }}" class="text-xl font-bold text-gray-800">
-                    {{ config('app.name', 'Laravel') }}
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
                 </a>
                 <div class="space-x-4" x-data="{ open: false }">
                     @guest
