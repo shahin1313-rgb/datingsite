@@ -6,12 +6,12 @@
             font-family: 'Vazir', sans-serif !important;
         }
 
-        html,
+        /* html,
         body {
             direction: rtl;
             background: linear-gradient(to bottom, #f7fafc, #e2e8f0);
             text-align: right;
-        }
+        } */
 
         .sidebar {
             background: linear-gradient(180deg, #ff5e62 0%, #f6d365 100%);
