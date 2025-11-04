@@ -62,6 +62,16 @@
                     <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
                 </a>
                 <div class="space-x-4" x-data="{ open: false }">
+
+                <!-- پیام‌ها -->
+<a href="{{ route('messages.index') }}" class="relative inline-flex items-center text-gray-600 hover:text-gray-800">
+    <i class="fas fa-envelope text-xl"></i>
+    <span
+        class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+        3
+    </span>
+</a>
+
                     @guest
                         @if (Route::has('login'))
                             <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-800">{{ __('Login') }}</a>
