@@ -271,12 +271,28 @@
         // overlay.classList.toggle('hidden', !isOpen);
 
         // چرخش فلش هنگام باز/بسته شدن
-        if (arrowIcon) {
-            arrowIcon.style.transition = 'transform 0.3s ease';
-            arrowIcon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    //     if (arrowIcon) {
+    //         arrowIcon.style.transition = 'transform 0.3s ease';
+    //         arrowIcon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    //     }
+    // }
+
+    // چون نمی‌خواهی پس‌زمینه تار شود، مطمئن شو همیشه hidden بماند
+        overlay.classList.add('hidden');
+
+        // تغییر آیکون بین فلش و ضربدر
+        if (isOpen) {
+            arrowIcon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M6 18L18 6M6 6l12 12" />
+            `;
+        } else {
+            arrowIcon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 5l7 7-7 7" />
+            `;
         }
     }
-
     // انیمیشن ظاهر شدن المان‌ها
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.animate-slide-in').forEach((el, index) => {

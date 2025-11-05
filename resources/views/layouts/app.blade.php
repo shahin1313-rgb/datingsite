@@ -18,6 +18,7 @@
     @yield('head')
 
     <style>
+          [x-cloak] { display: none !important; }  /* اضافه‌شده برای مخفی‌کردن منو هنگام بارگذاری */
         html,
         body,
         h1,
@@ -91,7 +92,7 @@
                                         clip-rule="evenodd" />
                                 </svg>
                             </button>
-                            <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                            <div x-show="open" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Buy</a>
                                 <a href="{{ route('profile.edit') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ویرایش پروفایل</a>
