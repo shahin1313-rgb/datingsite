@@ -57,7 +57,7 @@
 
 <body class="bg-gray-100 min-h-screen">
     <div id="app">
-        <nav class="bg-white shadow">
+        <nav class="bg-white shadow fixed top-0 left-0 w-full z-50">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <a href="{{ url('/') }}" class="text-xl font-bold text-gray-800">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">

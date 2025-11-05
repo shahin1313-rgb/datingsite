@@ -6,6 +6,8 @@
             font-family: 'Vazir', sans-serif !important;
         }
 
+       
+
         .sidebar {
             background: linear-gradient(180deg, #ff5e62 0%, #f6d365 100%);
             box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
