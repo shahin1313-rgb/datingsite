@@ -57,12 +57,12 @@
 
 <body class="bg-gray-100 min-h-screen">
     <div id="app">
-        <nav class="bg-white shadow fixed top-0 left-0 w-full z-50">
+        <nav class="bg-white shadow fixed flex top-0 left-0 w-full z-50">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <a href="{{ url('/') }}" class="text-xl font-bold text-gray-800">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
                 </a>
-                <div class="space-x-4" x-data="{ open: false }">
+                <div class="space-x-4 flex items-center " x-data="{ open: false }">
 
                 <!-- پیام‌ها -->
 <a href="{{ route('messages.index') }}" class="relative inline-flex items-center text-gray-600 hover:text-gray-800">
@@ -72,6 +72,41 @@
         3
     </span>
 </a>
+
+<!-- انتخاب زبان -->
+<div class="relative" x-data="{ langMenu: false }" @click.away="langMenu = false">
+    <button @click="langMenu = !langMenu"
+        class="flex items-center space-x-1 text-gray-600 hover:text-gray-800">
+        <i class="fa-solid fa-globe"></i>
+        <span class="hidden sm:inline text-sm font-medium">
+            @if (app()->getLocale() == 'fa')
+                فارسی
+            @elseif(app()->getLocale() == 'fr')
+                Français
+            @else
+                English
+            @endif
+        </span>
+        <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.061l-4.24 4.243a.75.75 0 01-1.06 0L5.25 8.28a.75.75 0 01-.02-1.06z"
+                clip-rule="evenodd" />
+        </svg>
+    </button>
+
+    <div x-show="langMenu" x-cloak
+        class="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg z-50">
+        <a href="{{ url('lang/fa') }}"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+            <span>🇮🇷</span><span>فارسی</span>
+        </a>
+        <a href="{{ url('lang/fr') }}"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+            <span>🇫🇷</span><span>Français</span>
+        </a>
+    </div>
+</div>
+
 
                     @guest
                         @if (Route::has('login'))

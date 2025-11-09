@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\AdminTicketController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\Admin\PhotoController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\LanguageController;
+
 
 
 Route::get('/', function () {
@@ -71,7 +73,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
+
+
+
 /// n
+Route::get('lang/{lang}', [LanguageController::class, 'switch']);
+
 
 Route::post('/report', [ReportController::class, 'store'])->name('report.store')->middleware('auth');
 

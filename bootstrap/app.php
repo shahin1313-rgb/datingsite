@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class, // Custom middleware
             'auth' => Authenticate::class, // Default Laravel auth middleware
         ]);
+         // اعمال میدل‌ورهای عمومی برای تمام درخواست‌های وب
+    $middleware->web(append: [
+        \App\Http\Middleware\SetLocale::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
