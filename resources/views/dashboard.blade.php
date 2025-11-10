@@ -130,7 +130,7 @@
 
     <div class="min-h-screen" x-data="{ openLogoutModal: false }">
         <!-- دکمه فلش باز/بستن منو -->
-<div class="fixed top-4 right-4 z-[9999]">
+<div class="fixed top-4 right-4 z-[9999] md:hidden">
     <button onclick="toggleSidebar()" class="bg-pink-600 text-white p-2 rounded-full shadow-md hover:bg-pink-700 transition">
         <svg id="arrowIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300" fill="none"
              viewBox="0 0 24 24" stroke="currentColor">
