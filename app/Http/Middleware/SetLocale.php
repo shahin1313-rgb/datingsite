@@ -13,8 +13,13 @@ class SetLocale
       public function handle($request, Closure $next)
     {
         $locale = Session::get('locale', config('app.locale'));
+       
         App::setLocale($locale);
 
+
         return $next($request);
+
+    //     App::setLocale('fa'); // زبان را روی فارسی تنظیم کنید
+    // return $next($request);
     }
 }

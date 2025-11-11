@@ -1,12 +1,11 @@
 @extends('layouts.app')
-
 @section('content')
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-center">
             <div class="w-full md:w-2/3 lg:w-1/2">
                 <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                     <div class="px-6 py-4 border-b">
-                        <h2 class="text-2xl font-semibold">{{ __('Dashboard') }}</h2>
+                        <h2 class="text-2xl font-semibold">{{ trans('dashboard.Dashboard') }}</h2>
                     </div>
                     <div class="p-6">
                         @if (session('status'))
@@ -15,7 +14,6 @@
                                 {{ session('status') }}
                             </div>
                         @endif
-
                         @if ($user->profile_picture)
                             <div class="flex justify-center mt-4">
 
@@ -53,8 +51,8 @@
                                 @endif
                             </p>
 
-                            <p class="mt-2"><span class="font-semibold">Interested In:</span>
-                                {{ $user->interested_in }}</p>
+                            <!-- <p class="mt-2"><span class="font-semibold">Interested In:</span>
+                                {{ $user->interested_in }}</p> -->
                             <p class="mt-2"><span class="font-semibold">Salary:</span> میلیون تومن {{ $user->salary }}
                             </p>
                             <p class="mt-2 text-gray-600">{{ $user->bio }}</p>

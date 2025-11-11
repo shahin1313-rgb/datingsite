@@ -1,0 +1,19 @@
+<?php
+return [
+    "Dashboard" => "نمای کلی",
+    'hello_user' => 'Bonjour, :name',
+    'overview' => 'Vue d’ensemble',
+    'profile' => 'Profil',
+    'search' => 'Recherche',
+    'edit_profile' => 'Modifier le profil',
+    'likes' => 'Mentions J’aime',
+    'purchase' => 'Achat',
+    'support_tickets' => 'Tickets de support',
+    'site_police' => 'Police du site',
+    'history' => 'Historique',
+    'settings' => 'Paramètres',
+    'logout' => 'Déconnexion',
+    'are_you_sure' => 'Êtes-vous sûr ?',
+    'logout_confirm' => 'Voulez-vous vous déconnecter de votre compte ?',
+    'cancel' => 'Annuler',
+];
