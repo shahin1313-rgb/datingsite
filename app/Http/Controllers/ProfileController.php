@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use App\Models\ProfileView;
+use App\Models\UserProfileVisit;
 
 class ProfileController extends Controller
 {
@@ -50,14 +51,12 @@ class ProfileController extends Controller
         $profileUser = User::findOrFail($id);
 
         if (Auth::check() && Auth::id() !== $profileUser->id) {
-            ProfileView::create([
-                'viewer_id' => Auth::id(),
-                'viewed_id' => $profileUser->id,
+            UserProfileVisit::create([
+                'viewer_id' => auth()->id(),
+                'profile_owner_id' => $profileOwner->id,
             ]);
         }
-        return view('profile.show', [
-            'user' => $profileUser
-        ]);
+       return view('profile.show', compact('profileOwner'));
     }
 
     public function search(Request $request)

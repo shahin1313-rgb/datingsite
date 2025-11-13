@@ -65,20 +65,25 @@
          </div>
          <div class="animate-slide-in" style="animation-delay: 0.6s;">
              <h3 class="text-2xl font-bold text-gray-800 mb-4">مناطق</h3>
-             <div class="bg-white card p-6 rounded-xl">
-                 <table class="w-full text-right">
-                     <tbody>
-                         <tr class="border-b">
-                             <td class="py-3">آمریکا</td>
-                             <td class="py-3 text-gray-600">65%</td>
-                         </tr>
-                         <tr>
-                             <td class="py-3">انگلستان</td>
-                             <td class="py-3 text-gray-600">15%</td>
-                         </tr>
-                     </tbody>
-                 </table>
-             </div>
+             <div class="card p-4 shadow rounded-lg">
+    <h3 class="text-lg font-bold mb-2">بازدید از پروفایل شما</h3>
+    <p>👁️ امروز: <strong>{{ $todayViews }}</strong> بازدید</p>
+    <p>📈 کل بازدیدها: <strong>{{ $totalViews }}</strong></p>
+
+    <h4 class="mt-3 font-semibold">سه بازدیدکننده اخیر:</h4>
+    <ul>
+        @forelse($latestViewers as $view)
+            <li>{{ $view->viewer->name ?? 'کاربر ناشناس' }}</li>
+        @empty
+            <li>هنوز کسی پروفایل شما را ندیده است.</li>
+        @endforelse
+    </ul>
+
+    <a href="{{ route('dashboard.views') }}" class="text-blue-600 hover:underline mt-2 inline-block">
+        مشاهده لیست کامل
+    </a>
+</div>
+
          </div>
      </div>
 
