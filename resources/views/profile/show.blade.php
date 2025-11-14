@@ -32,69 +32,76 @@
                         @endif
 
 
+<div class="p-4 space-y-3">
 
-                        <div class="p-4">
-                            <h5 class="text-xl font-bold">{{ $profileOwner->name }}</h5>
-                            <h6 class="text-md text-gray-500">{{ $profileOwner->city }}</h6>
-                            <p class="mt-2 text-gray-700">{{ $profileOwner->email }}</p>
-                            <p><strong>وضعیت تأهل:</strong>
-                                @if ($profileOwner->marital_status == 'single')
-                                    مجرد
-                                @elseif($profileOwner->marital_status == 'married')
-                                    متأهل
-                                @elseif($profileOwner->marital_status == 'divorced')
-                                    مطلقه
-                                @elseif($profileOwner->marital_status == 'widowed')
-                                    بیوه
-                                @else
-                                    ثبت نشده
-                                @endif
-                            </p>
+    <p><strong>{{ __('profilepage.name') }}:</strong> {{ $profileOwner->name }}</p>
 
-                            <!-- <p class="mt-2"><span class="font-semibold">Interested In:</span>
-                                {{ $profileOwner->interested_in }}</p> -->
-                            <p class="mt-2"><span class="font-semibold">Salary:</span> میلیون تومن {{ $profileOwner->salary }}
-                            </p>
-                            <p class="mt-2 text-gray-600">{{ $profileOwner->bio }}</p>
-                            <p class="mt-2"><span class="font-semibold">Role:</span> {{ $profileOwner->role }}</p>
+    <p><strong>{{ __('profilepage.city') }}:</strong> {{ $profileOwner->city }}</p>
 
-                            <div class="mt-4 flex flex-wrap gap-2">
-                                <a href="{{ url()->previous() }}"
-                                    class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded">
-                                    Back
-                                </a>
+    <p><strong>{{ __('profilepage.email') }}:</strong> {{ $profileOwner->email }}</p>
 
-                                <a href="#"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
-                                    Show
-                                </a>
-                                <form action="{{ route('like.store', $profileOwner->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">
-                                        ❤️ لایک
-                                    </button>
-                                </form>
+    <p>
+        <strong>{{ __('profilepage.marital_status') }}:</strong>
+        @if ($profileOwner->marital_status == 'single')
+            {{ __('profilepage.single') }}
+        @elseif($profileOwner->marital_status == 'married')
+            {{ __('profilepage.married') }}
+        @elseif($profileOwner->marital_status == 'divorced')
+            {{ __('profilepage.divorced') }}
+        @elseif($profileOwner->marital_status == 'widowed')
+            {{ __('profilepage.widowed') }}
+        @else
+            {{ __('profilepage.not_set') }}
+        @endif
+    </p>
 
+    <p><strong>{{ __('profilepage.salary') }}:</strong> {{ $profileOwner->salary }} {{ __('profilepage.salary_unit') }}</p>
 
-                                @if (auth()->check() && auth()->id() !== $profileOwner->id)
-                                    <form action="{{ route('report.store') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="reported_id" value="{{ $profileOwner->id }}">
-                                        <button type="submit"
-                                            class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
-                                            گزارش سریع🚫
-                                        </button>
-                                    </form>
+    <p><strong>{{ __('profilepage.bio') }}:</strong> {{ $profileOwner->bio }}</p>
 
+    <p><strong>{{ __('profilepage.role') }}:</strong> {{ $profileOwner->role }}</p>
 
-                                    <!-- Trigger Modal Button (می‌توانید با جاوااسکریپت مدال را نمایش دهید) -->
-                                    <button onclick="document.getElementById('reportModal').classList.remove('hidden')"
-                                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded">
-                                        ⚠️ اطلاع‌رسانی رفتار مشکوک
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
+</div>
+
+  <div class="mt-4 flex flex-wrap gap-2">
+
+    <a href="{{ url()->previous() }}"
+       class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded">
+        {{ __('profilepage.back') }}
+    </a>
+
+    <a href="#"
+       class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
+        {{ __('profilepage.show') }}
+    </a>
+
+    <form action="{{ route('like.store', $profileOwner->id) }}" method="POST">
+        @csrf
+        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">
+            ❤️ {{ __('profilepage.like') }}
+        </button>
+    </form>
+
+    @if (auth()->check() && auth()->id() !== $profileOwner->id)
+        <form action="{{ route('report.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="reported_id" value="{{ $profileOwner->id }}">
+            <button type="submit"
+                class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
+                {{ __('profilepage.quick_report') }} 🚫
+            </button>
+        </form>
+
+        <button onclick="document.getElementById('reportModal').classList.remove('hidden')"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded">
+            ⚠️ {{ __('profilepage.suspicious_behavior') }}
+        </button>
+    @endif
+
+</div>
+
+</div>
+
                     </div>
                 </div>
             </div>
