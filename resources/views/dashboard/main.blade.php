@@ -79,7 +79,7 @@
         @endforelse
     </ul>
 
-    <a href="{{ route('dashboard.views') }}" class="text-blue-600 hover:underline mt-2 inline-block">
+    <a href="#" class="text-blue-600 hover:underline mt-2 inline-block">
         مشاهده لیست کامل
     </a>
 </div>

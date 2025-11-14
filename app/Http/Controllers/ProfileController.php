@@ -5,15 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-// use bdbdIlluminate\Foundation\Auth\User;
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use App\Models\ProfileView;
-use App\Models\UserProfileVisit;
+
 
 class ProfileController extends Controller
 {
-
     // Show profile edit form
     public function edit()
     {
@@ -25,9 +22,8 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        // dd($user);
 
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'city' => 'nullable|string|max:255',
@@ -36,50 +32,46 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('profile_picture')) {
-            // ذخیره عکس جدید
             $path = $request->file('profile_picture')->store('profile_pictures', 'public');
             $validatedData['profile_picture'] = $path;
         }
+
         $user->update($validatedData);
+
         return redirect()->route('dashboard')->with('success', 'پروفایل با موفقیت بروزرسانی شد.');
     }
 
-
-
+    // Show user profile and log visit
     public function show($id)
     {
-        $profileUser = User::findOrFail($id);
+        $profileOwner = User::findOrFail($id);
 
-        if (Auth::check() && Auth::id() !== $profileUser->id) {
-            UserProfileVisit::create([
-                'viewer_id' => auth()->id(),
+        if (Auth::check() && Auth::id() !== $profileOwner->id) {
+            ProfileView::create([
+                'viewer_id' => Auth::id(),
                 'profile_owner_id' => $profileOwner->id,
             ]);
         }
-       return view('profile.show', compact('profileOwner'));
+
+        return view('profile.show', compact('profileOwner'));
     }
 
+    // Search profiles
     public function search(Request $request)
     {
-        // Get the search parameters from the request
         $city = $request->input('city');
-        // مقدارهای پیش‌فرض
-        $minAge = $request->input('min_age', 18); // پیش‌فرض: 18 سال
-        $maxAge = $request->input('max_age', 99); // پیش‌فرض: 99 سال
+        $minAge = $request->input('min_age', 18);
+        $maxAge = $request->input('max_age', 99);
 
-        // Start building the query
         $query = User::query();
 
-        // Filter by city (if provided)
         if ($city) {
             $query->where('city', 'like', '%' . $city . '%');
         }
 
-
-        // اگر کاربر مقدار min و max age را وارد کرده
         if ($minAge && $maxAge) {
             $currentYear = Carbon::now()->year;
-            $minBirthYear = $currentYear - $maxAge; // دقت کن: برعکس چون سال تولد کمتر یعنی فرد بزرگتر است
+            $minBirthYear = $currentYear - $maxAge;
             $maxBirthYear = $currentYear - $minAge;
 
             $query->whereBetween('birth_year', [$minBirthYear, $maxBirthYear]);
@@ -100,10 +92,9 @@ class ProfileController extends Controller
         if ($request->has('is_active')) {
             $query->where('is_active', true);
         }
-        // Execute the query and paginate the results
+
         $profiles = $query->paginate(3);
 
-        // Pass the results to the view
         return view('search', compact('profiles'));
     }
 }

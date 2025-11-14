@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ProfileView; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
 class DashboardController extends Controller
 {
     public function index()
@@ -19,16 +20,17 @@ class DashboardController extends Controller
 
         // Fetch the authenticated user
         $user = Auth::user();
+        $userId = $user->id; 
 
 
         // آمار بازدیدها
-    $totalViews = UserProfileVisit::where('profile_owner_id', $userId)->count();
+    $totalViews = ProfileView::where('viewed_id', $userId)->count();
 
-    $todayViews = UserProfileVisit::where('profile_owner_id', $userId)
+    $todayViews = ProfileView::where('viewed_id', $userId)
         ->whereDate('created_at', Carbon::today())
         ->count();
 
-    $latestViewers = UserProfileVisit::where('profile_owner_id', $userId)
+    $latestViewers = ProfileView::where('viewed_id', $userId)
         ->latest()
         ->take(3)
         ->with('viewer')
