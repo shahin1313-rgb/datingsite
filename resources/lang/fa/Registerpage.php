@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'register' => 'ثبت‌نام',
+    'name' => 'نام',
+    'email' => 'ایمیل',
+    'gender' => 'جنسیت',
+    'male' => 'مرد',
+    'female' => 'زن',
+    'age' => 'سن',
+    'city' => 'شهر',
+    'marital_status' => 'وضعیت تأهل',
+    'select' => 'انتخاب کنید',
+    'single' => 'مجرد',
+    'married' => 'متأهل',
+    'divorced' => 'طلاق‌گرفته',
+    'widowed' => 'همسر فوت شده',
+    'bio' => 'بیوگرافی',
+    'interested_in' => 'علاقه‌مندی‌ها',
+    'salary' => 'درآمد ماهانه',
+    'profile_picture' => 'انتخاب عکس پروفایل',
+    'password' => 'رمز عبور',
+    'password_confirm' => 'تکرار رمز عبور',
+    'submit' => 'ثبت‌نام',
+];

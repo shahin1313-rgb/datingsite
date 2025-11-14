@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'register' => 'Inscription',
+    'name' => 'Nom',
+    'email' => 'E-mail',
+    'gender' => 'Genre',
+    'male' => 'Homme',
+    'female' => 'Femme',
+    'age' => 'Âge',
+    'city' => 'Ville',
+    'marital_status' => 'État civil',
+    'select' => 'Choisissez',
+    'single' => 'Célibataire',
+    'married' => 'Marié(e)',
+    'divorced' => 'Divorcé(e)',
+    'widowed' => 'Veuf / Veuve',
+    'bio' => 'Biographie',
+    'interested_in' => 'Centres d’intérêt',
+    'salary' => 'Revenu mensuel',
+    'profile_picture' => 'Choisir une photo de profil',
+    'password' => 'Mot de passe',
+    'password_confirm' => 'Confirmer le mot de passe',
+    'submit' => 'S’inscrire',
+];
