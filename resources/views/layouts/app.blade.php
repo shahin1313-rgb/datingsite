@@ -67,10 +67,12 @@
                 <!-- پیام‌ها -->
 <a href="{{ route('messages.index') }}" class="relative inline-flex items-center text-gray-600 hover:text-gray-800">
     <i class="fas fa-envelope text-xl"></i>
+     @if($globalUnreadCount > 0)
     <span
         class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
-        3
+        {{ $globalUnreadCount }}
     </span>
+    @endif
 </a>
 
 <!-- انتخاب زبان -->
