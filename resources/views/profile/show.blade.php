@@ -5,7 +5,7 @@
             <div class="w-full md:w-2/3 lg:w-1/2">
                 <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                     <div class="px-6 py-4 border-b">
-                        <h2 class="text-2xl font-semibold">{{ trans('dashboard.Dashboard') }}</h2>
+                        <h2 class="text-2xl font-semibold">{{ trans('Dashboard') }}</h2>
                     </div>
                     <div class="p-6">
                         @if (session('status'))
