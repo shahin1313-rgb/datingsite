@@ -70,17 +70,34 @@
         {{ __('profilepage.back') }}
     </a>
 
-    <a href="#"
-       class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
-        {{ __('profilepage.show') }}
-    </a>
+    
 
-    <form action="{{ route('like.store', $profileOwner->id) }}" method="POST">
+    {{-- ===== دکمه لایک با Ajax ===== --}}
+<div class="relative">
+    <form id="likeForm" action="{{ route('like.store', $profileOwner->id) }}" method="POST">
         @csrf
-        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">
-            ❤️ {{ __('profilepage.like') }}
+
+        {{-- بررسی کن کاربر قبلاً لایک کرده یا نه --}}
+        @php
+$alreadyLiked = auth()->check() && \DB::table('likes')
+        ->where('user_id', auth()->id())
+        ->where('liked_user_id', $profileOwner->id)
+        ->exists();
+        
+        @endphp
+
+        <button type="submit"
+                id="likeButton"
+                class="like-btn flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-white transition-all duration-300 {{ $alreadyLiked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600' }}"
+                {{ $alreadyLiked ? 'disabled' : '' }}>
+            
+            <span id="likeIcon">{{ $alreadyLiked ? '✓' : '❤️' }}</span>
+            <span id="likeText">
+                {{ $alreadyLiked ? 'لایک شده' : __('profilepage.like') }}
+            </span>
         </button>
     </form>
+</div>
 
     @if (auth()->check() && auth()->id() !== $profileOwner->id)
         <form action="{{ route('report.store') }}" method="POST">
@@ -135,3 +152,50 @@
         </div>
     </div>
 @endsection
+
+{{-- اسکریپت Ajax خیلی ساده - فقط در همین صفحه کار می‌کنه --}}
+<script>
+document.getElementById('likeForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const button   = document.getElementById('likeButton');
+    const icon     = document.getElementById('likeIcon');
+    const text     = document.getElementById('likeText');
+
+    // غیرفعال کردن موقت دکمه
+    button.disabled = true;
+
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new FormData(this)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // تغییر ظاهر به حالت لایک شده
+            button.classList.remove('bg-red-500', 'hover:bg-red-600');
+            button.classList.add('bg-green-600', 'hover:bg-green-700');
+            icon.textContent = '✓';
+            text.textContent = 'لایک شده';
+            button.disabled = true; // دیگه نتونه دوباره لایک کنه
+        }
+        اگر بخوای آنلایک هم بشه، فقط این else رو فعال کن
+        else if (result.liked === false) {
+            button.classList.remove('bg-green-600'); 
+            button.classList.add('bg-red-500');
+            icon.textContent = '❤️';
+            text.textContent = 'لایک';
+            button.disabled = false;
+        }
+    })
+    .catch(() => {
+        alert('خطایی رخ داد، دوباره تلاش کنید');
+        button.disabled = false;
+    });
+});
+</script>
