@@ -127,11 +127,10 @@
                           class="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           autocomplete="off" required></textarea>
 
-                <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-xl shadow-lg transition hover:scale-110">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+               <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-xl shadow-lg transition hover:scale-110 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                     </svg>
                 </button>
             </form>
