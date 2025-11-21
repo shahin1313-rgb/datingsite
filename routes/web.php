@@ -21,12 +21,12 @@ use App\Http\Controllers\BlockController;
 use App\Http\Controllers\Admin\PhotoController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\LandingController;
+
+Route::get('/', [LandingController::class, 'welcome']);
 
 
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 
 Route::get('/test-modal', function () {

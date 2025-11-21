@@ -31,8 +31,11 @@ class AppServiceProvider extends ServiceProvider
                 ->whereNull('read_at')
                 ->count();
 
-            $view->with('globalUnreadCount', $globalUnreadCount);
-        }
+         
+        } else {
+                $globalUnreadCount = 0;
+            }
+               $view->with('globalUnreadCount', $globalUnreadCount);
     });
     }
 }

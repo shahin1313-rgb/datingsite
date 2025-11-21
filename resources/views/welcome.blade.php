@@ -80,6 +80,28 @@
                 حالا شروع کن</a>
         </div>
     </section>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+
+    <!-- Total Messages -->
+    <div class="text-center bg-white shadow p-6 rounded-lg">
+        <h3 class="text-xl font-bold text-gray-700">تعداد کل پیام‌ها</h3>
+        <span class="text-4xl font-extrabold text-blue-600 counter" data-target="{{ $totalMessages }}">0</span>
+    </div>
+
+    <!-- Messages This Month -->
+    <div class="text-center bg-white shadow p-6 rounded-lg">
+        <h3 class="text-xl font-bold text-gray-700">پیام‌های این ماه</h3>
+        <span class="text-4xl font-extrabold text-green-600 counter" data-target="{{ $monthlyMessages }}">0</span>
+    </div>
+
+    <!-- Messages Today -->
+    <div class="text-center bg-white shadow p-6 rounded-lg">
+        <h3 class="text-xl font-bold text-gray-700">پیام‌های امروز</h3>
+        <span class="text-4xl font-extrabold text-red-600 counter" data-target="{{ $todayMessages }}">0</span>
+    </div>
+
+</div>
+
 
     <!-- ویژگی‌ها -->
     <section class="py-20 bg-white">
@@ -129,6 +151,33 @@
     </footer>
 
     <script>
+
+        
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".counter");
+
+        counters.forEach(counter => {
+            const target = +counter.getAttribute("data-target");
+            let count = 0;
+
+            // سرعت شمارش
+            const speed = target / 50;
+
+            function updateCounter() {
+                if (count < target) {
+                    count += speed;
+                    counter.textContent = Math.ceil(count);
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    counter.textContent = target; // تثبیت عدد نهایی
+                }
+            }
+
+            updateCounter();
+        });
+    });
+
+
         // انیمیشن ساده برای fade-in
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.animate-fade-in-down').forEach(el => {

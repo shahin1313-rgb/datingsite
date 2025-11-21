@@ -16,9 +16,9 @@
                             </div>
                         @endif
 
-                        @if ($profileOwner->profile_picture)
+                        @if ($user->profile_picture)
                             <div class="flex justify-center mt-4">
-                                <img src="{{ asset('storage/' . $profileOwner->profile_picture) }}"
+                                <img src="{{ asset('storage/' . $user->profile_picture) }}"
                                     class="w-48 h-48 rounded-full border-4 border-white shadow-xl object-cover -mt-16 z-10"
                                     alt="Profile Picture">
                             </div>
@@ -34,15 +34,15 @@
 
 
                         <div class="p-4">
-                            <h5 class="text-xl font-bold">{{ $profileOwner->name }}</h5>
-                            <h6 class="text-md text-gray-500">{{ $profileOwner->city }}</h6>
-                            <p class="mt-2 text-gray-700">{{ $profileOwner->email }}</p>
+                            <h5 class="text-xl font-bold">{{ $user->name }}</h5>
+                            <h6 class="text-md text-gray-500">{{ $user->city }}</h6>
+                            <p class="mt-2 text-gray-700">{{ $user->email }}</p>
                             <p class="mt-2"><span class="font-semibold">Interested In:</span>
-                                {{ $profileOwner->interested_in }}</p>
-                            <p class="mt-2"><span class="font-semibold">Salary:</span> میلیون تومن {{ $profileOwner->salary }}
+                                {{ $user->interested_in }}</p>
+                            <p class="mt-2"><span class="font-semibold">Salary:</span> میلیون تومن {{ $user->salary }}
                             </p>
-                            <p class="mt-2 text-gray-600">{{ $profileOwner->bio }}</p>
-                            <p class="mt-2"><span class="font-semibold">Role:</span> {{ $profileOwner->role }}</p>
+                            <p class="mt-2 text-gray-600">{{ $user->bio }}</p>
+                            <p class="mt-2"><span class="font-semibold">Role:</span> {{ $user->role }}</p>
 
                             <div class="mt-4 flex flex-wrap gap-2">
                                 <a href="{{ url()->previous() }}"
@@ -55,10 +55,10 @@
                                     Show
                                 </a>
 
-                                @if (auth()->check() && auth()->id() !== $profileOwner->id)
+                                @if (auth()->check() && auth()->id() !== $user->id)
                                     <form action="{{ route('report.store') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="reported_id" value="{{ $profileOwner->id }}">
+                                        <input type="hidden" name="reported_id" value="{{ $user->id }}">
                                         <button type="submit"
                                             class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
                                             گزارش سریع🚫
@@ -95,7 +95,7 @@
             <div class="px-4 py-4">
                 <form action="{{ route('report.store') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="reported_id" value="{{ $profileOwner->id }}">
+                    <input type="hidden" name="reported_id" value="{{ $user->id }}">
                     <label for="reason" class="block text-sm font-medium text-gray-700">Reason for reporting:</label>
                     <textarea name="reason" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required></textarea>
                     <button type="submit"

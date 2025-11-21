@@ -47,9 +47,19 @@ class ProfileController extends Controller
         $profileOwner = User::findOrFail($id);
 
         if (Auth::check() && Auth::id() !== $profileOwner->id) {
+
+            
+        // بررسی بازدید در 24 ساعت گذشته
+        $viewExistsToday = ProfileView::where('viewer_id', Auth::id())
+            ->where('viewed_id', $profileOwner->id)
+            ->where('created_at', '>=', now()->subDay()) // فقط بازدید امروز
+            ->exists();
+
+        // اگر امروز بازدید نشده بود → ثبت کنیم
+        if (!$viewExistsToday) {
             ProfileView::create([
                 'viewer_id' => Auth::id(),
-                'profile_owner_id' => $profileOwner->id,
+                'viewed_id' => $profileOwner->id,
             ]);
         }
 
