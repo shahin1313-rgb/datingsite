@@ -47,20 +47,42 @@
      <!-- فعالیت‌ها و نوتیفیکیشن‌ها -->
      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
          <div class="lg:col-span-2 animate-slide-in" style="animation-delay: 0.5s;">
-             <h3 class="text-2xl font-bold text-gray-800 mb-4">فعالیت‌های اخیر</h3>
-             <div class="bg-white card p-6 rounded-xl">
-                 <table class="w-full text-right">
-                     <tbody>
-                         <tr class="border-b">
-                             <td class="py-3"><i class="fa fa-user text-blue-500 ml-2"></i> مشاهده جدید</td>
-                             <td class="py-3 text-gray-600">10 دقیقه قبل</td>
-                         </tr>
-                         <tr class="border-b">
-                             <td class="py-3"><i class="fa fa-bell text-red-500 ml-2"></i> هشدار سیستم</td>
-                             <td class="py-3 text-gray-600">15 دقیقه قبل</td>
-                         </tr>
-                     </tbody>
-                 </table>
+            <div class="bg-white rounded-xl shadow-md p-6">
+    <h3 class="text-xl font-bold text-red-600 mb-4">
+        ❤️ لایک‌های دریافتی شما
+    </h3>
+
+    <div class="text-3xl font-bold mb-2">{{ $likesCount }} لایک</div>
+    @if($todayLikes > 0)
+        <p class="text-sm text-green-600 font-medium mb-4">
+            +{{ $todayLikes }} لایک جدید امروز
+        </p>
+    @endif
+
+    <div class="grid grid-cols-5 gap-3 mt-6">
+        @foreach($latestLikers as $like)
+            <div class="text-center">
+                <a href="{{ route('profile.show', $like->liker->id) }}">
+                    @if($like->liker->profile_picture)
+                        <img src="{{ asset('storage/' . $like->liker->profile_picture) }}"
+                             class="w-16 h-16 rounded-full object-cover border-2 border-red-400">
+                    @else
+                        <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                            <span class="text-2xl">👤</span>
+                        </div>
+                    @endif
+                    <p class="text-xs mt-1 truncate">{{ $like->liker->name }}</p>
+                </a>
+            </div>
+        @endforeach
+    </div>
+
+    @if($likesCount > 5)
+        <a href="{{ route('likes.received') }}" class="block mt-4 text-center text-red-600 font-medium">
+            دیدن همه لایک‌ها →
+        </a>
+    @endif
+</div>
              </div>
          </div>
          <div class="animate-slide-in" style="animation-delay: 0.6s;">

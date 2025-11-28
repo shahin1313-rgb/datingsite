@@ -123,6 +123,16 @@ class User extends Authenticatable
     }
 
 
+    public function receivedLikes()
+{
+    return $this->hasMany(Like::class, 'liked_user_id');
+}
+
+public function sentLikes()
+{
+    return $this->hasMany(Like::class, 'user_id');
+}
+
 
     /**
      * The attributes that should be hidden for serialization.

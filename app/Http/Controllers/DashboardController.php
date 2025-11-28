@@ -49,9 +49,28 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+
+            
+        // --- آمار لایک‌ها (مهم) ---
+        // تعداد کل لایک‌های دریافتی
+        $likesCount = $user->receivedLikes()->count();
+
+        // لایک‌های امروز
+        $todayLikes = $user->receivedLikes()
+            ->whereDate('created_at', now()->toDateString())
+            ->count();
+
+        // آخرین 5 نفر که لایک کرده‌اند
+        $latestLikers = $user->receivedLikes()
+            ->with('liker')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
         // Pass the user data to the view
         return view('dashboard', compact('user', 'recentUsers', 'recentProfileViews', 'totalViews',
         'todayViews',
-        'latestViewers'));
+        'latestViewers','likesCount',
+            'todayLikes',
+            'latestLikers'));
     }
 }
