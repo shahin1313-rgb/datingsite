@@ -105,28 +105,23 @@
         مشاهده لیست کامل
     </a>
 </div>
-
-         </div>
-     </div>
-
-     <!-- اعضای فعال -->
-     <div class="animate-slide-in z-0" style="animation-delay: 0.7s;">
-         <h3 class="text-2xl font-bold text-gray-800 mb-4">اعضای فعال</h3>
-         <div class="bg-white shadow-lg rounded-xl p-6 customer-logos">
-             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                 @foreach ($recentUsers as $recentUser)
-                     <div class="flex flex-col items-center">
-                         <a href="{{ route('profile.show', $recentUser->id) }}">
-                             <img src="{{ asset('storage/' . ($recentUser->profile_picture ?? 'default.jpg')) }}"
-                                 alt="{{ $recentUser->name ?? 'کاربر' }}"
-                                 class="w-24 h-24 rounded-full object-cover mb-3 border-2 border-white shadow-lg hover:scale-110 transition-transform duration-300">
-                         </a>
-                         <span class="text-sm text-gray-600 text-center">{{ $recentUser->name ?? 'کاربر' }}</span>
-                     </div>
-                 @endforeach
-             </div>
-         </div>
-     </div>
+<div class="animate-slide-in z-0" style="animation-delay: 0.7s;">
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">اعضای فعال</h3>
+    <div class="bg-white shadow-lg rounded-xl p-6">
+        <div class="flex flex-row justify-around items-start space-x-reverse space-x-6 overflow-x-auto">
+            @foreach ($recentUsers as $recentUser)
+                <div class="flex flex-col items-center flex-shrink-0 min-w-[100px]">
+                    <a href="{{ route('profile.show', $recentUser->id) }}">
+                        <img src="{{ asset('storage/' . ($recentUser->profile_picture ?? 'default.jpg')) }}"
+                             alt="{{ $recentUser->name ?? 'کاربر' }}"
+                             class="w-20 h-20 rounded-full object-cover mb-3 border-2 border-white shadow-lg hover:scale-110 transition-transform duration-300 mx-auto">
+                    </a>
+                    <span class="text-sm text-gray-600 text-center block px-1">{{ $recentUser->name ?? 'کاربر' }}</span>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
 
      <!-- بازدیدکنندگان اخیر -->
      <div class="mt-8 animate-slide-in z-0" style="animation-delay: 1.0s;">
@@ -171,4 +166,8 @@
      <footer class="mt-8 bg-gray-100 p-6 rounded-xl text-center animate-slide-in" style="animation-delay: 1s;">
          <p class="text-gray-600">ساخته شده با Laravel و Tailwind CSS</p>
      </footer>
+         </div>
+     </div>
+
+ 
  </main>
