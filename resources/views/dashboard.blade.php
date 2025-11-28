@@ -19,9 +19,33 @@
             z-index: 9998;
         }
 
+        
         [x-show="openLogoutModal"] {
-            z-index: 9999;
-        }
+        z-index: 9999;
+    display: none !important; /* Force hidden on false */
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+[x-show="openLogoutModal"]:not(.alpine-hidden) { /* .alpine-hidden is Alpine's internal class for false */
+    display: none !important;
+}
+.logout-modal {
+    display: none !important;
+}
+.logout-modal.open {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+/* Mobile: Ensure no pointer bleed */
+@media (max-width: 768px) {
+    [x-show="openLogoutModal"] {
+        pointer-events: none !important;
+    }
+    .logout-modal.open {
+        pointer-events: auto !important;
+    }
+}
 
         .main-content,
         header,
