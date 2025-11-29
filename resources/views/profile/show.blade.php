@@ -65,10 +65,10 @@
 
   <div class="mt-4 flex flex-wrap gap-2">
 
-    <a href="{{ url()->previous() }}"
-       class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded">
-        {{ __('profilepage.back') }}
-    </a>
+ <a href="{{ route('dashboard') }}"
+   class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded">
+    {{ __('profilepage.back') }}
+</a>
 
     
 
