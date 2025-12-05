@@ -20,4 +20,5 @@ return [
     'like' => 'لایک',
     'quick_report' => 'گزارش سریع',
     'suspicious_behavior' => 'اطلاع‌رسانی رفتار مشکوک',
+    'message' => 'پیام بده',
 ];

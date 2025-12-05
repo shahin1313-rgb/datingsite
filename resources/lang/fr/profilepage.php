@@ -19,4 +19,5 @@ return [
     'like' => 'Like',
     'quick_report' => 'Signalement rapide',
     'suspicious_behavior' => 'Signaler un comportement suspect',
+    'message' => 'Envoyer un message',
 ];
