@@ -70,6 +70,12 @@
     {{ __('profilepage.back') }}
 </a>
 
+@if (auth()->check() && auth()->id() !== $profileOwner->id)
+    <a href="{{ route('messages.show', $profileOwner->id) }}"  {{-- Fixed: Use $profileOwner->id --}}
+       class="bg-[#E74C3C] text-white px-4 py-2 rounded hover:bg-red-700 text-sm shadow">
+        💌 {{ __('profilepage.message') }}  {{-- Use translation key if available; fallback to 'پیام بده' --}}
+    </a>
+@endif
     
 
     {{-- ===== دکمه لایک با Ajax ===== --}}
