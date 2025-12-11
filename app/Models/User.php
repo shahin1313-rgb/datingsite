@@ -32,7 +32,7 @@ class User extends Authenticatable
         'birth_year',
         'role',
         'interested_in',
-        'salary',
+        'salary','premium_until', 'created_at', 'updated_at'
 
     ];
     // protected $attributes = [
@@ -133,7 +133,30 @@ public function sentLikes()
     return $this->hasMany(Like::class, 'user_id');
 }
 
+ // بررسی پریمیوم بودن
+    public function isPremium(): bool
+    {
+        return $this->premium_until !== null && $this->premium_until->isFuture();
+    }
 
+    // اعطای پریمیوم برای X روز
+    public function grantPremium(int $days = 30)
+    {
+        $now = Carbon::now();
+
+        if ($this->premium_until && $this->premium_until->isFuture()) {
+            $this->premium_until = $this->premium_until->addDays($days);
+        } else {
+            $this->premium_until = $now->addDays($days);
+        }
+
+        $this->save();
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
     /**
      * The attributes that should be hidden for serialization.
      *
