@@ -8,10 +8,15 @@ use App\Models\Message;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class MessageController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
     public function index()
     {
@@ -77,12 +82,35 @@ class MessageController extends Controller
     // Store a new message
     public function store(Request $request, User $user)
     {
+        $user = Auth::user();
+
         $request->validate([
+            'receiver_id' => 'required|exists:users,id|not_in:'.$user->id,
             'message' => 'required|string|max:1000',
         ]);
+        // اگر گیرنده قبلاً از این فرستنده پیام دریافت کرده بودیم، آن را "اولین پیام" قلمداد نمی‌کنیم
+        $receiverId = (int) $request->input('receiver_id');
         if ($user->isBlockedBy(auth()->id()) || auth()->user()->hasBlocked($user->id)) {
             return back()->with('error', 'Cannot send message to this user.');
         }
+         // بررسی اینکه آیا قبلاً این فرستنده به این گیرنده در گذشته پیام فرستاده است
+        $alreadySentToThisReceiverBefore = Message::where('sender_id', $user->id)
+            ->where('receiver_id', $receiverId)
+            ->exists();
+             if (!$user->isPremium() && !$alreadySentToThisReceiverBefore) {
+            // شمارش تعداد receiver‌های یکتا که امروز پیام اول از این کاربر گرفته‌اند
+            $sentToday = Message::where('sender_id', $user->id)
+                ->whereDate('created_at', Carbon::today())
+                ->distinct('receiver_id')
+                ->count('receiver_id');
+
+            if ($sentToday >= 1) {
+                // سقف روزانه پر شده
+                return response()->json([
+                    'error' => 'LIMIT_REACHED',
+                    'message' => 'Free daily first-message limit reached.'
+                ], 403);
+            }
 
         // Create a new message
         Message::create([
@@ -92,6 +120,9 @@ class MessageController extends Controller
             'is_read' => false // Default as unread
 
         ]);
+
+         // در اینجا می‌توان نوتیف یا ایمیل ارسال کرد
+        // Notification::send(...)
 
         return redirect()->route('messages.show', $user)->with('success', 'Message sent successfully.');
     }
