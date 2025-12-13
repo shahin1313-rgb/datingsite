@@ -119,8 +119,13 @@
 
         {{-- فرم ارسال پیام - همیشه در پایین صفحه می‌ماند --}}
         <div class="bg-white border-t border-gray-200 p-4 shrink-0">
-            <form action="{{ route('messages.store', $user) }}" method="POST" class="flex items-end gap-3">
-                @csrf
+            <form action="{{ route('messages.store') }}" method="POST" class="flex items-end gap-3">
+               
+            @csrf
+            
+    {{-- گیرنده پیام --}}
+    <input type="hidden" name="receiver_id" value="{{ $user->id }}">
+
                 <textarea name="message"
                           rows="1"
                           placeholder="پیام خود را بنویسید..."

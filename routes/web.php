@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\PhotoController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', [LandingController::class, 'welcome']);
 
@@ -62,17 +63,19 @@ Route::middleware('auth')->group(function () {
     // Inbox page
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
 
-    // Conversation between two users
+    // // Conversation between two users
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
 
-    // Send a message
-    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+    // // Send a message
+    // Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
+
+
 
 
 
@@ -146,6 +149,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/unblock/{id}', [BlockController::class, 'unblock'])->name('user.unblock');
 });
 
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+
+    // پرداخت
+    Route::post('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/payments/callback', [PaymentController::class, 'callback'])->name('payments.callback');
+});
 
 Route::middleware('guest')->group(function () {
 
