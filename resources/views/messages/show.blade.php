@@ -1,172 +1,98 @@
 @extends('layouts.app')
 
-{{-- لودینگ اسپینر --}}
-<div id="loadingSpinner" role="status"
-     class="fixed inset-0 bg-white flex items-center justify-center z-50 transition-opacity duration-300">
-    <div class="text-center">
-        <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-             viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-    </div>
+@section('content')
+
+{{-- لودینگ --}}
+<div id="loadingSpinner" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <svg class="animate-spin h-12 w-12 text-blue-600" viewBox="0 0 24 24"></svg>
 </div>
 
 <script>
-    window.addEventListener('load', () => {
-        const spinner = document.getElementById('loadingSpinner');
-        spinner.style.opacity = '0';
-        setTimeout(() => spinner.remove(), 400);
-    });
+window.addEventListener('load', () => {
+    document.getElementById('loadingSpinner')?.remove();
+});
 </script>
 
-@section('content')
-    {{-- کل صفحه چت دقیقاً زیر navbar سایت فیکس می‌شود و هدر چت همیشه ثابت می‌ماند --}}
-    <div class="fixed inset-x-0 top-16 bottom-0 flex flex-col bg-white">
+<div class="fixed inset-x-0 top-16 bottom-0 flex flex-col bg-white">
 
-        {{-- هدر چت - کاملاً ثابت و چسبیده به زیر navbar سایت (حتی هنگام اسکرول پیام‌ها) --}}
-        <div class="flex items-center justify-between bg-blue-600 text-white px-4 py-3 shrink-0 border-b border-blue-700 z-10">
-            <div class="flex items-center flex-1">
-                <a href="{{ url()->previous() }}" class="text-white hover:bg-white/20 rounded-full p-2 transition mr-2">
-                    ←
-                </a>
+    {{-- هدر چت --}}
+    <div class="flex items-center bg-blue-600 text-white px-4 py-3 shrink-0">
+        <a href="{{ url()->previous() }}" class="mr-3">←</a>
 
-                <img src="{{ $user->profile_picture 
-                    ? asset('storage/' . $user->profile_picture) 
-                    : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=96&background=e5e7eb&color=374151' }}"
-                     class="w-12 h-12 rounded-full object-cover mr-4 border-3 border-white shadow-lg"
-                     alt="{{ $user->name }}">
+        <img src="{{ $user->profile_picture
+            ? asset('storage/'.$user->profile_picture)
+            : 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}"
+             class="w-10 h-10 rounded-full mr-3">
 
-                <div>
-                    <h4 class="text-lg font-semibold">{{ $user->name }}</h4>
-
-                    @php
-                        $lastLogin = \Carbon\Carbon::make($user->last_login_at);
-                        $isOnline = $lastLogin && $lastLogin->diffInMinutes(now()) < 5;
-                    @endphp
-
-                    <p class="text-sm opacity-90 flex items-center gap-1.5">
-                        @if($isOnline)
-                            <span class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
-                            <span class="mr-1">آنلاین</span>
-                        @else
-                            آخرین بازدید: 
-                            <span dir="ltr">{{ $lastLogin?->diffForHumans() ?? 'نامشخص' }}</span>
-                        @endif
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- لیست پیام‌ها - فقط این بخش اسکرول می‌شود --}}
-        <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 bg-gray-50/90">
-            @php $previousSenderId = null; @endphp
-
-            @forelse ($messages as $message)
-                @php
-                    $isOwn = $message->sender_id == auth()->id();
-                      $isNewGroup = is_null($previousSenderId) || $previousSenderId !== $message->sender_id;
-                      $previousSenderId = $message->sender_id;
-                @endphp
-
-                <div class="flex {{ $isOwn ? 'justify-end' : 'justify-start' }} w-full {{ $isNewGroup ? 'mt-8' : 'mt-2' }}">
-                    <div class="flex items-end gap-3 {{ $isOwn ? 'flex-row-reverse' : '' }} max-w-[85%]">
-                        @if($isNewGroup)
-                            <img src="{{ $message->sender->profile_picture 
-                                ? asset('storage/' . $message->sender->profile_picture) 
-                                : 'https://ui-avatars.com/api/?name=' . urlencode($message->sender->name) . '&size=80&background=e5e7eb&color=374151' }}"
-                                 class="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                                 alt="{{ $message->sender->name }}">
-                        @else
-                            <div class="w-10"></div>
-                        @endif
-
-                        <div class="max-w-xs md:max-w-md p-3.5 rounded-2xl shadow-sm
-                            {{ $isOwn 
-                                ? 'bg-blue-500 text-white rounded-br-none' 
-                                : 'bg-white text-gray-800 rounded-bl-none border border-gray-200' }}">
-
-                            <p class="text-sm leading-relaxed break-words">{{ $message->message }}</p>
-
-                            <div class="flex items-center gap-1.5 mt-1.5 text-xs opacity-80 {{ $isOwn ? 'justify-end' : 'justify-start' }}">
-                                <span>{{ $message->created_at->format('H:i') }}</span>
-
-                                @if($isOwn)
-                                    @if($message->read_at)
-                                        <svg class="w-4 h-4 text-cyan-300" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L6.5 10.793l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                                            <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L6.5 10.793l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                                        </svg>
-                                    @else
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    @endif
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="text-center text-gray-500 py-12">
-                    هنوز پیامی ارسال نشده. اولین پیام را شما بفرستید! 💬
-                </div>
-            @endforelse
-
-            <div id="end-of-messages"></div>
-        </div>
-
-        {{-- فرم ارسال پیام - همیشه در پایین صفحه می‌ماند --}}
-        <div class="bg-white border-t border-gray-200 p-4 shrink-0">
-            <form action="{{ route('messages.store') }}" method="POST" class="flex items-end gap-3">
-               
-            @csrf
-            
-    {{-- گیرنده پیام --}}
-    <input type="hidden" name="receiver_id" value="{{ $user->id }}">
-
-                <textarea name="message"
-                          rows="1"
-                          placeholder="پیام خود را بنویسید..."
-                          class="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          autocomplete="off" required></textarea>
-
-               <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-xl shadow-lg transition hover:scale-110 active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                    </svg>
-                </button>
-            </form>
+        <div>
+            <div class="font-semibold">{{ $user->name }}</div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const end = document.getElementById('end-of-messages');
-            end.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
-    
+    {{-- پیام‌ها --}}
+    <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+        @foreach($messages as $message)
+            @php $isOwn = $message->sender_id === auth()->id(); @endphp
+
+            <div class="flex {{ $isOwn ? 'justify-end' : 'justify-start' }} mb-3">
+                <div class="px-4 py-2 rounded-xl max-w-xs
+                    {{ $isOwn ? 'bg-blue-500 text-white' : 'bg-white border' }}">
+                    {{ $message->message }}
+                </div>
+            </div>
+        @endforeach
+        <div id="end-of-messages"></div>
+    </div>
+
+    {{-- فرم ارسال پیام (AJAX ONLY) --}}
+    <div class="border-t p-4">
+        <form id="sendMessageForm" class="flex gap-3">
+            @csrf
+            <input type="hidden" name="receiver_id" value="{{ $user->id }}">
+
+            <textarea name="message"
+                      rows="1"
+                      class="flex-1 border rounded-xl px-3 py-2"
+                      placeholder="پیام خود را بنویسید..."
+                      required></textarea>
+
+            <button type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-xl">
+                ارسال
+            </button>
+        </form>
+    </div>
+</div>
+
+{{-- مدال پرداخت --}}
+<div id="paymentModal"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-xl p-6 w-full max-w-sm text-center">
+        <h3 class="text-lg font-semibold mb-4">
+            برای ارسال پیام بیشتر، پرداخت لازم است
+        </h3>
+
+        <button onclick="startPayment()"
+                class="bg-green-600 text-white px-6 py-2 rounded-lg">
+            پرداخت
+        </button>
+
+        <button onclick="closePaymentModal()"
+                class="block mt-3 text-gray-500 text-sm mx-auto">
+            انصراف
+        </button>
+    </div>
+</div>
+
+{{-- اسکریپت‌ها --}}
+<script>
 let currentReceiver = null;
 
-function openPaymentModal(receiverId) {
-    currentReceiver = receiverId;
-    document.getElementById('paymentModal').classList.remove('hidden');
-    document.getElementById('paymentModal').classList.add('flex');
-}
-
-function closePaymentModal() {
-    document.getElementById('paymentModal').classList.add('hidden');
-    document.getElementById('paymentModal').classList.remove('flex');
-}
-
-// ارسال پیام با AJAX
 document.getElementById('sendMessageForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const form = this;
-    const formData = new FormData(form);
+    const formData = new FormData(this);
 
     fetch("{{ route('messages.store') }}", {
         method: "POST",
@@ -176,25 +102,28 @@ document.getElementById('sendMessageForm').addEventListener('submit', function (
         },
         body: formData
     })
-    .then(response => {
-        if (response.status === 402) {
-            return response.json();
-        }
-        return response.json();
-    })
+    .then(res => res.json())
     .then(data => {
-        if (data?.error === 'PAYMENT_REQUIRED') {
-            openPaymentModal(data.receiver_id);
+        if (data.error === 'PAYMENT_REQUIRED') {
+            currentReceiver = data.receiver_id;
+            openPaymentModal();
         } else {
-            location.reload(); // پیام موفق → رفرش
+            location.reload();
         }
     })
-    .catch(err => {
-        console.error(err);
-    });
+    .catch(console.error);
 });
 
-// شروع پرداخت
+function openPaymentModal() {
+    document.getElementById('paymentModal').classList.remove('hidden');
+    document.getElementById('paymentModal').classList.add('flex');
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.add('hidden');
+    document.getElementById('paymentModal').classList.remove('flex');
+}
+
 function startPayment() {
     fetch("{{ route('payments.create') }}", {
         method: "POST",
@@ -202,35 +131,11 @@ function startPayment() {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            receiver_id: currentReceiver
-        })
+        body: JSON.stringify({ receiver_id: currentReceiver })
     })
     .then(res => res.json())
-    .then(data => {
-        window.location.href = data.payment_url;
-    });
+    .then(data => window.location.href = data.payment_url);
 }
 </script>
-
-    <form id="sendMessageForm" class="flex items-end gap-3">
-    @csrf
-
-    <input type="hidden" name="receiver_id" value="{{ $user->id }}">
-
-    <textarea name="message"
-              rows="1"
-              placeholder="پیام خود را بنویسید..."
-              class="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              autocomplete="off"
-              required></textarea>
-
-    <button type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-xl shadow-lg transition hover:scale-110 active:scale-95">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-        </svg>
-    </button>
-</form>
 
 @endsection
