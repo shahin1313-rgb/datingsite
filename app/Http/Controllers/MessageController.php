@@ -79,8 +79,8 @@ class MessageController extends Controller
     }
 
 
-    // Store a new message
-  public function store(Request $request)
+   
+public function store(Request $request)
 {
     $sender = Auth::user();
 
@@ -89,38 +89,69 @@ class MessageController extends Controller
         'message'     => 'required|string|max:1000',
     ]);
 
-    $receiverId = (int) $request->receiver_id;
-
-
-   
+    $receiver = User::findOrFail($request->receiver_id);
 
     // چک بلاک
-    if ($sender->isBlockedBy($receiverId) || $sender->hasBlocked($receiverId)) {
-        return back()->with('error', 'Cannot send message to this user.');
+    if ($sender->isBlockedBy($receiver->id) || $sender->hasBlocked($receiver->id)) {
+        return response()->json([
+            'error' => 'BLOCKED'
+        ], 403);
     }
 
-    // آیا قبلاً بین این دو پیام بوده؟
-    $alreadySentBefore = Message::where('sender_id', $sender->id)
-        ->where('receiver_id', $receiverId)
-        ->exists();
+    // تعداد کل پیام‌ها بین دو طرف (دوطرفه)
+    $messagesCount = Message::where(function ($q) use ($sender, $receiver) {
+            $q->where('sender_id', $sender->id)
+              ->where('receiver_id', $receiver->id);
+        })
+        ->orWhere(function ($q) use ($sender, $receiver) {
+            $q->where('sender_id', $receiver->id)
+              ->where('receiver_id', $sender->id);
+        })
+        ->count();
 
-     // پیام دوم و بعدی → پرداخت
-    if ($alreadySentBefore) {
+    /**
+     * 1️⃣ پیام اول → آزاد، فقط فرستنده می‌بیند
+     */
+    if ($messagesCount === 0) {
+
+        Message::create([
+            'sender_id'   => $sender->id,
+            'receiver_id' => $receiver->id,
+            'message'     => $request->message,
+            'status'      => 'private', // فقط فرستنده
+            'is_read'     => false,
+        ]);
+
         return response()->json([
-            'error' => 'PAYMENT_REQUIRED',
-            'message' => 'Unlock chat by upgrading your account.'
+            'success' => true,
+            'type'    => 'FIRST_MESSAGE_PRIVATE'
+        ]);
+    }
+
+    /**
+     * 2️⃣ پیام دوم به بعد → نیاز به پریمیوم یکی از دو طرف
+     */
+    if (! $sender->is_premium && ! $receiver->is_premium) {
+        return response()->json([
+            'error' => 'PREMIUM_REQUIRED'
         ], 402);
     }
-    // ذخیره پیام
+
+    /**
+     * 3️⃣ ارسال پیام عادی
+     */
     Message::create([
         'sender_id'   => $sender->id,
-        'receiver_id' => $receiverId,
+        'receiver_id' => $receiver->id,
         'message'     => $request->message,
+        'status'      => 'sent',
         'is_read'     => false,
     ]);
 
-    return back()->with('success', 'Message sent successfully.');
-}
+    return response()->json([
+        'success' => true
+    ]);
 
 }
     
+}

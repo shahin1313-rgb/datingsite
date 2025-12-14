@@ -35,11 +35,30 @@ window.addEventListener('load', () => {
             @php $isOwn = $message->sender_id === auth()->id(); @endphp
 
             <div class="flex {{ $isOwn ? 'justify-end' : 'justify-start' }} mb-3">
-                <div class="px-4 py-2 rounded-xl max-w-xs
-                    {{ $isOwn ? 'bg-blue-500 text-white' : 'bg-white border' }}">
-                    {{ $message->message }}
-                </div>
-            </div>
+                 {{-- پیام خصوصی و کاربر گیرنده --}}
+    @if ($message->status === 'private' && ! $isOwn)
+        <div class="px-4 py-3 rounded-xl max-w-xs bg-gray-100 border text-sm text-gray-600">
+            🔒 برای مشاهده این پیام، <br>
+            <strong>حداقل یکی از دو طرف</strong> باید دارای
+            <strong>اکانت پریمیوم</strong> باشد.
+        </div>
+
+    {{-- پیام واقعی --}}
+    @else
+        <div class="px-4 py-2 rounded-xl max-w-xs
+            {{ $isOwn ? 'bg-blue-500 text-white' : 'bg-white border' }}">
+            {{ $message->message }}
+        </div>
+    @endif
+    @if ($message->status === 'private' && ! $isOwn)
+    <div class="mt-2 text-center">
+        <a href="{{ route('premium.upgrade') }}"
+           class="text-blue-600 text-sm font-medium">
+            ارتقا به اکانت پریمیوم
+        </a>
+    </div>
+@endif
+
         @endforeach
         <div id="end-of-messages"></div>
     </div>
