@@ -104,22 +104,13 @@ class MessageController extends Controller
         ->where('receiver_id', $receiverId)
         ->exists();
 
-    // محدودیت پیام اول برای کاربران غیر پریمیوم
-    if (!$sender->isPremium() && !$alreadySentBefore) {
-
-        $sentToday = Message::where('sender_id', $sender->id)
-            ->whereDate('created_at', Carbon::today())
-            ->distinct('receiver_id')
-            ->count('receiver_id');
-
-        if ($sentToday >= 1) {
-            return response()->json([
-                'error'   => 'LIMIT_REACHED',
-                'message' => 'Free daily first-message limit reached.'
-            ], 403);
-        }
+     // پیام دوم و بعدی → پرداخت
+    if ($alreadySentBefore) {
+        return response()->json([
+            'error' => 'PAYMENT_REQUIRED',
+            'message' => 'Unlock chat by upgrading your account.'
+        ], 402);
     }
-
     // ذخیره پیام
     Message::create([
         'sender_id'   => $sender->id,

@@ -147,5 +147,90 @@
             const end = document.getElementById('end-of-messages');
             end.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         });
-    </script>
+    
+let currentReceiver = null;
+
+function openPaymentModal(receiverId) {
+    currentReceiver = receiverId;
+    document.getElementById('paymentModal').classList.remove('hidden');
+    document.getElementById('paymentModal').classList.add('flex');
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.add('hidden');
+    document.getElementById('paymentModal').classList.remove('flex');
+}
+
+// ارسال پیام با AJAX
+document.getElementById('sendMessageForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+
+    fetch("{{ route('messages.store') }}", {
+        method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value,
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (response.status === 402) {
+            return response.json();
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data?.error === 'PAYMENT_REQUIRED') {
+            openPaymentModal(data.receiver_id);
+        } else {
+            location.reload(); // پیام موفق → رفرش
+        }
+    })
+    .catch(err => {
+        console.error(err);
+    });
+});
+
+// شروع پرداخت
+function startPayment() {
+    fetch("{{ route('payments.create') }}", {
+        method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            receiver_id: currentReceiver
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        window.location.href = data.payment_url;
+    });
+}
+</script>
+
+    <form id="sendMessageForm" class="flex items-end gap-3">
+    @csrf
+
+    <input type="hidden" name="receiver_id" value="{{ $user->id }}">
+
+    <textarea name="message"
+              rows="1"
+              placeholder="پیام خود را بنویسید..."
+              class="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autocomplete="off"
+              required></textarea>
+
+    <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-xl shadow-lg transition hover:scale-110 active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+    </button>
+</form>
+
 @endsection
