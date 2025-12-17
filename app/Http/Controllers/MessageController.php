@@ -79,11 +79,91 @@ class MessageController extends Controller
     }
 
 
-   
+
+
+//    public function store(Request $request)
+// {
+//     dd('STORE HIT');
+// }
+// public function store(Request $request)
+// {
+//     $sender = Auth::user();
+
+//     $request->validate([
+//         'receiver_id' => 'required|exists:users,id|not_in:' . $sender->id,
+//         'message'     => 'required|string|max:1000',
+//     ]);
+
+//     $receiver = User::findOrFail($request->receiver_id);
+
+//     // چک بلاک
+//     if ($sender->isBlockedBy($receiver->id) || $sender->hasBlocked($receiver->id)) {
+//         return response()->json([
+//             'error' => 'BLOCKED'
+//         ], 403);
+//     }
+
+//     // تعداد کل پیام‌ها بین دو طرف (دوطرفه)
+//     $messagesCount = Message::where(function ($q) use ($sender, $receiver) {
+//             $q->where('sender_id', $sender->id)
+//               ->where('receiver_id', $receiver->id);
+//         })
+//         ->orWhere(function ($q) use ($sender, $receiver) {
+//             $q->where('sender_id', $receiver->id)
+//               ->where('receiver_id', $sender->id);
+//         })
+//         ->count();
+
+//     /**
+//      * 1️⃣ پیام اول → آزاد، فقط فرستنده می‌بیند
+//      */
+//     if ($messagesCount === 0) {
+
+//         Message::create([
+//             'sender_id'   => $sender->id,
+//             'receiver_id' => $receiver->id,
+//             'message'     => $request->message,
+//             'status'      => 'private', // فقط فرستنده
+//             'is_read'     => false,
+//         ]);
+
+//         return response()->json([
+//             'success' => true,
+//             'type'    => 'FIRST_MESSAGE_PRIVATE'
+//         ]);
+//     }
+
+//     /**
+//      * 2️⃣ پیام دوم به بعد → نیاز به پریمیوم یکی از دو طرف
+//      */
+//     if (! $sender->is_premium && ! $receiver->is_premium) {
+//         return response()->json([
+//             'error' => 'PREMIUM_REQUIRED',
+//             'receiver_id' => $receiverId
+//         ], 402);
+//     }
+
+//     /**
+//      * 3️⃣ ارسال پیام عادی
+//      */
+//     Message::create([
+//         'sender_id'   => $sender->id,
+//         'receiver_id' => $receiver->id,
+//         'message'     => $request->message,
+//         'status'      => 'sent',
+//         'is_read'     => false,
+//     ]);
+
+//     return response()->json([
+//         'success' => true
+//     ]);
+
+// }
 public function store(Request $request)
 {
     $sender = Auth::user();
 
+    // 1. اعتبارسنجی ورودی‌ها
     $request->validate([
         'receiver_id' => 'required|exists:users,id|not_in:' . $sender->id,
         'message'     => 'required|string|max:1000',
@@ -91,34 +171,34 @@ public function store(Request $request)
 
     $receiver = User::findOrFail($request->receiver_id);
 
-    // چک بلاک
-    if ($sender->isBlockedBy($receiver->id) || $sender->hasBlocked($receiver->id)) {
-        return response()->json([
-            'error' => 'BLOCKED'
-        ], 403);
+    // 2. چک کردن وضعیت بلاک
+    // توجه: متدهای isBlockedBy و hasBlocked باید در مدل User شما تعریف شده باشند
+    if (method_exists($sender, 'isBlockedBy')) {
+        if ($sender->isBlockedBy($receiver->id) || $sender->hasBlocked($receiver->id)) {
+            return response()->json([
+                'error' => 'BLOCKED'
+            ], 403);
+        }
     }
 
-    // تعداد کل پیام‌ها بین دو طرف (دوطرفه)
+    // 3. محاسبه تعداد پیام‌های رد و بدل شده (دوطرفه)
     $messagesCount = Message::where(function ($q) use ($sender, $receiver) {
-            $q->where('sender_id', $sender->id)
-              ->where('receiver_id', $receiver->id);
+            $q->where('sender_id', $sender->id)->where('receiver_id', $receiver->id);
         })
         ->orWhere(function ($q) use ($sender, $receiver) {
-            $q->where('sender_id', $receiver->id)
-              ->where('receiver_id', $sender->id);
+            $q->where('sender_id', $receiver->id)->where('receiver_id', $sender->id);
         })
         ->count();
 
     /**
-     * 1️⃣ پیام اول → آزاد، فقط فرستنده می‌بیند
+     * 4. قانون پیام اول (رایگان اما مخفی برای گیرنده تا زمان پریمیوم شدن)
      */
     if ($messagesCount === 0) {
-
-        Message::create([
+        $message = Message::create([
             'sender_id'   => $sender->id,
             'receiver_id' => $receiver->id,
             'message'     => $request->message,
-            'status'      => 'private', // فقط فرستنده
+            'status'      => 'private', 
             'is_read'     => false,
         ]);
 
@@ -129,16 +209,17 @@ public function store(Request $request)
     }
 
     /**
-     * 2️⃣ پیام دوم به بعد → نیاز به پریمیوم یکی از دو طرف
+     * 5. بررسی محدودیت پریمیوم برای پیام‌های بعدی
      */
     if (! $sender->is_premium && ! $receiver->is_premium) {
         return response()->json([
-            'error' => 'PREMIUM_REQUIRED'
+            'error' => 'PREMIUM_REQUIRED',
+            'receiver_id' => $receiver->id // مقدار درست جایگزین شد
         ], 402);
     }
 
     /**
-     * 3️⃣ ارسال پیام عادی
+     * 6. ارسال پیام عادی (اگر یکی پریمیوم باشد)
      */
     Message::create([
         'sender_id'   => $sender->id,
@@ -151,7 +232,6 @@ public function store(Request $request)
     return response()->json([
         'success' => true
     ]);
+}    
 
-}
-    
 }

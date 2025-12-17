@@ -2,6 +2,8 @@
 
 @section('content')
 
+
+
 {{-- لودینگ --}}
 <div id="loadingSpinner" class="fixed inset-0 bg-white flex items-center justify-center z-50">
     <svg class="animate-spin h-12 w-12 text-blue-600" viewBox="0 0 24 24"></svg>
@@ -105,11 +107,14 @@ window.addEventListener('load', () => {
 </div>
 
 {{-- اسکریپت‌ها --}}
-<script>
+<!-- <script>
 let currentReceiver = null;
+console.log('JS LOADED');
 
-document.getElementById('sendMessageForm').addEventListener('submit', function (e) {
+
+document.getElementById('sendMessageForm').addEventListener('submit', function (e) {console.log('FORM SUBMITTED');
     e.preventDefault();
+    e.stopImmediatePropagation();
 
     const formData = new FormData(this);
 
@@ -155,6 +160,153 @@ function startPayment() {
     .then(res => res.json())
     .then(data => window.location.href = data.payment_url);
 }
+</script> -->
+
+<script>
+let currentReceiver = null;
+
+console.log('JS LOADED');
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.getElementById('sendMessageForm');
+    const container = document.getElementById('messagesContainer');
+    
+    if (!form) return;
+
+    // اسکرول به انتها در هنگام لود صفحه
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+
+    form.addEventListener('submit', function (e) {
+        console.log('FORM SUBMITTED (AJAX)');
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const formData = new FormData(form);
+        const messageText = form.querySelector('textarea[name="message"]').value;
+
+        fetch("{{ route('messages.store') }}", {
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(async res => {
+            const data = await res.json();
+
+            // اگر نیاز به پرداخت بود (402)
+            if (res.status === 402) {
+                return data;
+            }
+
+            // خطای اعتبارسنجی (422)
+            if (res.status === 422) {
+                console.error('VALIDATION ERROR:', data.errors);
+                if (data.errors && Object.keys(data.errors).length > 0) {
+                    const firstErrorKey = Object.keys(data.errors)[0];
+                    alert(data.errors[firstErrorKey][0]);
+                }
+                throw new Error('VALIDATION_FAILED'); 
+            }
+
+            // سایر خطاهای سرور
+            if (!res.ok) {
+                throw new Error('Server Error');
+            }
+
+            return data;
+        })
+        .then(data => {
+            console.log('RESPONSE:', data);
+
+            // اگر نیاز به پریمیوم بود
+            if (data.error === 'PAYMENT_REQUIRED' || data.error === 'PREMIUM_REQUIRED') {
+                currentReceiver = data.receiver_id ?? null;
+                console.log('Opening payment modal because:', data.error);
+                openPaymentModal();
+                return;
+            }
+
+            // نمایش آنی پیام در لیست بدون رفرش
+            if (container) {
+                const newMessageHtml = `
+                    <div class="flex justify-end mb-3">
+                        <div class="px-4 py-2 rounded-xl max-w-xs bg-blue-500 text-white shadow-sm">
+                            ${messageText}
+                            ${data.type === 'FIRST_MESSAGE_PRIVATE' ? 
+                                '<span class="block text-[10px] opacity-80 mt-1 border-t border-white/20 pt-1">🔒 پیام اول (فقط شما می‌بینید)</span>' 
+                                : ''}
+                        </div>
+                    </div>
+                `;
+
+                container.insertAdjacentHTML('beforeend', newMessageHtml);
+                
+                // اسکرول نرم به پایین
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+
+            // خالی کردن فرم
+            form.reset();
+        })
+        .catch(err => {
+            if (err.message !== 'VALIDATION_FAILED') {
+                console.error('FETCH ERROR:', err);
+            }
+        });
+    });
+});
+
+function openPaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function closePaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function startPayment() {
+    if (!currentReceiver) {
+        alert('خطا در شناسایی گیرنده');
+        return;
+    }
+
+    fetch("{{ route('payments.create') }}", {
+        method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ receiver_id: currentReceiver })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.payment_url) {
+            window.location.href = data.payment_url;
+        } else {
+            alert('خطا در ایجاد درگاه پرداخت');
+        }
+    })
+    .catch(err => console.error('Payment Error:', err));
+}
 </script>
+
 
 @endsection

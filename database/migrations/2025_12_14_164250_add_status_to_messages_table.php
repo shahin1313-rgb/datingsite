@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('messages', function (Blueprint $table) {
-             $table->enum('status', ['locked', 'sent'])
+             $table->enum('status', ['locked', 'sent','private'])
                   ->default('sent')
                   ->after('message');
         });
