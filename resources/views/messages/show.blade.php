@@ -2,12 +2,7 @@
 
 @section('content')
 
-{{-- لودینگ مدرن --}}
-<div id="loadingSpinner" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
-    <div class="relative flex items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-    </div>
-</div>
+
 
 <div class="fixed inset-0 flex flex-col bg-[#f0f2f5] max-w-md mx-auto shadow-2xl">
     
@@ -132,9 +127,6 @@
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 </style>
 
-{{-- اسکریپت‌ها همان منطق شما را دارند با کمی بهبود در اسکرول --}}
-<script>
-// ... (کدهای JS شما کاملاً صحیح هستند، فقط در بخش درج پیام جدید HTML جدید را جایگزین کنید)
-</script>
+
 
 @endsection
