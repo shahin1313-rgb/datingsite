@@ -1,165 +1,130 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'fa' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'DatingApp') }}</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
-    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
 
     @yield('head')
 
     <style>
-          [x-cloak] { display: none !important; }  /* اضافه‌شده برای مخفی‌کردن منو هنگام بارگذاری */
-        html,
-        body,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5 {
-            font-family: 'Raleway', sans-serif;
-        }
-
-        #loadingSpinner {
-            border: 16px solid #f3f3f3;
-            border-top: 16px solid #3498db;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+        [x-cloak] { display: none !important; }
+        body { font-family: 'Tahoma', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .pb-safe { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+        
+        /* استایل کمکی برای انیمیشن محو شدن لودینگ */
+        .loader-hidden {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-out;
         }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
-    <div id="app">
-        <nav class="bg-white shadow fixed flex top-0 left-0 w-full z-50">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <a href="{{ url('/') }}" class="text-xl font-bold text-gray-800">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
-                </a>
-                <div class="space-x-4 flex items-center " x-data="{ open: false }">
+<body class="bg-gray-50 text-gray-900">
 
-                <!-- پیام‌ها -->
-<a href="{{ route('messages.index') }}" class="relative inline-flex items-center text-gray-600 hover:text-gray-800">
-    <i class="fas fa-envelope text-xl"></i>
-     @if($globalUnreadCount > 0)
-    <span
-        class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
-        {{ $globalUnreadCount }}
-    </span>
-    @endif
-</a>
-
-<!-- انتخاب زبان -->
-<div class="relative" x-data="{ langMenu: false }" @click.away="langMenu = false">
-    <button @click="langMenu = !langMenu"
-        class="flex items-center space-x-1 text-gray-600 hover:text-gray-800">
-        <i class="fa-solid fa-globe"></i>
-        <span class="hidden sm:inline text-sm font-medium">
-            @if (app()->getLocale() == 'fa')
-                فارسی
-            @elseif(app()->getLocale() == 'fr')
-                Français
-            @else
-                English
-            @endif
-        </span>
-        <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-                d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.061l-4.24 4.243a.75.75 0 01-1.06 0L5.25 8.28a.75.75 0 01-.02-1.06z"
-                clip-rule="evenodd" />
-        </svg>
-    </button>
-
-    <div x-show="langMenu" x-cloak
-        class="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg z-50">
-        <a href="{{ url('lang/fa') }}"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-            <span>🇮🇷</span><span>فارسی</span>
-        </a>
-        <a href="{{ url('lang/fr') }}"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-            <span>🇫🇷</span><span>Français</span>
-        </a>
+    {{-- لودینگ مدرن و هوشمند --}}
+    <div id="globalLoading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-[9999]">
+        <div class="relative">
+            <div class="w-16 h-16 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fas fa-heart text-pink-500 animate-pulse"></i>
+            </div>
+        </div>
+        <span class="mt-4 text-sm font-medium text-gray-500">در حال بارگذاری...</span>
     </div>
-</div>
 
+    <div id="app" class="flex flex-col min-h-screen">
+        {{-- نوبار --}}
+        <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 h-14 flex items-center">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <a href="{{ url('/') }}" class="flex items-center gap-2">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
+                    <span class="font-bold text-lg tracking-tight text-pink-600">DatingApp</span>
+                </a>
 
-                    @guest
-                        @if (Route::has('login'))
-                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-800">{{ __('Login') }}</a>
-                        @endif
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}"
-                                class="text-gray-600 hover:text-gray-800">{{ __('Register') }}</a>
-                        @endif
-                    @else
-                        <div class="relative inline-block text-left" @click.away="open = false">
-                            <button @click="open = !open"
-                                class="inline-flex items-center text-gray-600 hover:text-gray-800">
-                                {{ Auth::user()->name }}
-                                <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 011.06 1.061l-4.24 4.243a.75.75 0 01-1.06 0L5.25 8.28a.75.75 0 01-.02-1.06z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            <div x-show="open" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Buy</a>
-                                <a href="{{ route('profile.edit') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ویرایش پروفایل</a>
-                                <a href="{{ route('dashboard') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">لیست
-                                    علاقمندی‌ها</a>
-                                <div class="border-t border-gray-200"></div>
-                                <a href="{{ route('logout') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    {{ __('Logout') }}
-                                </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                                    @csrf
-                                </form>
-                            </div>
+                <div class="flex items-center gap-4">
+                   <div class="relative" x-data="{ langMenu: false }">
+                        <button @click="langMenu = !langMenu" class="text-gray-500 text-sm focus:outline-none p-2">
+                            <i class="fa-solid fa-globe"></i>
+                        </button>
+                        
+                        <div x-show="langMenu" 
+                             @click.away="langMenu = false" 
+                             x-cloak 
+                             class="absolute left-0 mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
+                            <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">🇮🇷 فارسی</a>
+                            <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">🇬🇧 English</a>
                         </div>
-                    @endguest
+                    </div>
                 </div>
             </div>
         </nav>
 
-        <main class="p-4">
-            <!-- <div id="loadingSpinner" role="status"></div> -->
-            <div id="mainContent" class="bg-white p-4 rounded shadow">
+        {{-- محتوای اصلی --}}
+        <main class="flex-grow p-4 pb-safe">
+            <div class="max-w-md mx-auto"> 
                 @yield('content')
             </div>
         </main>
-    </div>
-</body>
 
+        {{-- منوی پایین موبایل --}}
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 z-50 sm:hidden">
+            <div class="flex justify-around items-center h-14">
+                <a href="{{ url('/') }}" class="flex flex-col items-center justify-center w-full {{ request()->is('/') ? 'text-pink-600' : 'text-gray-400' }}">
+                    <i class="fas fa-heart text-xl"></i>
+                    <span class="text-[10px] mt-1">اکتشاف</span>
+                </a>
+
+                <a href="{{ route('search') }}" class="flex flex-col items-center justify-center w-full {{ request()->routeIs('search') ? 'text-pink-600' : 'text-gray-400' }}">
+                    <i class="fas fa-search text-xl"></i>
+                    <span class="text-[10px] mt-1">جستجو</span>
+                </a>
+
+                <a href="{{ route('messages.index') }}" class="flex flex-col items-center justify-center w-full relative {{ request()->routeIs('messages.*') ? 'text-pink-600' : 'text-gray-400' }}">
+                    <i class="fas fa-comment-dots text-xl"></i>
+                    <span class="text-[10px] mt-1">پیام‌ها</span>
+                    @if(isset($globalUnreadCount) && $globalUnreadCount > 0)
+                        <span class="absolute top-1 right-4 bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full border-2 border-white">
+                            {{ $globalUnreadCount }}
+                        </span>
+                    @endif
+                </a>
+
+                <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full {{ request()->routeIs('dashboard') ? 'text-pink-600' : 'text-gray-400' }}">
+                    <i class="fas fa-user-circle text-xl"></i>
+                    <span class="text-[10px] mt-1">پروفایل</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    {{-- اسکریپت کنترل لودینگ --}}
+    <script>
+        function hideGlobalLoader() {
+            const loader = document.getElementById('globalLoading');
+            if (loader) {
+                loader.classList.add('loader-hidden');
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 500);
+            }
+        }
+
+        // مخفی کردن لودینگ بعد از لود کامل صفحه
+        window.addEventListener('load', hideGlobalLoader);
+
+        // لایه محافظ: اگر لودینگ تا ۳ ثانیه مخفی نشد، اجباراً مخفی شود
+        setTimeout(hideGlobalLoader, 3000);
+    </script>
+
+    @stack('scripts')
+</body>
 </html>
