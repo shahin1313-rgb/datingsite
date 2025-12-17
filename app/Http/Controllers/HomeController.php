@@ -24,7 +24,13 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        // دریافت لیست پروفایل‌ها (مثلاً ۱۰ مورد در هر صفحه)
+        $profiles = User::where('id', '!=', auth()->id()) // عدم نمایش پروفایل خود کاربر
+                        ->latest()
+                        ->paginate(10);
+
+        // ارسال متغیر به ویو
+        return view('home', compact('profiles'));
     }
 
     public function show($id)
