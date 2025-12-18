@@ -185,3 +185,9 @@ Route::post('/like/{likedUserId}', [LikeController::class, 'store'])->name('like
 Route::middleware(['auth'])->group(function () {
     Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
 });
+
+
+// routes/web.php
+
+Route::get('/upgrade', [App\Http\Controllers\PremiumController::class, 'index'])
+    ->name('premium.upgrade');
