@@ -1,329 +1,178 @@
 @extends('layouts.app')
 
 @section('content')
-    <style>
-        * {
-            font-family: 'Vazir', sans-serif !important;
-        }
+<style>
+    /* جلوگیری از پرش المان‌ها قبل از لود جاوااسکریپت */
+    [x-cloak] { display: none !important; }
 
-       
+    body {
+        font-family: 'Vazir', sans-serif !important;
+        background-color: #f4f7f6;
+        margin: 0;
+        overflow-x: hidden;
+    }
 
+    /* سایدبار مدرن */
+    .sidebar {
+        background: linear-gradient(135deg, #ff5e62 0%, #ff9966 100%);
+        width: 260px;
+        z-index: 40; /* لایه متوسط */
+        transition: transform 0.3s ease;
+    }
+
+    /* استایل مودال خروج */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 9999; /* بالاترین لایه */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    @media (max-width: 768px) {
         .sidebar {
-            background: linear-gradient(180deg, #ff5e62 0%, #f6d365 100%);
-            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-            z-index: 50;
-        }
-
-        .fixed.inset-0.bg-black.bg-opacity-50 {
-            z-index: 9998;
-        }
-
-        
-        [x-show="openLogoutModal"] {
-        z-index: 9999;
-    display: none !important; /* Force hidden on false */
-    visibility: hidden !important;
-    opacity: 0 !important;
-}
-[x-show="openLogoutModal"]:not(.alpine-hidden) { /* .alpine-hidden is Alpine's internal class for false */
-    display: none !important;
-}
-.logout-modal {
-    display: none !important;
-}
-.logout-modal.open {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-/* Mobile: Ensure no pointer bleed */
-@media (max-width: 768px) {
-    [x-show="openLogoutModal"] {
-        pointer-events: none !important;
-    }
-    .logout-modal.open {
-        pointer-events: auto !important;
-    }
-}
-
-        .main-content,
-        header,
-        footer {
-            z-index: 1;
-        }
-
-        .sidebar-hidden {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
             transform: translateX(100%);
         }
-
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .sidebar.sidebar-open {
+            transform: translateX(0);
         }
+    }
+</style>
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-primary {
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: scale(1.05);
-            background-color: #fefcbf;
-        }
-
-        .profile-img {
-            border: 4px solid #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .animate-slide-in {
-            opacity: 0;
-            transform: translateX(-20px);
-            animation: slideIn 0.5s forwards;
-        }
-
-        @keyframes slideIn {
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .slick-slide img {
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(100%);
-                position: fixed;
-                top: 0;
-                right: 0;
-                width: 260px;
-            }
-
-            .sidebar-open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-right: 0 !important;
-                margin-left: 0 !important;
-            }
-
-            [x-show="openLogoutModal"] {
-                pointer-events: auto;
-            }
-
-            .fixed.inset-0.bg-black.bg-opacity-50 {
-                pointer-events: auto;
-            }
-
-            .main-content,
-            header,
-            aside,
-            footer {
-                pointer-events: auto;
-            }
-
-            [x-show="openLogoutModal"]~.main-content,
-            [x-show="openLogoutModal"]~header,
-            [x-show="openLogoutModal"]~aside,
-            [x-show="openLogoutModal"]~footer {
-                pointer-events: none;
-            }
-        }
-
-        #myOverlay {
-            z-index: 9997;
-        }
-
-        /* اصلاح جهت اسلایدر برای RTL */
-        .slick-slider {
-            direction: rtl;
-        }
-    </style>
-
-    <div class="min-h-screen" x-data="{ openLogoutModal: false }">
-        <!-- دکمه فلش باز/بستن منو -->
-<div class="fixed top-20 right-4 z-[9999] md:hidden">
-    <button onclick="toggleSidebar()" class="bg-pink-600 text-white p-2 rounded-full shadow-md hover:bg-pink-700 transition">
-        <svg id="arrowIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-    </button>
-</div>
-
-        <div class="flex">
-            <!-- نوار کناری -->
-            <aside class="sidebar w-64 h-screen fixed top-0 right-0 p-6 text-white flex flex-col md:sidebar-open"
-                id="mySidebar">
-                <div class="flex items-center space-x-reverse space-x-3 mb-8">
-                    <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}" alt="Profile"
-                        class="w-12 h-12 rounded-full profile-img">
-                    <div>
-                        <span class="text-lg font-bold">سلام، {{ auth()->user()->name ?? 'کاربر' }}</span>
-                        <div class="flex space-x-reverse space-x-2 mt-2">
-                            <a href="{{ route('messages.index') }}" class="text-white hover:text-pink-200"><i
-                                    class="fa fa-envelope"></i></a>
-                            <a href="{{ route('profile.show', auth()->id()) }}" class="text-white hover:text-pink-200"><i
-                                    class="fa fa-user"></i></a>
-                            <a href="#" class="text-white hover:text-pink-200"><i class="fa fa-cog"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <nav class="space-y-2">
-                    <a href="{{ route('dashboard') }}"
-                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg bg-pink-600 hover:bg-pink-700">
-                        <i class="fa fa-users"></i><span>نمای کلی</span>
-                    </a>
-                    <a href="{{ route('profile.show', auth()->id()) }}"
-                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-eye"></i><span>پروفایل</span>
-                    </a>
-                    <a href="{{ route('search') }}"
-                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-search"></i><span>جستجو</span>
-                    </a>
-                    <a href="{{ route('profile.edit') }}"
-                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-edit"></i><span>ویرایش پروفایل</span>
-                    </a>
-                    <a href="{{ route('likes.index') }}"
-                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-diamond"></i><span>لایک ها</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-diamond"></i><span>خرید</span>
-                    </a>
-                    <a href="{{ route('user.tickets.index') }}" class="block py-2 px-4 hover:bg-gray-100">
-                        📨 تیکت‌های پشتیبانی
-                    </a>
-
-                    <a href="{{ route('police.index') }}"
-                        class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-shield"></i><span>پلیس سایت</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-history"></i><span>تاریخچه</span>
-                    </a>
-                    <a href="#" class="flex items-center space-x-reverse space-x-2 p-3 rounded-lg hover:bg-pink-500">
-                        <i class="fa fa-cog"></i><span>تنظیمات</span>
-                    </a>
-                </nav>
-                <button @click="openLogoutModal = true; console.log('Modal opened', openLogoutModal)"
-                    class="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-red-600 hover:bg-red-700 text-white transition duration-300">
-                    <i class="fa fa-sign-out"></i><span>خروج</span>
-                </button>
-            </aside>
-
-            <!-- محتوای اصلی -->
-            @include('dashboard.main')
-
-
+<div x-data="{ openLogoutModal: false, sidebarOpen: false }" class="relative min-h-screen flex flex-row-reverse">
+    
+    <aside :class="sidebarOpen ? 'sidebar-open' : ''" 
+           class="sidebar sticky top-0 h-screen flex-shrink-0 flex flex-col p-5 text-white">
+        
+        <div class="flex flex-col items-center py-6 mb-6">
+            <div class="w-16 h-16 rounded-full border-2 border-white/50 overflow-hidden shadow-lg">
+                <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}" class="w-full h-full object-cover">
+            </div>
+            <span class="mt-3 font-bold text-sm">{{ auth()->user()->name }}</span>
         </div>
 
-        <!-- مودال تأیید -->
-        <div x-show="openLogoutModal" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" @keydown.escape.window="openLogoutModal = false"
-            class="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center">
-            <div @click.outside="openLogoutModal = false" class="bg-white rounded-lg p-6 w-72 text-center shadow-2xl">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">آیا مطمئن هستید؟</h2>
-                <p class="text-gray-600 mb-6">می‌خواهید از حساب کاربری خود خارج شوید؟</p>
-                <div class="flex justify-between">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit"
-                            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">خروج</button>
-                    </form>
-                    <button @click="openLogoutModal = false" type="button"
-                        class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">انصراف</button>
+        <nav class="space-y-2 flex-1 overflow-y-auto">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-home"></i> <span>داشبورد</span>
+            </a>
+            </nav>
+
+        <button type="button" @click="openLogoutModal = true" 
+                class="mt-auto bg-white/10 hover:bg-red-500 p-3 rounded-xl transition flex items-center justify-center gap-2 border border-white/20">
+            <i class="fa fa-sign-out"></i> <span>خروج</span>
+        </button>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50">
+        <header class="md:hidden flex items-center justify-between p-4 bg-white shadow-sm border-b">
+            <button @click="sidebarOpen = true" class="text-gray-600 p-2"><i class="fa fa-bars text-xl"></i></button>
+            <span class="font-black text-pink-600">Dating Panel</span>
+        </header>
+        <div class="animate-slide-in">
+    <div class="relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+        <div class="h-32 bg-gradient-to-r from-pink-500 to-orange-400"></div>
+        
+        <div class="px-6 pb-6">
+            <div class="relative flex flex-col md:flex-row items-center md:items-end -mt-16 md:-mt-12 gap-5">
+                <div class="relative group">
+                    <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}" 
+                         class="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl bg-white">
+                    
+                    <a href="{{ route('profile.edit') }}" 
+                       class="absolute bottom-2 right-2 bg-white p-2 rounded-xl shadow-md text-pink-600 hover:scale-110 transition md:opacity-0 group-hover:opacity-100">
+                        <i class="fa fa-camera"></i>
+                    </a>
+                </div>
+
+                <div class="flex-1 text-center md:text-right mb-2">
+                    <h1 class="text-2xl font-black text-gray-800">{{ auth()->user()->name }}</h1>
+                    <p class="text-gray-500 flex items-center justify-center md:justify-start gap-2">
+                        <i class="fa fa-map-marker-alt text-pink-500"></i>
+                        {{ auth()->user()->city ?? 'موقعیت ثبت نشده' }}
+                    </p>
+                </div>
+
+                <div class="flex gap-3 mb-2">
+                    <a href="{{ route('profile.edit') }}" 
+                       class="px-6 py-2 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition text-sm">
+                        ویرایش پروفایل
+                    </a>
+                    <button class="p-2 bg-pink-50 text-pink-600 rounded-2xl hover:bg-pink-600 hover:text-white transition">
+                        <i class="fa fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-center md:justify-start gap-8 mt-8 border-t pt-6">
+                <div class="text-center">
+                    <span class="block text-xl font-black text-gray-800">۱۲۴</span>
+                    <span class="text-xs text-gray-400">لایک‌ها</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xl font-black text-gray-800">۸۵۰</span>
+                    <span class="text-xs text-gray-400">بازدید</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xl font-black text-gray-800">۱۸</span>
+                    <span class="text-xs text-gray-400">پیام‌ها</span>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="fixed inset-0 bg-black bg-opacity-50 hidden md:hidden" id="myOverlay" onclick="toggleSidebar()"></div>
+        <main class="main-content p-4 md:p-8">
+            @include('dashboard.main')
+        </main>
+    </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script>
-        $(document).ready(function() {
-            $('.customer-logos').slick({
-                slidesToShow: 4,
-                slidesToScroll: 1,
-                autoplay: true,
-                autoplaySpeed: 2000,
-                arrows: false,
-                dots: true,
-                pauseOnHover: true,
-                rtl: true,
-                responsive: [{
-                    breakpoint: 768,
-                    settings: {
-                        slidesToShow: 3
-                    }
-                }, {
-                    breakpoint: 520,
-                    settings: {
-                        slidesToShow: 2
-                    }
-                }]
-            });
-        });
+    <div x-show="openLogoutModal" 
+         class="modal-backdrop"
+         x-cloak
+         x-transition:enter="transition opacity-0 duration-300"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition opacity-100 duration-200"
+         x-transition:leave-end="opacity-0">
+        
+        <div class="absolute inset-0" @click="openLogoutModal = false"></div>
 
-       
-         function toggleSidebar() {
-        const sidebar = document.getElementById('mySidebar');
-        const overlay = document.getElementById('myOverlay');
-        const arrowIcon = document.getElementById('arrowIcon');
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 text-center transform transition-all" @click.stop>
+            <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa fa-power-off text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">خروج از سایت؟</h3>
+            <p class="text-gray-500 text-sm mb-6">آیا برای خروج مطمئن هستید؟</p>
+            
+            <div class="flex gap-2">
+                <button type="button" @click="openLogoutModal = false" 
+                        class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200">
+                    انصراف
+                </button>
+                <form action="{{ route('logout') }}" method="POST" class="flex-1">
+                    @csrf
+                    <button type="submit" class="w-full py-2 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md">
+                        خروج
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        // تغییر وضعیت باز/بسته شدن منو
-        const isOpen = sidebar.classList.toggle('sidebar-open');
+    <div x-show="sidebarOpen" 
+         x-cloak
+         x-transition.opacity
+         @click="sidebarOpen = false" 
+         class="fixed inset-0 bg-black/50 z-[35] md:hidden backdrop-blur-sm"></div>
 
-        // // نمایش یا مخفی‌سازی پس‌زمینه تیره
-        // overlay.classList.toggle('hidden', !isOpen);
+</div>
 
-        // چرخش فلش هنگام باز/بسته شدن
-    //     if (arrowIcon) {
-    //         arrowIcon.style.transition = 'transform 0.3s ease';
-    //         arrowIcon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-    //     }
-    // }
-
-    // چون نمی‌خواهی پس‌زمینه تار شود، مطمئن شو همیشه hidden بماند
-        overlay.classList.add('hidden');
-
-        // تغییر آیکون بین فلش و ضربدر
-        if (isOpen) {
-            arrowIcon.innerHTML = `
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M6 18L18 6M6 6l12 12" />
-            `;
-        } else {
-            arrowIcon.innerHTML = `
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M9 5l7 7-7 7" />
-            `;
-        }
-    }
-    // انیمیشن ظاهر شدن المان‌ها
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.animate-slide-in').forEach((el, index) => {
-            el.style.animationDelay = `${index * 0.1}s`;
-        });
-    });
-    </script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 @endsection

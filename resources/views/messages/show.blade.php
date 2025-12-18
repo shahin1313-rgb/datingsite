@@ -3,8 +3,8 @@
 @section('content')
 
 
-
-<div class="fixed inset-0 flex flex-col bg-[#f0f2f5] max-w-md mx-auto shadow-2xl">
+{{-- تغییر خط اول کانتینر --}}
+<div class="flex flex-col bg-[#f0f2f5] max-w-md mx-auto shadow-2xl" style="height: calc(100vh - 60px);">
     
     {{-- هدر چت مدرن --}}
     <div class="flex items-center justify-between bg-white border-b px-4 py-3 shrink-0 z-10 shadow-sm">
@@ -68,7 +68,7 @@
     </div>
 
     {{-- بخش ارسال پیام --}}
-    <div class="bg-white p-3 border-t pb-safe">
+    <div class="bg-white p-3 border-t pb-safe z-20">
         <form id="sendMessageForm" class="flex items-end gap-2">
             @csrf
             <input type="hidden" name="receiver_id" value="{{ $user->id }}">
@@ -115,6 +115,29 @@
 </div>
 
 <style>
+
+
+
+    /* ۱. مخفی کردن منوی پایین تمپلیت اصلی فقط در این صفحه */
+    nav.fixed.bottom-0 { 
+        display: none !important; 
+    }
+
+    /* ۲. حذف پدینگ اضافی که در تمپلیت اصلی برای main در نظر گرفته شده */
+    main.pb-safe { 
+        padding-bottom: 0 !important; 
+        padding-top: 0 !important;
+    }
+
+    /* ۳. اصلاح ارتفاع کانتینر چت برای موبایل */
+    .chat-container {
+        height: 100vh; /* برای مرورگرهای قدیمی */
+        height: 100dvh; /* برای مرورگرهای جدید - ارتفاع دقیق صفحه */
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+    }
+
     .animate-fade-in-up {
         animation: fadeInUp 0.3s ease-out forwards;
     }
@@ -127,6 +150,24 @@
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 </style>
 
+<script>
+    const container = document.getElementById('messagesContainer');
+    
+    // اسکرول به پایین هنگام لود صفحه
+    window.onload = () => {
+        container.scrollTop = container.scrollHeight;
+    };
+
+    // اسکرول به پایین هنگام باز شدن کیبورد در موبایل
+    const tx = document.getElementsByTagName('textarea');
+    for (let i = 0; i < tx.length; i++) {
+        tx[i].addEventListener("focus", function() {
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 300);
+        });
+    }
+</script>
 
 
 @endsection

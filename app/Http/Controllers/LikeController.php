@@ -22,6 +22,15 @@ class LikeController extends Controller
             'liked_user_id' => $likedUserId,
         ]);
 
+        // بررسی اینکه آیا طرف مقابل هم قبلا من را لایک کرده؟
+    $isMatch = Like::where('user_id', $likedUserId)
+                   ->where('liked_user_id', $user->id)
+                   ->exists();
+
+    if ($isMatch) {
+        return back()->with('success', 'تبریک! شما با هم مچ شدید. پیام بدید!');
+    }
+
         return back()->with('success', 'کاربر لایک شد.');
     }
 
@@ -40,17 +49,12 @@ class LikeController extends Controller
     {
         $user = Auth::user();
 
-        // افرادی که من لایک کرده‌ام
-        $likedUsers = auth()->user()->likedUsers;
-        // کاربران لایک شده توسط کاربر جاری
 
-
-        // افرادی که من را لایک کرده‌اند
-        $likedByUsers = auth()->user()->likedByUsers;
-
-        // کاربران لایک شده توسط کاربر جاری
-
-
+        // دریافت لیست‌ها به همراه داده‌های پایه برای سرعت بیشتر
+    $likedUsers = $user->likedUsers()->latest()->get(); 
+    $likedByUsers = $user->likedByUsers()->latest()->get();
+        
+  
         return view('likes.index', compact('likedUsers', 'likedByUsers'));
     }
 }

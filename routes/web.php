@@ -175,6 +175,13 @@ Route::middleware('guest')->group(function () {
 Route::post('/like/{id}', [LikeController::class, 'store'])->name('like.store');
 Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
 
+
+// مسیری که خطای شما را برطرف می‌کند
+Route::get('/likes/received', [LikeController::class, 'index'])->name('likes.received')->middleware('auth');
+
+// مسیر ذخیره لایک (برای دکمه‌های لایک)
+Route::post('/like/{likedUserId}', [LikeController::class, 'store'])->name('likes.store')->middleware('auth');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
 });

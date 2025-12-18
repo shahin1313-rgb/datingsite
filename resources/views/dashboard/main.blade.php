@@ -1,173 +1,124 @@
- <main class="main-content md:mr-64 md:ml-0 p-6 w-full">
-     <button class="md:hidden text-gray-800 p-2 focus:outline-none" onclick="toggleSidebar()">
-         <i class="fa fa-bars text-2xl"></i>
-     </button>
-     <header class="mb-8 animate-slide-in">
-         <h2 class="text-3xl font-bold text-gray-800"><i class="fa fa-dashboard ml-2"></i> داشبورد من</h2>
-     </header>
+<main class="main-content w-full p-4 md:p-8 space-y-8">
+    
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-slide-in">
+        <div>
+            <h2 class="text-3xl font-black text-gray-800 tracking-tight">پیشخوان من</h2>
+            <p class="text-gray-500 mt-1">خلاصه وضعیت فعالیت‌های شما در یک نگاه</p>
+        </div>
+        <div class="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+            <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-2"></span>
+            <span class="text-sm font-bold text-gray-700">وضعیت شما: آنلاین</span>
+        </div>
+    </header>
 
-     <!-- باکس‌های اطلاعات -->
-     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-         <a href="{{ route('messages.index') }}"
-             class="card bg-gradient-to-br from-red-500 to-pink-500 text-white p-6 rounded-xl animate-slide-in"
-             style="animation-delay: 0.1s;">
-             <div class="flex items-center justify-between">
-                 <i class="fa fa-comment text-4xl"></i>
-                 <h3 class="text-2xl font-bold">{{ auth()->user()->unreadMessagesCount() }}</h3>
-             </div>
-             <h4 class="mt-2 text-lg">پیام جدید</h4>
-         </a>
-         <a href="{{ route('profile.edit') }}"
-             class="card bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-6 rounded-xl animate-slide-in"
-             style="animation-delay: 0.2s;">
-             <div class="flex items-center justify-between">
-                 <i class="fa fa-user text-4xl"></i>
-                 <h3 class="text-2xl font-bold">ویرایش</h3>
-             </div>
-             <h4 class="mt-2 text-lg">پروفایل</h4>
-         </a>
-         <div class="card bg-gradient-to-br from-teal-500 to-cyan-500 text-white p-6 rounded-xl animate-slide-in"
-             style="animation-delay: 0.3s;">
-             <div class="flex items-center justify-between">
-                 <i class="fa fa-credit-card text-4xl"></i>
-                 <h3 class="text-2xl font-bold">23</h3>
-             </div>
-             <h4 class="mt-2 text-lg">پرداخت شارژ</h4>
-         </div>
-         <div class="card bg-gradient-to-br from-orange-500 to-yellow-500 text-white p-6 rounded-xl animate-slide-in"
-             style="animation-delay: 0.4s;">
-             <div class="flex items-center justify-between">
-                 <i class="fa fa-heart text-4xl"></i>
-                 <h3 class="text-2xl font-bold">50</h3>
-             </div>
-             <h4 class="mt-2 text-lg">افراد مچ‌شده</h4>
-         </div>
-     </div>
-
-     <!-- فعالیت‌ها و نوتیفیکیشن‌ها -->
-     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-         <div class="lg:col-span-2 animate-slide-in" style="animation-delay: 0.5s;">
-            <div class="bg-white rounded-xl shadow-md p-6">
-    <h3 class="text-xl font-bold text-red-600 mb-4">
-        ❤️ لایک‌های دریافتی شما
-    </h3>
-
-    <div class="text-3xl font-bold mb-2">{{ $likesCount }} لایک</div>
-    @if($todayLikes > 0)
-        <p class="text-sm text-green-600 font-medium mb-4">
-            +{{ $todayLikes }} لایک جدید امروز
-        </p>
-    @endif
-
-    <div class="grid grid-cols-5 gap-3 mt-6">
-        @foreach($latestLikers as $like)
-            <div class="text-center">
-                <a href="{{ route('profile.show', $like->liker->id) }}">
-                    @if($like->liker->profile_picture)
-                        <img src="{{ asset('storage/' . $like->liker->profile_picture) }}"
-                             class="w-16 h-16 rounded-full object-cover border-2 border-red-400">
-                    @else
-                        <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span class="text-2xl">👤</span>
-                        </div>
-                    @endif
-                    <p class="text-xs mt-1 truncate">{{ $like->liker->name }}</p>
-                </a>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <a href="{{ route('messages.index') }}" class="group bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+                <i class="fa fa-comment-dots text-xl"></i>
             </div>
-        @endforeach
-    </div>
-
-    @if($likesCount > 5)
-        <a href="{{ route('likes.received') }}" class="block mt-4 text-center text-red-600 font-medium">
-            دیدن همه لایک‌ها →
+            <span class="block text-2xl font-black text-gray-800">{{ auth()->user()->unreadMessagesCount() }}</span>
+            <span class="text-sm text-gray-500 font-medium">پیام جدید</span>
         </a>
-    @endif
-</div>
-             </div>
-         </div>
-         <div class="animate-slide-in" style="animation-delay: 0.6s;">
-             <h3 class="text-2xl font-bold text-gray-800 mb-4">مناطق</h3>
-             <div class="card p-4 shadow rounded-lg">
-    <h3 class="text-lg font-bold mb-2">بازدید از پروفایل شما</h3>
-    <p>👁️ امروز: <strong>{{ $todayViews }}</strong> بازدید</p>
-    <p>📈 کل بازدیدها: <strong>{{ $totalViews }}</strong></p>
 
-    <h4 class="mt-3 font-semibold">سه بازدیدکننده اخیر:</h4>
-    <ul>
-        @forelse($latestViewers as $view)
-            <li>{{ $view->viewer->name ?? 'کاربر ناشناس' }}</li>
-        @empty
-            <li>هنوز کسی پروفایل شما را ندیده است.</li>
-        @endforelse
-    </ul>
+        <div class="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4">
+                <i class="fa fa-heart text-xl"></i>
+            </div>
+            <span class="block text-2xl font-black text-gray-800">{{ $likesCount }}</span>
+            <span class="text-sm text-gray-500 font-medium">لایک دریافتی</span>
+        </div>
 
-    <a href="#" class="text-blue-600 hover:underline mt-2 inline-block">
-        مشاهده لیست کامل
-    </a>
-</div>
-<div class="animate-slide-in z-0" style="animation-delay: 0.7s;">
-    <h3 class="text-2xl font-bold text-gray-800 mb-4">اعضای فعال</h3>
-    <div class="bg-white shadow-lg rounded-xl p-6">
-        <div class="flex flex-row justify-around items-start space-x-reverse space-x-6 overflow-x-auto">
-            @foreach ($recentUsers as $recentUser)
-                <div class="flex flex-col items-center flex-shrink-0 min-w-[100px]">
-                    <a href="{{ route('profile.show', $recentUser->id) }}">
-                        <img src="{{ asset('storage/' . ($recentUser->profile_picture ?? 'default.jpg')) }}"
-                             alt="{{ $recentUser->name ?? 'کاربر' }}"
-                             class="w-20 h-20 rounded-full object-cover mb-3 border-2 border-white shadow-lg hover:scale-110 transition-transform duration-300 mx-auto">
-                    </a>
-                    <span class="text-sm text-gray-600 text-center block px-1">{{ $recentUser->name ?? 'کاربر' }}</span>
-                </div>
-            @endforeach
+        <div class="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
+                <i class="fa fa-wallet text-xl"></i>
+            </div>
+            <span class="block text-2xl font-black text-gray-800">۲۳</span>
+            <span class="text-sm text-gray-500 font-medium">اعتبار (روز)</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4">
+                <i class="fa fa-eye text-xl"></i>
+            </div>
+            <span class="block text-2xl font-black text-gray-800">{{ $totalViews }}</span>
+            <span class="text-sm text-gray-500 font-medium">کل بازدیدها</span>
         </div>
     </div>
-</div>
 
-     <!-- بازدیدکنندگان اخیر -->
-     <div class="mt-8 animate-slide-in z-0" style="animation-delay: 1.0s;">
-         <h3 class="text-2xl font-bold text-gray-800 mb-4">بازدیدکنندگان اخیر</h3>
-         <div class="bg-white card p-6 rounded-xl">
-             @forelse($recentProfileViews as $view)
-                 <div class="flex items-center space-x-reverse space-x-4 border-b py-2">
-                     <img src="{{ asset('storage/' . ($view->viewer->profile_picture ?? 'default.jpg')) }}"
-                         class="w-10 h-10 rounded-full" alt="{{ $view->viewer->name }}">
-                     <div>
-                         <a href="{{ route('profile.show', $view->viewer->id) }}"
-                             class="text-pink-600 hover:underline font-bold">
-                             {{ $view->viewer->name }}
-                         </a>
-                         <p class="text-sm text-gray-500">{{ $view->created_at->diffForHumans() }}</p>
-                     </div>
-                 </div>
-             @empty
-                 <p class="text-gray-500">هنوز کسی پروفایل شما را مشاهده نکرده است.</p>
-             @endforelse
-         </div>
-     </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-2 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-black text-gray-800">❤️ لایک‌های اخیر</h3>
+                <a href="{{ route('likes.received') }}" class="text-sm font-bold text-pink-600 hover:underline">مشاهده همه</a>
+            </div>
 
-     <!-- آمار پایینی -->
-     <div class="mt-8 bg-gray-800 text-white p-6 rounded-xl animate-slide-in" style="animation-delay: 0.9s;">
-         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <div>
-                 <h4 class="text-lg font-bold">جمعیت</h4>
-                 <p class="text-gray-300">کشور / شهر</p>
-             </div>
-             <div>
-                 <h4 class="text-lg font-bold">سیستم</h4>
-                 <p class="text-gray-300">مرورگر / سیستم‌عامل</p>
-             </div>
-             <div>
-                 <h4 class="text-lg font-bold">هدف</h4>
-                 <p class="text-gray-300">علایق کاربران</p>
-             </div>
-         </div>
-     </div>
+            <div class="flex overflow-x-auto gap-6 pb-4 no-scrollbar">
+                @foreach($latestLikers as $like)
+                <div class="flex-shrink-0 flex flex-col items-center group">
+                    <div class="relative">
+                        <img src="{{ asset('storage/' . ($like->liker->profile_picture ?? 'default.jpg')) }}" 
+                             class="w-20 h-20 rounded-[2rem] object-cover ring-4 ring-pink-50 group-hover:ring-pink-200 transition-all">
+                        <span class="absolute -bottom-1 -right-1 bg-red-500 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
+                            <i class="fa fa-heart text-[8px] text-white"></i>
+                        </span>
+                    </div>
+                    <span class="mt-3 text-xs font-bold text-gray-700">{{ $like->liker->name }}</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
 
-     <footer class="mt-8 bg-gray-100 p-6 rounded-xl text-center animate-slide-in" style="animation-delay: 1s;">
-         <p class="text-gray-600">ساخته شده با Laravel و Tailwind CSS</p>
-     </footer>
-         </div>
-     </div>
+        <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-6">
+            <h3 class="text-xl font-black text-gray-800 mb-6 italic">بازدیدکنندگان</h3>
+            <div class="space-y-5">
+                @forelse($recentProfileViews as $view)
+                <div class="flex items-center gap-4 group">
+                    <img src="{{ asset('storage/' . ($view->viewer->profile_picture ?? 'default.jpg')) }}" 
+                         class="w-12 h-12 rounded-2xl object-cover">
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-gray-800 group-hover:text-pink-600 transition">{{ $view->viewer->name }}</h4>
+                        <p class="text-[10px] text-gray-400">{{ $view->created_at->diffForHumans() }}</p>
+                    </div>
+                    <i class="fa fa-chevron-left text-gray-300 text-xs"></i>
+                </div>
+                @empty
+                <p class="text-sm text-gray-500 text-center py-4">هنوز بازدیدی ندارید</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
 
- 
- </main>
+    <section>
+        <h3 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+            <span class="w-2 h-8 bg-orange-500 rounded-full"></span>
+            اعضای فعال و آنلاین
+        </h3>
+        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-[2.5rem] p-8 overflow-hidden relative">
+            <div class="flex overflow-x-auto gap-8 no-scrollbar relative z-10">
+                @foreach ($recentUsers as $recentUser)
+                <a href="{{ route('profile.show', $recentUser->id) }}" class="flex-shrink-0 text-center group">
+                    <div class="relative inline-block">
+                        <img src="{{ asset('storage/' . ($recentUser->profile_picture ?? 'default.jpg')) }}" 
+                             class="w-16 h-16 rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-90 group-hover:scale-110 shadow-2xl">
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></span>
+                    </div>
+                    <p class="mt-3 text-xs font-medium text-gray-400 group-hover:text-white transition">{{ $recentUser->name }}</p>
+                </a>
+                @endforeach
+            </div>
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+        </div>
+    </section>
+
+    <footer class="py-10 text-center border-t border-gray-100 mt-12">
+        <p class="text-gray-400 text-sm italic">مدیریت روابط شما به سبک مدرن</p>
+    </footer>
+
+</main>
+
+<style>
+    /* مخفی کردن اسکرول‌بار برای زیبایی بیشتر */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

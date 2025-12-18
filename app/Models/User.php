@@ -68,6 +68,8 @@ class User extends Authenticatable
 
 
 
+
+
     public function unreadMessagesCount()
     {
         return $this->receivedMessages()->whereNull('read_at')->count();
@@ -114,12 +116,12 @@ class User extends Authenticatable
 
     public function likedUsers()
     {
-        return $this->belongsToMany(User::class, 'likes', 'user_id', 'liked_user_id');
+        return $this->belongsToMany(User::class, 'likes', 'user_id', 'liked_user_id')->withTimestamps();;
     }
 
     public function likedByUsers()
     {
-        return $this->belongsToMany(User::class, 'likes', 'liked_user_id', 'user_id');
+        return $this->belongsToMany(User::class, 'likes', 'liked_user_id', 'user_id')->withTimestamps();;
     }
 
 
@@ -177,6 +179,7 @@ public function sentLikes()
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'premium_until' => 'datetime',
         ];
     }
 }
