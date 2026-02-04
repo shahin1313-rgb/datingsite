@@ -18,19 +18,13 @@
         [x-cloak] { display: none !important; }
         body { font-family: 'Tahoma', sans-serif; -webkit-tap-highlight-color: transparent; }
         .pb-safe { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
-        
-        /* استایل کمکی برای انیمیشن محو شدن لودینگ */
-        .loader-hidden {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease-out;
-        }
+        .loader-hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease-out; }
     </style>
 </head>
 
 <body class="bg-gray-50 text-gray-900">
 
-    {{-- لودینگ مدرن و هوشمند --}}
+    {{-- لودینگ --}}
     <div id="globalLoading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-[9999]">
         <div class="relative">
             <div class="w-16 h-16 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin"></div>
@@ -41,14 +35,65 @@
         <span class="mt-4 text-sm font-medium text-gray-500">در حال بارگذاری...</span>
     </div>
 
-    <div id="app" class="flex flex-col min-h-screen">
+    {{-- شروع اپلیکیشن با وضعیت سایدبار --}}
+    <div id="app" x-data="{ sidebarOpen: false }" class="flex flex-col min-h-screen">
+        
+        {{-- منوی کشویی سایدبار (Mobile Drawer) --}}
+        <div x-show="sidebarOpen" x-cloak class="relative z-[1000] lg:hidden">
+            <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="sidebarOpen = false"></div>
+            <div class="fixed inset-y-0 right-0 w-72 bg-white shadow-2xl p-6 transition-transform"
+                 x-show="sidebarOpen"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="translate-x-full">
+                
+                <div class="flex justify-between items-center mb-8 border-b pb-4">
+                    <span class="font-bold text-pink-600 text-lg">منوی دسترسی</span>
+                    <button @click="sidebarOpen = false" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
+                        <i class="fa fa-th-large text-pink-500"></i> <span>داشبورد</span>
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
+                        <i class="fa fa-user-edit text-pink-500"></i> <span>ویرایش پروفایل</span>
+                    </a>
+                    <a href="{{ route('user.tickets.index') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
+                        <i class="fa fa-ticket-alt text-pink-500"></i> <span>تیکت‌های پشتیبانی</span>
+                    </a>
+                    <a href="{{ route('search') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700 {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : '' }}">
+                         <i class="fa fa-search w-5 text-pink-500"></i> <span>جستجوی پیشرفته</span>
+                    </a>
+                    <hr class="my-4">
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-xl transition">
+                            <i class="fa fa-sign-out-alt"></i> <span>خروج از حساب</span>
+                        </button>
+                    </form>
+                </nav>
+            </div>
+        </div>
+
         {{-- نوبار --}}
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 h-14 flex items-center">
             <div class="container mx-auto px-4 flex justify-between items-center">
-                <a href="{{ url('/') }}" class="flex items-center gap-2">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
-                    <span class="font-bold text-lg tracking-tight text-pink-600">DatingApp</span>
-                </a>
+                <div class="flex items-center gap-3">
+                    <button @click="sidebarOpen = true" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg lg:hidden">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+
+                    <a href="{{ url('/') }}" class="flex items-center gap-2">
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
+                        <span class="font-bold text-lg tracking-tight text-pink-600">DatingApp</span>
+                    </a>
+                </div>
 
                 <div class="flex items-center gap-4">
                    <div class="relative" x-data="{ langMenu: false }">
@@ -56,12 +101,10 @@
                             <i class="fa-solid fa-globe"></i>
                         </button>
                         
-                        <div x-show="langMenu" 
-                             @click.away="langMenu = false" 
-                             x-cloak 
-                             class="absolute left-0 mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
-                            <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">🇮🇷 فارسی</a>
-                            <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">🇬🇧 English</a>
+                        <div x-show="langMenu" @click.away="langMenu = false" x-cloak 
+                             class="absolute {{ app()->getLocale() == 'fa' ? 'right-0' : 'left-0' }} mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
+                            <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50">🇮🇷 فارسی</a>
+                            <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50">🇬🇧 English</a>
                         </div>
                     </div>
                 </div>
@@ -82,22 +125,14 @@
                     <i class="fas fa-heart text-xl"></i>
                     <span class="text-[10px] mt-1">اکتشاف</span>
                 </a>
-
                 <a href="{{ route('search') }}" class="flex flex-col items-center justify-center w-full {{ request()->routeIs('search') ? 'text-pink-600' : 'text-gray-400' }}">
                     <i class="fas fa-search text-xl"></i>
                     <span class="text-[10px] mt-1">جستجو</span>
                 </a>
-
                 <a href="{{ route('messages.index') }}" class="flex flex-col items-center justify-center w-full relative {{ request()->routeIs('messages.*') ? 'text-pink-600' : 'text-gray-400' }}">
                     <i class="fas fa-comment-dots text-xl"></i>
                     <span class="text-[10px] mt-1">پیام‌ها</span>
-                    @if(isset($globalUnreadCount) && $globalUnreadCount > 0)
-                        <span class="absolute top-1 right-4 bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full border-2 border-white">
-                            {{ $globalUnreadCount }}
-                        </span>
-                    @endif
                 </a>
-
                 <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full {{ request()->routeIs('dashboard') ? 'text-pink-600' : 'text-gray-400' }}">
                     <i class="fas fa-user-circle text-xl"></i>
                     <span class="text-[10px] mt-1">پروفایل</span>
@@ -106,22 +141,15 @@
         </nav>
     </div>
 
-    {{-- اسکریپت کنترل لودینگ --}}
     <script>
         function hideGlobalLoader() {
             const loader = document.getElementById('globalLoading');
             if (loader) {
                 loader.classList.add('loader-hidden');
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 500);
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
             }
         }
-
-        // مخفی کردن لودینگ بعد از لود کامل صفحه
         window.addEventListener('load', hideGlobalLoader);
-
-        // لایه محافظ: اگر لودینگ تا ۳ ثانیه مخفی نشد، اجباراً مخفی شود
         setTimeout(hideGlobalLoader, 3000);
     </script>
 
