@@ -60,15 +60,48 @@
         </div>
 
         <nav class="space-y-2 flex-1 overflow-y-auto">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-                <i class="fa fa-home"></i> <span>داشبورد</span>
-            </a>
-            </nav>
+            
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-th-large"></i> <span>داشبورد</span>
+</a>
 
-        <button type="button" @click="openLogoutModal = true" 
+<a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-user-edit"></i> <span>ویرایش پروفایل</span>
+</a>
+
+<a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-envelope"></i> <span>پیام‌های من</span>
+</a>
+
+<a href="{{ route('user.tickets.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-ticket-alt"></i> <span>تیکت‌های پشتیبانی</span>
+</a>
+
+<a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-heart"></i> <span>لیست لایک‌ها</span>
+</a>
+
+<a href="{{ route('police.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-user-slash"></i> <span>لیست سیاه</span>
+</a>
+
+<a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition">
+    <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
+</a>
+
+<form action="{{ route('logout') }}" method="POST" class="w-full">
+    @csrf
+    <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition">
+        <i class="fa fa-sign-out-alt"></i> <span>خروج</span>
+    </button>
+</form>
+            <button type="button" @click="openLogoutModal = true" 
                 class="mt-auto bg-white/10 hover:bg-red-500 p-3 rounded-xl transition flex items-center justify-center gap-2 border border-white/20">
             <i class="fa fa-sign-out"></i> <span>خروج</span>
         </button>
+            </nav>
+
+        
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0 bg-gray-50">
