@@ -116,7 +116,7 @@
         <div class="px-6 pb-6">
             <div class="relative flex flex-col md:flex-row items-center md:items-end -mt-16 md:-mt-12 gap-5">
                 <div class="relative group">
-                    <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}" 
+                    <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.png')) }}" 
                          class="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl bg-white">
                     
                     <a href="{{ route('profile.edit') }}" 
