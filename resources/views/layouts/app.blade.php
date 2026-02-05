@@ -101,11 +101,21 @@
                             <i class="fa-solid fa-globe"></i>
                         </button>
                         
-                        <div x-show="langMenu" @click.away="langMenu = false" x-cloak 
-                             class="absolute {{ app()->getLocale() == 'fa' ? 'right-0' : 'left-0' }} mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
-                            <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50">🇮🇷 فارسی</a>
-                            <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50">🇬🇧 English</a>
-                        </div>
+                      <div x-show="langMenu" 
+     @click.away="langMenu = false" 
+     x-cloak 
+     x-transition:enter="transition ease-out duration-100"
+     x-transition:enter-start="transform opacity-0 scale-95"
+     x-transition:enter-end="transform opacity-100 scale-100"
+     class="absolute left-0 mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
+    
+    <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
+        <span class="text-base">🇮🇷</span> <span>فارسی</span>
+    </a>
+    <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
+        <span class="text-base">🇬🇧</span> <span>English</span>
+    </a>
+</div>
                     </div>
                 </div>
             </div>
