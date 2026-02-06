@@ -39,6 +39,9 @@
     <div id="app" x-data="{ sidebarOpen: false }" class="flex flex-col min-h-screen">
         
         {{-- منوی کشویی سایدبار (Mobile Drawer) --}}
+        @auth
+            
+       
         <div x-show="sidebarOpen" x-cloak class="relative z-[1000] lg:hidden">
             <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="sidebarOpen = false"></div>
             <div class="fixed inset-y-0 right-0 w-72 bg-white shadow-2xl p-6 transition-transform"
@@ -56,7 +59,7 @@
                         <i class="fa fa-times text-2xl"></i>
                     </button>
                 </div>
-
+         
                 <nav class="space-y-2">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
                         <i class="fa fa-th-large text-pink-500"></i> <span>داشبورد</span>
@@ -91,6 +94,7 @@
             </div>
         </div>
 
+        @endauth
         {{-- نوبار --}}
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 h-14 flex items-center">
             <div class="container mx-auto px-4 flex justify-between items-center">
@@ -141,6 +145,7 @@
         </main>
 
         {{-- منوی پایین موبایل --}}
+        @auth
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 z-50 sm:hidden">
             <div class="flex justify-around items-center h-14">
                 <a href="{{ url('/') }}" class="flex flex-col items-center justify-center w-full {{ request()->is('/') ? 'text-pink-600' : 'text-gray-400' }}">
@@ -161,6 +166,7 @@
                 </a>
             </div>
         </nav>
+        @endauth
     </div>
 
     <script>
