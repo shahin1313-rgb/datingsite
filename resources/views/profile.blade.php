@@ -1,109 +1,128 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="flex justify-center">
-            <div class="w-full md:w-2/3 lg:w-1/2">
-                <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b">
-                        <h2 class="text-2xl font-semibold">{{ __('Dashboard') }}</h2>
-                    </div>
-                    <div class="p-6">
-                        @if (session('status'))
-                            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"
-                                role="alert">
-                                {{ session('status') }}
-                            </div>
-                        @endif
+<div class="container mx-auto px-4 py-12">
+    <div class="flex justify-center">
+        <div class="w-full md:w-2/3 lg:w-1/2">
+            <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-pink-100">
+                
+                <div class="h-32 bg-gradient-to-r from-pink-400 to-rose-400"></div>
 
+                <div class="relative px-6 pb-6">
+                    <div class="flex justify-center">
                         @if ($user->profile_picture)
-                            <div class="flex justify-center mt-4">
-                                <img src="{{ asset('storage/' . $user->profile_picture) }}"
-                                    class="w-48 h-48 rounded-full border-4 border-white shadow-xl object-cover -mt-16 z-10"
-                                    alt="Profile Picture">
-                            </div>
+                            <img src="{{ asset('storage/' . $user->profile_picture) }}"
+                                 class="w-40 h-40 rounded-full border-4 border-white shadow-lg object-cover -mt-20 bg-white"
+                                 alt="Profile Picture">
                         @else
-                            <div class="flex justify-center mt-4">
-                                <div
-                                    class="w-48 h-48 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm border-4 border-white shadow-xl -mt-16 z-10">
-                                    No Image
-                                </div>
+                            <div class="w-40 h-40 rounded-full bg-pink-50 border-4 border-white shadow-lg -mt-20 flex items-center justify-center text-pink-300 z-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
                             </div>
                         @endif
+                    </div>
 
+                    <div class="text-center mt-4">
+                        <h2 class="text-3xl font-extrabold text-gray-800">{{ $user->name }}</h2>
+                        <p class="text-pink-500 font-medium flex justify-center items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {{ $user->city }}
+                        </p>
+                    </div>
 
-
-                        <div class="p-4">
-                            <h5 class="text-xl font-bold">{{ $user->name }}</h5>
-                            <h6 class="text-md text-gray-500">{{ $user->city }}</h6>
-                            <p class="mt-2 text-gray-700">{{ $user->email }}</p>
-                            <p class="mt-2"><span class="font-semibold">Interested In:</span>
-                                {{ $user->interested_in }}</p>
-                            <p class="mt-2"><span class="font-semibold">Salary:</span> میلیون تومن {{ $user->salary }}
-                            </p>
-                            <p class="mt-2 text-gray-600">{{ $user->bio }}</p>
-                            <p class="mt-2"><span class="font-semibold">Role:</span> {{ $user->role }}</p>
-
-                            <div class="mt-4 flex flex-wrap gap-2">
-                                <a href="{{ url()->previous() }}"
-                                    class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded">
-                                    Back
-                                </a>
-
-                                <a href="#"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
-                                    Show
-                                </a>
-
-                                @if (auth()->check() && auth()->id() !== $user->id)
-                                    <form action="{{ route('report.store') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="reported_id" value="{{ $user->id }}">
-                                        <button type="submit"
-                                            class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
-                                            گزارش سریع🚫
-                                        </button>
-                                    </form>
-
-
-                                    <!-- Trigger Modal Button (می‌توانید با جاوااسکریپت مدال را نمایش دهید) -->
-                                    <button onclick="document.getElementById('reportModal').classList.remove('hidden')"
-                                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded">
-                                        ⚠️ اطلاع‌رسانی رفتار مشکوک
-                                    </button>
-                                @endif
-                            </div>
+                    @if (session('status'))
+                        <div class="mt-4 bg-green-50 border-r-4 border-green-500 text-green-700 p-4 rounded-xl text-sm" role="alert">
+                            {{ session('status') }}
                         </div>
+                    @endif
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-sm text-gray-600 bg-pink-50/50 p-5 rounded-2xl">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 text-base">📧 ایمیل:</span>
+                            <span>{{ $user->email }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 text-base">💖 علاقه‌مند به:</span>
+                            <span>{{ $user->interested_in }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 text-base">💰 درآمد:</span>
+                            <span>{{ $user->salary }} میلیون تومان</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 text-base">🛡️ نقش:</span>
+                            <span class="bg-pink-200 text-pink-800 px-2 py-0.5 rounded-full text-xs font-bold">{{ $user->role }}</span>
+                        </div>
+                        <div class="col-span-1 md:col-span-2 mt-2 border-t border-pink-100 pt-2">
+                            <span class="font-bold text-pink-600 block mb-1 text-base">📝 بیوگرافی:</span>
+                            <p class="italic leading-relaxed text-gray-700">{{ $user->bio ?? 'توضیحاتی ثبت نشده است.' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-wrap justify-center gap-3">
+                        <a href="{{ url()->previous() }}" 
+                           class="flex-1 min-w-[120px] text-center bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 px-6 rounded-2xl transition duration-300">
+                            بازگشت
+                        </a>
+
+                        <a href="#" 
+                           class="flex-1 min-w-[120px] text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-pink-200 transition duration-300 transform hover:-translate-y-1">
+                            مشاهده کامل
+                        </a>
+
+                        @if (auth()->check() && auth()->id() !== $user->id)
+                            <div class="w-full flex gap-3 mt-2">
+                                <form action="{{ route('report.store') }}" method="POST" class="flex-1">
+                                    @csrf
+                                    <input type="hidden" name="reported_id" value="{{ $user->id }}">
+                                    <button type="submit" 
+                                            class="w-full bg-white border-2 border-red-100 hover:border-red-500 text-red-500 font-bold py-3 px-6 rounded-2xl transition duration-300 flex items-center justify-center gap-2">
+                                        <span>🚫</span> گزارش سریع
+                                    </button>
+                                </form>
+
+                                <button onclick="document.getElementById('reportModal').classList.remove('hidden')" 
+                                        class="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold py-3 px-6 rounded-2xl transition duration-300 flex items-center justify-center gap-2 border-2 border-transparent hover:border-amber-200">
+                                    <span>⚠️</span> رفتار مشکوک
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+</div>
 
-    <!-- Report Modal -->
-    <div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-black opacity-50"></div>
-        <div class="bg-white rounded-lg shadow-xl z-50 w-full max-w-md mx-4">
-            <div class="flex justify-between items-center px-4 py-3 border-b">
-                <h3 class="text-lg font-semibold">Report User</h3>
-                <button type="button" class="text-gray-600 hover:text-gray-800"
+<div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="document.getElementById('reportModal').classList.add('hidden')"></div>
+    <div class="bg-white rounded-3xl shadow-2xl z-50 w-full max-w-md overflow-hidden transform transition-all">
+        <div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-rose-700">گزارش تخلف کاربر</h3>
+            <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl"
                     onclick="document.getElementById('reportModal').classList.add('hidden')">
-                    &times;
+                &times;
+            </button>
+        </div>
+        <div class="p-6">
+            <form action="{{ route('report.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="reported_id" value="{{ $user->id }}">
+                <label for="reason" class="block text-sm font-bold text-gray-700 mb-2">علت گزارش خود را بنویسید:</label>
+                <textarea name="reason" rows="4" 
+                          class="w-full border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-pink-400 focus:border-transparent outline-none transition" 
+                          placeholder="توضیحات بیشتر..." required></textarea>
+                
+                <button type="submit" 
+                        class="w-full mt-6 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:shadow-red-200 transition duration-300">
+                    ثبت و ارسال گزارش
                 </button>
-            </div>
-            <div class="px-4 py-4">
-                <form action="{{ route('report.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="reported_id" value="{{ $user->id }}">
-                    <label for="reason" class="block text-sm font-medium text-gray-700">Reason for reporting:</label>
-                    <textarea name="reason" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required></textarea>
-                    <button type="submit"
-                        class="mt-3 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
-                        Submit Report
-                    </button>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 @endsection

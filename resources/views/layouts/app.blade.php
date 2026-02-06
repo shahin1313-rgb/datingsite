@@ -111,6 +111,15 @@
                     </a>
                 </div>
 
+                 
+                {{-- دکمه بازگشت - فقط در صفحات غیر از صفحه اصلی نمایش داده می‌شود --}}
+            @if(!request()->is('/') && !request()->routeIs('home'))
+                <button onclick="window.history.back()" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors" title="بازگشت">
+                    <i class="fa fa-arrow-left text-lg"></i>
+                </button>
+            @endif
+
+          
                 <div class="flex items-center gap-4">
                    <div class="relative" x-data="{ langMenu: false }">
                         <button @click="langMenu = !langMenu" class="text-gray-500 text-sm focus:outline-none p-2">

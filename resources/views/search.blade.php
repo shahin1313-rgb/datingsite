@@ -35,14 +35,31 @@
                 </div>
 
                 {{-- Marital Status --}}
-                <div class="flex flex-col">
-                    <label class="text-gray-600 mb-2 mr-1 font-semibold">💍 وضعیت تأهل</label>
-                    <select name="marital_status" class="bg-gray-50 border-gray-200 text-gray-700 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400 outline-none">
-                        <option value="">همه موارد</option>
-                        <option value="single" {{ request('marital_status') == 'single' ? 'selected' : '' }}>مجرد</option>
-                        <option value="divorced" {{ request('marital_status') == 'divorced' ? 'selected' : '' }}>جدا شده</option>
-                    </select>
-                </div>
+               <div class="flex flex-col w-full max-w-xs font-sans" dir="rtl">
+    <label for="marital_status" class="flex items-center text-gray-700 mb-2 ms-1 text-sm font-bold">
+        <span class="ml-2 text-base">💍</span>
+        وضعیت تأهل
+    </label>
+
+    <div class="relative group">
+        <select id="marital_status" name="marital_status" 
+            class="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3 px-4 pe-10 rounded-2xl 
+                   transition-all duration-300 ease-in-out
+                   focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 focus:outline-none
+                   cursor-pointer shadow-sm hover:border-gray-300">
+            
+            <option value="" class="py-2">همه موارد</option>
+            <option value="single" {{ request('marital_status') == 'single' ? 'selected' : '' }}>مجرد</option>
+            <option value="divorced" {{ request('marital_status') == 'divorced' ? 'selected' : '' }}>جدا شده</option>
+        </select>
+
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-400 group-focus-within:text-pink-500 transition-colors">
+            <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+        </div>
+    </div>
+</div>
 
                 {{-- Checkboxes --}}
                 <div class="md:col-span-2 flex flex-wrap gap-6 items-center">
