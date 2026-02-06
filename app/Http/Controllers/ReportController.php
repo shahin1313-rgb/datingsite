@@ -34,11 +34,10 @@ class ReportController extends Controller
     public function store(Request $request)
     {
 
-
-        $request->validate([
-            'reported_id' => 'required|exists:users,id',
-        ]);
-
+$validated = $request->validate([
+        'reported_id' => 'required|exists:users,id',
+        'reason' => 'required|string|max:255', // This prevents the null error
+    ]);
 
 
 

@@ -79,6 +79,14 @@
                                 <form action="{{ route('report.store') }}" method="POST" class="flex-1">
                                     @csrf
                                     <input type="hidden" name="reported_id" value="{{ $user->id }}">
+                                    <label for="reason">علت گزارش:</label>
+                                <select name="reason" required>
+                                     <option value="مزاحمت">مزاحمت</option>
+                                        <option value="محتوای نامناسب">محتوای نامناسب</option>
+                                              <option value="اسپم">اسپم</option>
+                                           </select>
+
+    
                                     <button type="submit" 
                                             class="w-full bg-white border-2 border-red-100 hover:border-red-500 text-red-500 font-bold py-3 px-6 rounded-2xl transition duration-300 flex items-center justify-center gap-2">
                                         <span>🚫</span> گزارش سریع

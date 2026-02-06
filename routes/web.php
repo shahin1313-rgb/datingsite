@@ -62,7 +62,7 @@ Route::middleware('auth')->group(function () {
     // Likes (Consolidated)
     Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
     Route::get('/likes/received', [LikeController::class, 'index'])->name('likes.received');
-    Route::post('/like/{likedUserId}', [LikeController::class, 'store'])->name('likes.store');
+    Route::post('/like/{likedUserId}', [LikeController::class, 'store'])->name('like.store');
 
     // Tickets (User Side)
     Route::prefix('dashboard/tickets')->name('user.tickets.')->group(function () {
