@@ -1,193 +1,120 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Admin\AdmineLteController;
-use App\Http\Controllers\Admin\AdminMessageController;
-use App\Http\Controllers\Admin\AdminStateController;
-use App\Http\Controllers\TicketController;
-use App\Http\Controllers\Admin\AdminTicketController;
-use App\Http\Controllers\BlockController;
-use App\Http\Controllers\Admin\PhotoController;
-use App\Http\Controllers\LikeController;
-use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\LandingController;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\{
+    HomeController, AdminController, ReportController, MessageController,
+    ProfileController, DashboardController, TicketController, BlockController,
+    LikeController, LanguageController, LandingController, PaymentController,
+    PremiumController
+};
+use App\Http\Controllers\Auth\{
+    LoginController, RegisterController, ResetPasswordController, ForgotPasswordController
+};
+use App\Http\Controllers\Admin\{
+    AdmineLteController, AdminMessageController, AdminStateController,
+    AdminTicketController, PhotoController
+};
 
+// --- Public Routes ---
 Route::get('/', [LandingController::class, 'welcome']);
+Route::get('/lang/{lang}', [LanguageController::class, 'switch']);
+Route::get('/test-modal', fn() => view('test-modal'));
 
-
-
-
-
-Route::get('/test-modal', function () {
-    return view('test-modal');
+// --- Guest Routes (Login, Register, etc.) ---
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register']);
 });
 
-// Auth::routes();
-// Routes for authenticated users
+// --- Authenticated User Routes ---
 Route::middleware('auth')->group(function () {
+    
+    // Auth & Profile
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/search', [ProfileController::class, 'search'])->name('search');
+    Route::get('/upgrade', [PremiumController::class, 'index'])->name('premium.upgrade');
 
+    // Profile Management
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::post('/update', [ProfileController::class, 'update'])->name('update');
+        Route::get('/id/{id}', [ProfileController::class, 'show'])->name('show');
+        Route::get('/{name}', [HomeController::class, 'showname']); // Generalized route
+    });
 
-
-
-    // Password Reset Routes ff
+    // Password Reset (Inside Auth for security/logic check)
     Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
     Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
+    // Messages
+    Route::prefix('messages')->name('messages.')->group(function () {
+        Route::get('/', [MessageController::class, 'index'])->name('index');
+        Route::get('/{user}', [MessageController::class, 'show'])->name('show');
+        Route::post('/', [MessageController::class, 'store'])->name('store');
+    });
 
-    // Profile Update
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    // Likes (Consolidated)
+    Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
+    Route::get('/likes/received', [LikeController::class, 'index'])->name('likes.received');
+    Route::post('/like/{likedUserId}', [LikeController::class, 'store'])->name('likes.store');
 
-    Route::get('/profile/{name}', [HomeController::class, 'showname'])->name('profile');
+    // Tickets (User Side)
+    Route::prefix('dashboard/tickets')->name('user.tickets.')->group(function () {
+        Route::get('/', [TicketController::class, 'index'])->name('index');
+        Route::get('/create', [TicketController::class, 'create'])->name('create');
+        Route::post('/', [TicketController::class, 'store'])->name('store');
+    });
 
-    Route::get('/search', [ProfileController::class, 'search'])->name('search');
-
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
-
-    Route::get('/profile/id/{id}', [ProfileController::class, 'show'])->name('profile.show');
-
-    // Inbox page
-    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
-
-    // // Conversation between two users
-    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
-
-    // // Send a message
-    // Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
-
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-});
-
-
-
-
-
-/// n
-Route::get('lang/{lang}', [LanguageController::class, 'switch']);
-
-
-Route::post('/report', [ReportController::class, 'store'])->name('report.store')->middleware('auth');
-
-
-// Route::middleware(['auth', 'admin'])->group(function () {
-//     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-// });
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/', [AdmineLteController::class, 'index'])->name('admin.dashboard');
-    Route::get('/users', [AdmineLteController::class, 'indexUser'])->name('admin.users');
-    Route::post('/users/{user}/ban', [AdmineLteController::class, 'ban'])->name('admin.users.ban');
-    Route::get('/users/{user}', [AdmineLteController::class, 'showUser'])->name('admin.users.show');
-    Route::get('/statedashboard', [AdminStateController::class, 'index'])->name('statedashboard');
-
-    Route::delete('/users/{user}', [AdmineLteController::class, 'destroy'])->name('admin.users.destroy');
-    Route::get('/messages', [AdminMessageController::class, 'index'])->name('admin.messages');
-});
-Route::patch('/admin/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
-
-Route::patch('/admin/toggle-ban/{id}', [AdminController::class, 'toggleBan'])->name('admin.toggleBan');
-
-///// Report h
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-
-    // نمایش لیست گزارش‌ها
-    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
-
-    // بررسی گزارش (تغییر وضعیت به resolved)
-    Route::post('/reports/{report}/resolve', [ReportController::class, 'resolve'])->name('admin.reports.resolve');
-
-    // حذف گزارش
-    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
-});
-
-// Admin routes group
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/photos', [PhotoController::class, 'index'])->name('admin.photos.index');
-    Route::delete('/photos/{id}', [PhotoController::class, 'destroy'])->name('admin.photos.destroy');
-});
-
-Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
-    Route::get('/tickets', [AdminTicketController::class, 'index'])->name('tickets.index');
-    Route::get('/tickets/{id}', [AdminTicketController::class, 'show'])->name('tickets.show');
-    Route::post('/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('tickets.reply');
-    Route::post('/tickets/{id}/close', [AdminTicketController::class, 'close'])->name('tickets.close');
-});
-
-
-// Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-//     Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets');
-//     Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('admin.tickets.destroy');
-//     Route::post('/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('user.tickets.reply');
-// });
-
-Route::middleware(['auth'])->prefix('dashboard')->name('user.')->group(function () {
-    Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
-    Route::get('tickets/create', [TicketController::class, 'create'])->name('tickets.create');
-    Route::post('tickets', [TicketController::class, 'store'])->name('tickets.store');
-});
-
-
-Route::middleware('auth')->group(function () {
+    // Blocking & Reports
     Route::get('/police', [BlockController::class, 'index'])->name('police.index');
     Route::post('/block/{id}', [BlockController::class, 'block'])->name('user.block');
     Route::post('/unblock/{id}', [BlockController::class, 'unblock'])->name('user.unblock');
-});
+    Route::post('/report', [ReportController::class, 'store'])->name('report.store');
 
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
-
-    // پرداخت
+    // Payments
     Route::post('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/payments/callback', [PaymentController::class, 'callback'])->name('payments.callback');
 });
 
-Route::middleware('guest')->group(function () {
+// --- Admin Routes (Fully Secured) ---
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    
+    // Dashboard & Stats
+    Route::get('/', [AdmineLteController::class, 'index'])->name('dashboard');
+    Route::get('/statedashboard', [AdminStateController::class, 'index'])->name('statedashboard');
+    
+    // User Management
+    Route::prefix('users')->group(function () {
+        Route::get('/', [AdmineLteController::class, 'indexUser'])->name('users');
+        Route::get('/{user}', [AdmineLteController::class, 'showUser'])->name('users.show');
+        Route::post('/{user}/ban', [AdmineLteController::class, 'ban'])->name('users.ban');
+        Route::delete('/{user}', [AdmineLteController::class, 'destroy'])->name('users.destroy');
+        // Critical actions moved inside admin group
+        Route::patch('/make-admin/{id}', [AdminController::class, 'makeAdmin'])->name('makeAdmin');
+        Route::patch('/toggle-ban/{id}', [AdminController::class, 'toggleBan'])->name('toggleBan');
+    });
 
+    // Content Management
+    Route::get('/messages', [AdminMessageController::class, 'index'])->name('messages');
+    Route::get('/photos', [PhotoController::class, 'index'])->name('photos.index');
+    Route::delete('/photos/{id}', [PhotoController::class, 'destroy'])->name('photos.destroy');
 
-    // Authentication Routes
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    // Reports Management
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+    Route::post('/reports/{report}/resolve', [ReportController::class, 'resolve'])->name('reports.resolve');
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
 
-
-    // Registration Routes
-    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register']);
+    // Ticket Management (Admin side)
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/', [AdminTicketController::class, 'index'])->name('index');
+        Route::get('/{id}', [AdminTicketController::class, 'show'])->name('show');
+        Route::post('/{id}/reply', [AdminTicketController::class, 'reply'])->name('reply');
+        Route::post('/{id}/close', [AdminTicketController::class, 'close'])->name('close');
+    });
 });
-
-
-Route::post('/like/{id}', [LikeController::class, 'store'])->name('like.store');
-Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
-
-
-// مسیری که خطای شما را برطرف می‌کند
-Route::get('/likes/received', [LikeController::class, 'index'])->name('likes.received')->middleware('auth');
-
-// مسیر ذخیره لایک (برای دکمه‌های لایک)
-Route::post('/like/{likedUserId}', [LikeController::class, 'store'])->name('likes.store')->middleware('auth');
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/likes', [LikeController::class, 'index'])->name('likes.index');
-});
-
-
-// routes/web.php
-
-Route::get('/upgrade', [App\Http\Controllers\PremiumController::class, 'index'])
-    ->name('premium.upgrade');
