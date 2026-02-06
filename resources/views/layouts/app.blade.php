@@ -95,10 +95,12 @@
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 h-14 flex items-center">
             <div class="container mx-auto px-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
+                    @auth
                     <button @click="sidebarOpen = true" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg lg:hidden">
                         <i class="fa fa-bars text-xl"></i>
                     </button>
 
+                    @endauth
                     <a href="{{ url('/') }}" class="flex items-center gap-2">
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
                         <span class="font-bold text-lg tracking-tight text-pink-600">DatingApp</span>
