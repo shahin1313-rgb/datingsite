@@ -46,17 +46,41 @@
 
                 {{-- Checkboxes --}}
                 <div class="md:col-span-2 flex flex-wrap gap-6 items-center">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="has_photo" value="1" {{ request('has_photo') ? 'checked' : '' }} class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
-                        <span class="mr-3 text-sm font-bold text-gray-600">فقط عکس‌دارها</span>
-                    </label>
+                   <div class="flex flex-wrap gap-6 items-center font-sans" dir="rtl">
+    
+    <label class="group relative flex items-center cursor-pointer select-none">
+        <input type="checkbox" name="has_photo" value="1" {{ request('has_photo') ? 'checked' : '' }} class="sr-only peer">
+        
+        <div class="w-12 h-6 bg-gray-300 rounded-full transition-colors duration-300 ease-in-out 
+                    peer-checked:bg-pink-500 peer-focus:ring-4 peer-focus:ring-pink-200">
+        </div>
+        
+        <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ease-in-out 
+                    peer-checked:-translate-x-6 shadow-sm">
+        </div>
+        
+        <span class="ms-3 text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
+            فقط عکس‌دارها
+        </span>
+    </label>
 
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" {{ request('is_active') ? 'checked' : '' }} class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                        <span class="mr-3 text-sm font-bold text-gray-600">آنلاین‌ها</span>
-                    </label>
+    <label class="group relative flex items-center cursor-pointer select-none">
+        <input type="checkbox" name="is_active" value="1" {{ request('is_active') ? 'checked' : '' }} class="sr-only peer">
+        
+        <div class="w-12 h-6 bg-gray-300 rounded-full transition-colors duration-300 ease-in-out 
+                    peer-checked:bg-emerald-500 peer-focus:ring-4 peer-focus:ring-emerald-200">
+        </div>
+        
+        <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ease-in-out 
+                    peer-checked:-translate-x-6 shadow-sm">
+        </div>
+        
+        <span class="ms-3 text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
+            آنلاین‌ها
+        </span>
+    </label>
+
+</div>
                 </div>
 
                 {{-- Submit Button --}}
