@@ -61,6 +61,13 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
                         <i class="fa fa-th-large text-pink-500"></i> <span>داشبورد</span>
                     </a>
+                    <a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-envelope text-pink-500"></i> <span>پیام‌های من</span>
+</a>
+
+<a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+    <i class="fa fa-heart text-pink-500"></i> <span>لیست لایک‌ها</span>
+</a>
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
                         <i class="fa fa-user-edit text-pink-500"></i> <span>ویرایش پروفایل</span>
                     </a>
@@ -70,6 +77,9 @@
                     <a href="{{ route('search') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700 {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : '' }}">
                          <i class="fa fa-search w-5 text-pink-500"></i> <span>جستجوی پیشرفته</span>
                     </a>
+                    <a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition">
+    <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
+</a>
                     <hr class="my-4">
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
