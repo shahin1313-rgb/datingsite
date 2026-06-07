@@ -23,22 +23,54 @@
                         @endif
                     </div>
 
-                    <div class="text-center mt-4">
+                   <div class="text-center mt-4">
                         <h2 class="text-3xl font-extrabold text-gray-800 dark:text-slate-100">{{ $user->name }}</h2>
-                        <p class="text-pink-500 dark:text-pink-400 font-medium flex justify-center items-center gap-1 mt-1">
+                        <p class="text-pink-500 dark:text-pink-400 font-medium flex justify-center items-center gap-1 mt-1 mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             {{ $user->city }}
                         </p>
-                        <a href="/messages/{{ $user->id }}" 
-                           class="flex-[2] text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                            ارسال پیام
-                        </a>
+                        
+                        <div class="flex items-center justify-center gap-3 max-w-sm mx-auto">
+                            
+                            <a href="/messages/{{ $user->id }}" 
+                               class="flex-1 text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                ارسال پیام
+                            </a>
+
+                            @if(auth()->check() && auth()->id() !== $user->id)
+                                <form action="{{ route('like.store', ['likedUserId' => $user->id]) }}" method="POST" class="flex-shrink-0">
+                                    @csrf
+                                    
+                                    @php
+                                        $hasLiked = \DB::table('likes')
+                                            ->where('user_id', auth()->id())
+                                            ->where('liked_user_id', $user->id)
+                                            ->exists();
+                                    @endphp
+
+                                    @if($hasLiked)
+                                        <button type="submit" 
+                                                class="p-3 bg-red-500 text-white rounded-2xl shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-600 transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12"
+                                                title="برداشتن لایک">
+                                            <i class="fa fa-heart text-xl"></i>
+                                        </button>
+                                    @else
+                                        <button type="submit" 
+                                                class="p-3 bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-slate-700 rounded-2xl hover:bg-pink-600 hover:text-white dark:hover:bg-pink-600 dark:hover:text-white transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12"
+                                                title="لایک کردن">
+                                            <i class="far fa-heart text-xl"></i>
+                                        </button>
+                                    @endif
+                                </form>
+                            @endif
+
+                        </div>
                     </div>
 
                     @if (session('status'))
@@ -47,6 +79,7 @@
                         </div>
                     @endif
 
+                   
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-sm text-gray-600 dark:text-slate-300 bg-pink-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-transparent dark:border-slate-800">
                         
                         <div class="flex items-center gap-2">

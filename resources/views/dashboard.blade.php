@@ -61,47 +61,45 @@
 
         <nav class="space-y-2 flex-1 overflow-y-auto">
             
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-th-large"></i> <span>داشبورد</span>
-</a>
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-th-large"></i> <span>داشبورد</span>
+            </a>
 
-<a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-user-edit"></i> <span>ویرایش پروفایل</span>
-</a>
+            <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-user-edit"></i> <span>ویرایش پروفایل</span>
+            </a>
 
-<a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-envelope"></i> <span>پیام‌های من</span>
-</a>
+            <a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-envelope"></i> <span>پیام‌های من</span>
+            </a>
 
-<a href="{{ route('user.tickets.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-ticket-alt"></i> <span>تیکت‌های پشتیبانی</span>
-</a>
+            <a href="{{ route('user.tickets.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-ticket-alt"></i> <span>تیکت‌های پشتیبانی</span>
+            </a>
 
-<a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-heart"></i> <span>لیست لایک‌ها</span>
-</a>
+            <a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-heart"></i> <span>لیست لایک‌ها</span>
+            </a>
 
-<a href="{{ route('police.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-user-slash"></i> <span>لیست سیاه</span>
-</a>
+            <a href="{{ route('police.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                <i class="fa fa-user-slash"></i> <span>لیست سیاه</span>
+            </a>
 
-<a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition">
-    <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
-</a>
+            <a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition">
+                <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
+            </a>
 
-<form action="{{ route('logout') }}" method="POST" class="w-full">
-    @csrf
-    <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition">
-        <i class="fa fa-sign-out-alt"></i> <span>خروج</span>
-    </button>
-</form>
+            <form action="{{ route('logout') }}" method="POST" class="w-full">
+                @csrf
+                <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition">
+                    <i class="fa fa-sign-out-alt"></i> <span>خروج</span>
+                </button>
+            </form>
             <button type="button" @click="openLogoutModal = true" 
                 class="mt-auto bg-white/10 hover:bg-red-500 p-3 rounded-xl transition flex items-center justify-center gap-2 border border-white/20">
-            <i class="fa fa-sign-out"></i> <span>خروج</span>
-        </button>
-            </nav>
-
-        
+                <i class="fa fa-sign-out"></i> <span>خروج</span>
+            </button>
+        </nav>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0 bg-gray-50">
@@ -109,58 +107,59 @@
             <button @click="sidebarOpen = true" class="text-gray-600 p-2"><i class="fa fa-bars text-xl"></i></button>
             <span class="font-black text-pink-600">Dating Panel</span>
         </header>
-        <div class="animate-slide-in">
-    <div class="relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-        <div class="h-32 bg-gradient-to-r from-pink-500 to-orange-400"></div>
         
-        <div class="px-6 pb-6">
-            <div class="relative flex flex-col md:flex-row items-center md:items-end -mt-16 md:-mt-12 gap-5">
-                <div class="relative group">
-                    <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.png')) }}" 
-                         class="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl bg-white">
-                    
-                    <a href="{{ route('profile.edit') }}" 
-                       class="absolute bottom-2 right-2 bg-white p-2 rounded-xl shadow-md text-pink-600 hover:scale-110 transition md:opacity-0 group-hover:opacity-100">
-                        <i class="fa fa-camera"></i>
-                    </a>
-                </div>
+        <div class="animate-slide-in">
+            <div class="relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+                <div class="h-32 bg-gradient-to-r from-pink-500 to-orange-400"></div>
+                
+                <div class="px-6 pb-6">
+                    <div class="relative flex flex-col md:flex-row items-center md:items-end -mt-16 md:-mt-12 gap-5">
+                        <div class="relative group">
+                            <img src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.png')) }}" 
+                                 class="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl bg-white">
+                            
+                            <a href="{{ route('profile.edit') }}" 
+                               class="absolute bottom-2 right-2 bg-white p-2 rounded-xl shadow-md text-pink-600 hover:scale-110 transition md:opacity-0 group-hover:opacity-100">
+                                <i class="fa fa-camera"></i>
+                            </a>
+                        </div>
 
-                <div class="flex-1 text-center md:text-right mb-2">
-                    <h1 class="text-2xl font-black text-gray-800">{{ auth()->user()->name }}</h1>
-                    <p class="text-gray-500 flex items-center justify-center md:justify-start gap-2">
-                        <i class="fa fa-map-marker-alt text-pink-500"></i>
-                        {{ auth()->user()->city ?? 'موقعیت ثبت نشده' }}
-                    </p>
-                </div>
+                        <div class="flex-1 text-center md:text-right mb-2">
+                            <h1 class="text-2xl font-black text-gray-800">{{ auth()->user()->name }}</h1>
+                            <p class="text-gray-500 flex items-center justify-center md:justify-start gap-2">
+                                <i class="fa fa-map-marker-alt text-pink-500"></i>
+                                {{ auth()->user()->city ?? 'موقعیت ثبت نشده' }}
+                            </p>
+                        </div>
 
-                <div class="flex gap-3 mb-2">
-                    <a href="{{ route('profile.edit') }}" 
-                       class="px-6 py-2 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition text-sm">
-                        ویرایش پروفایل
-                    </a>
-                    <button class="p-2 bg-pink-50 text-pink-600 rounded-2xl hover:bg-pink-600 hover:text-white transition">
-                        <i class="fa fa-share-alt"></i>
-                    </button>
-                </div>
-            </div>
+                        <div class="flex gap-3 mb-2">
+                            <a href="{{ route('profile.edit') }}" 
+                               class="px-6 py-2 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition text-sm">
+                                ویرایش پروفایل
+                            </a>
+                            <button class="p-2 bg-pink-50 text-pink-600 rounded-2xl hover:bg-pink-600 hover:text-white transition">
+                                <i class="fa fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
 
-            <div class="flex justify-center md:justify-start gap-8 mt-8 border-t pt-6">
-                <div class="text-center">
-                    <span class="block text-xl font-black text-gray-800">۱۲۴</span>
-                    <span class="text-xs text-gray-400">لایک‌ها</span>
-                </div>
-                <div class="text-center">
-                    <span class="block text-xl font-black text-gray-800">۸۵۰</span>
-                    <span class="text-xs text-gray-400">بازدید</span>
-                </div>
-                <div class="text-center">
-                    <span class="block text-xl font-black text-gray-800">۱۸</span>
-                    <span class="text-xs text-gray-400">پیام‌ها</span>
+                    <div class="flex justify-center md:justify-start gap-8 mt-8 border-t pt-6">
+                        <div class="text-center">
+                            <span class="block text-xl font-black text-gray-800">{{ $likesCount ?? 0 }}</span>
+                            <span class="text-xs text-gray-400">لایک‌ها</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="block text-xl font-black text-gray-800">{{ $totalViews ?? 0 }}</span>
+                            <span class="text-xs text-gray-400">بازدید</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="block text-xl font-black text-gray-800">{{ $messagesCount ?? 0 }}</span>
+                            <span class="text-xs text-gray-400">پیام‌ها</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
         <main class="main-content p-4 md:p-8">
             @include('dashboard.main')
@@ -182,7 +181,7 @@
                 <i class="fa fa-power-off text-xl"></i>
             </div>
             <h3 class="text-lg font-bold text-gray-800 mb-2">خروج از سایت؟</h3>
-            <p class="text-gray-500 text-sm mb-6">آیا برای خروج مطمئن هستید؟</p>
+            <p class="text-gray-500 text-sm mb-6">آیا برای خروج مطمئن هستید?</p>
             
             <div class="flex gap-2">
                 <button type="button" @click="openLogoutModal = false" 
