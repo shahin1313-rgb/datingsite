@@ -64,10 +64,10 @@
                     </div>
 
                     <div class="mt-8 flex flex-wrap justify-center gap-3">
-                        <a href="{{ url()->previous() }}" 
-                           class="flex-1 min-w-[120px] text-center bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 font-bold py-3 px-6 rounded-2xl transition duration-300">
-                            بازگشت
-                        </a>
+                       <button onclick="window.history.back()" 
+                            class="flex-1 min-w-[120px] text-center bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 font-bold py-3 px-6 rounded-2xl transition duration-300">
+                        بازگشت
+                        </button>
 
                         <a href="#" 
                            class="flex-1 min-w-[120px] text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-1">
