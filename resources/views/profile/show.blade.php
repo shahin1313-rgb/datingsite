@@ -43,8 +43,8 @@
                                 ارسال پیام
                             </a>
 
-                            @if(auth()->check() && auth()->id() !== $user->id)
-                                <form action="{{ route('like.store', ['likedUserId' => $user->id]) }}" method="POST" class="flex-shrink-0">
+                           @if(auth()->check() && auth()->id() !== $user->id)
+                                <form id="like-form" action="{{ route('like.store', ['likedUserId' => $user->id]) }}" method="POST" class="flex-shrink-0" onsubmit="ajaxLike(event)">
                                     @csrf
                                     
                                     @php
@@ -54,19 +54,11 @@
                                             ->exists();
                                     @endphp
 
-                                    @if($hasLiked)
-                                        <button type="submit" 
-                                                class="p-3 bg-red-500 text-white rounded-2xl shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-600 transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12"
-                                                title="برداشتن لایک">
-                                            <i class="fa fa-heart text-xl"></i>
-                                        </button>
-                                    @else
-                                        <button type="submit" 
-                                                class="p-3 bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-slate-700 rounded-2xl hover:bg-pink-600 hover:text-white dark:hover:bg-pink-600 dark:hover:text-white transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12"
-                                                title="لایک کردن">
-                                            <i class="far fa-heart text-xl"></i>
-                                        </button>
-                                    @endif
+                                    <button type="submit" id="like-btn"
+                                            class="p-3 rounded-2xl shadow-lg transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12 {{ $hasLiked ? 'bg-red-500 text-white shadow-red-200 dark:shadow-none hover:bg-red-600' : 'bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-slate-700 hover:bg-pink-600 hover:text-white dark:hover:bg-pink-600 dark:hover:text-white' }}"
+                                            title="{{ $hasLiked ? 'برداشتن لایک' : 'لایک کردن' }}">
+                                        <i id="like-icon" class="{{ $hasLiked ? 'fa' : 'far' }} fa-heart text-xl"></i>
+                                    </button>
                                 </form>
                             @endif
 
@@ -172,4 +164,44 @@
         </div>
     </div>
 </div>
+
+<script>
+function ajaxLike(event) {
+    event.preventDefault(); // جلوگیری از رفرش شدن صفحه
+
+    const form = document.getElementById('like-form');
+    const btn = document.getElementById('like-btn');
+    const icon = document.getElementById('like-icon');
+    const url = form.action;
+    const token = form.querySelector('input[name="_token"]').value;
+
+    // ارسال درخواست به سرور در پس‌زمینه
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': token,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // تغییر آنی ظاهر دکمه بدون رفرش صفحه
+            if (icon.classList.contains('far')) {
+                // تبدیل به حالت لایک شده (قرمز)
+                icon.className = 'fa fa-heart text-xl';
+                btn.className = 'p-3 bg-red-500 text-white rounded-2xl shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-600 transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12';
+                btn.title = 'برداشتن لایک';
+            } else {
+                // تبدیل به حالت لایک نشده (خالی)
+                icon.className = 'far fa-heart text-xl';
+                btn.className = 'p-3 bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-slate-700 rounded-2xl hover:bg-pink-600 hover:text-white dark:hover:bg-pink-600 dark:hover:text-white transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center w-12 h-12';
+                btn.title = 'لایک کردن';
+            }
+        }
+    })
+    .catch(error => console.error('خطا در ارسال لایک:', error));
+}
+</script>
+
 @endsection
