@@ -1,207 +1,141 @@
 @extends('layouts.app')
+
 @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="flex justify-center">
-            <div class="w-full md:w-2/3 lg:w-1/2">
-                <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b">
-                        <h2 class="text-2xl font-semibold">{{ trans('Dashboard') }}</h2>
-                    </div>
-                    <div class="p-6">
-                        @if (session('status'))
-                            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"
-                                role="alert">
-                                {{ session('status') }}
-                            </div>
-                        @endif
-                        @if ($profileOwner->profile_picture)
-                            <div class="flex justify-center mt-4">
+<div class="container mx-auto px-4 py-12 transition-colors duration-300">
+    <div class="flex justify-center">
+        <div class="w-full md:w-2/3 lg:w-1/2">
+            <div class="bg-white dark:bg-slate-900 shadow-2xl rounded-3xl overflow-hidden border border-pink-100 dark:border-slate-800 transition-all duration-300">
+                
+                <div class="h-32 bg-gradient-to-r from-pink-400 to-rose-400 dark:from-pink-600 dark:to-rose-600"></div>
 
-
-                                <img src="{{ asset('storage/' . $profileOwner->profile_picture) }}"
-                                    class="w-48 h-48 rounded-full border-4 border-white shadow-xl object-cover -mt-16 z-10"
-                                    alt="Profile Picture">
-                            </div>
+                <div class="relative px-6 pb-6">
+                    <div class="flex justify-center">
+                        @if ($user->profile_picture)
+                            <img src="{{ asset('storage/' . $user->profile_picture) }}"
+                                 class="w-40 h-40 rounded-full border-4 border-white dark:border-slate-900 shadow-lg object-cover -mt-20 bg-white dark:bg-slate-800"
+                                 alt="Profile Picture">
                         @else
-                            <div class="flex justify-center mt-4">
-                                <div
-                                    class="w-48 h-48 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm border-4 border-white shadow-xl -mt-16 z-10">
-                                    No Image
-                                </div>
+                            <div class="w-40 h-40 rounded-full bg-pink-50 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-lg -mt-20 flex items-center justify-center text-pink-300 dark:text-slate-600 z-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
                             </div>
                         @endif
-
-
-<div class="p-4 space-y-3">
-
-    <p><strong>{{ __('profilepage.name') }}:</strong> {{ $profileOwner->name }}</p>
-
-    <p><strong>{{ __('profilepage.city') }}:</strong> {{ $profileOwner->city }}</p>
-
-    <p><strong>{{ __('profilepage.email') }}:</strong> {{ $profileOwner->email }}</p>
-
-    <p>
-        <strong>{{ __('profilepage.marital_status') }}:</strong>
-        @if ($profileOwner->marital_status == 'single')
-            {{ __('profilepage.single') }}
-        @elseif($profileOwner->marital_status == 'married')
-            {{ __('profilepage.married') }}
-        @elseif($profileOwner->marital_status == 'divorced')
-            {{ __('profilepage.divorced') }}
-        @elseif($profileOwner->marital_status == 'widowed')
-            {{ __('profilepage.widowed') }}
-        @else
-            {{ __('profilepage.not_set') }}
-        @endif
-    </p>
-
-    <p><strong>{{ __('profilepage.salary') }}:</strong> {{ $profileOwner->salary }} {{ __('profilepage.salary_unit') }}</p>
-
-    <p><strong>{{ __('profilepage.bio') }}:</strong> {{ $profileOwner->bio }}</p>
-
-    <p><strong>{{ __('profilepage.role') }}:</strong> {{ $profileOwner->role }}</p>
-
-</div>
-
-  <div class="mt-4 flex flex-wrap gap-2">
-
- <a href="{{ route('dashboard') }}"
-   class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded">
-    {{ __('profilepage.back') }}
-</a>
-
-@if (auth()->check() && auth()->id() !== $profileOwner->id)
-    <a href="{{ route('messages.show', $profileOwner->id) }}"  {{-- Fixed: Use $profileOwner->id --}}
-       class="bg-[#E74C3C] text-white px-4 py-2 rounded hover:bg-red-700 text-sm shadow">
-        💌 {{ __('profilepage.message') }}  {{-- Use translation key if available; fallback to 'پیام بده' --}}
-    </a>
-@endif
-    
-
-    {{-- ===== دکمه لایک با Ajax ===== --}}
-<div class="relative">
-    <form id="likeForm" action="{{ route('like.store', $profileOwner->id) }}" method="POST">
-        @csrf
-
-        {{-- بررسی کن کاربر قبلاً لایک کرده یا نه --}}
-        @php
-$alreadyLiked = auth()->check() && \DB::table('likes')
-        ->where('user_id', auth()->id())
-        ->where('liked_user_id', $profileOwner->id)
-        ->exists();
-        
-        @endphp
-
-        <button type="submit"
-                id="likeButton"
-                class="like-btn flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-white transition-all duration-300 {{ $alreadyLiked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600' }}"
-                {{ $alreadyLiked ? 'disabled' : '' }}>
-            
-            <span id="likeIcon">{{ $alreadyLiked ? '✓' : '❤️' }}</span>
-            <span id="likeText">
-                {{ $alreadyLiked ? 'لایک شده' : __('profilepage.like') }}
-            </span>
-        </button>
-    </form>
-</div>
-
-    @if (auth()->check() && auth()->id() !== $profileOwner->id)
-        <form action="{{ route('report.store') }}" method="POST">
-            @csrf
-            <input type="hidden" name="reported_id" value="{{ $profileOwner->id }}">
-            <button type="submit"
-                class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
-                {{ __('profilepage.quick_report') }} 🚫
-            </button>
-        </form>
-
-        <button onclick="document.getElementById('reportModal').classList.remove('hidden')"
-            class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded">
-            ⚠️ {{ __('profilepage.suspicious_behavior') }}
-        </button>
-    @endif
-
-</div>
-
-</div>
-
                     </div>
+
+                    <div class="text-center mt-4">
+                        <h2 class="text-3xl font-extrabold text-gray-800 dark:text-slate-100">{{ $user->name }}</h2>
+                        <p class="text-pink-500 dark:text-pink-400 font-medium flex justify-center items-center gap-1 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {{ $user->city }}
+                        </p>
+                    </div>
+
+                    @if (session('status'))
+                        <div class="mt-4 bg-green-50 dark:bg-green-950/40 border-r-4 border-green-500 text-green-700 dark:text-green-400 p-4 rounded-xl text-sm" role="alert">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-sm text-gray-600 dark:text-slate-300 bg-pink-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-transparent dark:border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 dark:text-pink-400 text-base">📧 ایمیل:</span>
+                            <span>{{ $user->email }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 dark:text-pink-400 text-base">💖 علاقه‌مند به:</span>
+                            <span>{{ $user->interested_in }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 dark:text-pink-400 text-base">💰 درآمد:</span>
+                            <span>{{ $user->salary }} میلیون تومان</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-pink-600 dark:text-pink-400 text-base">🛡️ نقش:</span>
+                            <span class="bg-pink-200 dark:bg-pink-900/60 text-pink-800 dark:text-pink-300 px-2 py-0.5 rounded-full text-xs font-bold">{{ $user->role }}</span>
+                        </div>
+                        <div class="col-span-1 md:col-span-2 mt-2 border-t border-pink-100 dark:border-slate-700 pt-2">
+                            <span class="font-bold text-pink-600 dark:text-pink-400 block mb-1 text-base">📝 بیوگرافی:</span>
+                            <p class="italic leading-relaxed text-gray-700 dark:text-slate-400">{{ $user->bio ?? 'توضیحاتی ثبت نشده است.' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-wrap justify-center gap-3">
+                        <a href="{{ url()->previous() }}" 
+                           class="flex-1 min-w-[120px] text-center bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 font-bold py-3 px-6 rounded-2xl transition duration-300">
+                            بازگشت
+                        </a>
+
+                        <a href="#" 
+                           class="flex-1 min-w-[120px] text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-1">
+                            مشاهده کامل
+                        </a>
+                    </div>
+
+                    @if (auth()->check() && auth()->id() !== $user->id)
+                        <div class="w-full flex flex-col sm:flex-row gap-3 mt-4 border-t border-gray-100 dark:border-slate-800 pt-4">
+                            
+                            <form action="{{ route('report.store') }}" method="POST" class="flex-1">
+                                @csrf
+                                <input type="hidden" name="reported_id" value="{{ $user->id }}">
+                                <input type="hidden" name="reason" value="گزارش سریع / بررسی پروفایل">
+                                
+                                <button type="submit" 
+                                        class="w-full bg-white dark:bg-slate-900 border-2 border-red-100 dark:border-red-950 hover:border-red-500 dark:hover:border-red-500 text-red-500 dark:text-red-400 font-bold py-3 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                    <span>🚫</span> گزارش سریع
+                                </button>
+                            </form>
+
+                            <button onclick="document.getElementById('reportModal').classList.remove('hidden')" 
+                                    class="flex-1 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-bold py-3 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 border-2 border-transparent hover:border-amber-200 dark:hover:border-amber-900 shadow-sm">
+                                <span>⚠️</span> گزارش با جزئیات
+                            </button>
+
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-    </div>
+</div>
 
-    <!-- Report Modal -->
-    <div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-black opacity-50"></div>
-        <div class="bg-white rounded-lg shadow-xl z-50 w-full max-w-md mx-4">
-            <div class="flex justify-between items-center px-4 py-3 border-b">
-                <h3 class="text-lg font-semibold">Report User</h3>
-                <button type="button" class="text-gray-600 hover:text-gray-800"
+<div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4 transition-all">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="document.getElementById('reportModal').classList.add('hidden')"></div>
+    <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl z-50 w-full max-w-md overflow-hidden transform transition-all border border-transparent dark:border-slate-800">
+        <div class="bg-rose-50 dark:bg-rose-950/30 px-6 py-4 border-b border-rose-100 dark:border-rose-900/50 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-rose-700 dark:text-rose-400">گزارش تخلف کاربر</h3>
+            <button type="button" class="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 text-2xl"
                     onclick="document.getElementById('reportModal').classList.add('hidden')">
-                    &times;
+                &times;
+            </button>
+        </div>
+        <div class="p-6">
+            <form action="{{ route('report.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="reported_id" value="{{ $user->id }}">
+                
+                <label for="reason_select" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">علت اصلی گزارش:</label>
+                <select name="reason_category" id="reason_select" class="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200 rounded-xl p-3 mb-4 outline-none focus:ring-2 focus:ring-pink-400">
+                    <option value="مزاحمت">مزاحمت در چت</option>
+                    <option value="محتوای نامناسب">پروفایل یا عکس نامناسب</option>
+                    <option value="اسپم">کاربر فیک / اسپم</option>
+                    <option value="سایر">سایر موارد</option>
+                </select>
+
+                <label for="reason" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">توضیحات بیشتر (اختیاری):</label>
+                <textarea name="reason" id="reason" rows="4" 
+                          class="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-pink-400 focus:border-transparent outline-none transition" 
+                          placeholder="لطفاً دلیل خود را بنویسید تا ادمین بررسی کند..." required></textarea>
+                
+                <button type="submit" 
+                        class="w-full mt-6 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:shadow-red-200 dark:shadow-none transition duration-300">
+                    ثبت و ارسال گزارش
                 </button>
-            </div>
-            <div class="px-4 py-4">
-                <form action="{{ route('report.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="reported_id" value="{{ $profileOwner->id }}">
-                    <label for="reason" class="block text-sm font-medium text-gray-700">Reason for reporting:</label>
-                    <textarea name="reason" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required></textarea>
-                    <button type="submit"
-                        class="mt-3 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
-                        Submit Report
-                    </button>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 @endsection
-
-{{-- اسکریپت Ajax خیلی ساده - فقط در همین صفحه کار می‌کنه --}}
-<script>
-document.getElementById('likeForm')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const button   = document.getElementById('likeButton');
-    const icon     = document.getElementById('likeIcon');
-    const text     = document.getElementById('likeText');
-
-    // غیرفعال کردن موقت دکمه
-    button.disabled = true;
-
-    fetch(this.action, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: new FormData(this)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // تغییر ظاهر به حالت لایک شده
-            button.classList.remove('bg-red-500', 'hover:bg-red-600');
-            button.classList.add('bg-green-600', 'hover:bg-green-700');
-            icon.textContent = '✓';
-            text.textContent = 'لایک شده';
-            button.disabled = true; // دیگه نتونه دوباره لایک کنه
-        }
-        اگر بخوای آنلایک هم بشه، فقط این else رو فعال کن
-        else if (result.liked === false) {
-            button.classList.remove('bg-green-600'); 
-            button.classList.add('bg-red-500');
-            icon.textContent = '❤️';
-            text.textContent = 'لایک';
-            button.disabled = false;
-        }
-    })
-    .catch(() => {
-        alert('خطایی رخ داد، دوباره تلاش کنید');
-        button.disabled = false;
-    });
-});
-</script>

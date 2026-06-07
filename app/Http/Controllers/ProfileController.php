@@ -44,36 +44,29 @@ class ProfileController extends Controller
     }
 
     public function show($id)
-    {
-        $profileOwner = User::findOrFail($id);
+{
+    // ۱. تغییر نام متغیر به $user
+    $user = User::findOrFail($id);
 
-        // فقط اگر کاربر لاگین کرده باشد و پروفایل متعلق به خودش نباشد → بازدید ثبت شود
-        if (Auth::check() && Auth::id() !== $profileOwner->id) {
+    // فقط اگر کاربر لاگین کرده باشد و پروفایل متعلق به خودش نباشد → بازدید ثبت شود
+    if (Auth::check() && Auth::id() !== $user->id) {
 
-            // گزینه ۱: یک بار در روز تقویمی (پیشنهادی)
-            $alreadyViewedToday = ProfileView::where('viewer_id', Auth::id())
-                ->where('viewed_id', $profileOwner->id)
-                ->whereDate('created_at', Carbon::today())
-                ->exists();
+        $alreadyViewedToday = ProfileView::where('viewer_id', Auth::id())
+            ->where('viewed_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->exists();
 
-            // گزینه ۲: دقیقاً ۲۴ ساعت (اگر واقعاً می‌خواهید)
-//            $alreadyViewedToday = ProfileView::where('viewer_id', Auth::id())
-//                ->where('viewed_id', $profileOwner->id)
-//                ->where('created_at', '>=', now()->subHours(24))
-//                ->exists();
-
-            if (! $alreadyViewedToday) {
-                ProfileView::create([
-                    'viewer_id' => Auth::id(),
-                    'viewed_id' => $profileOwner->id,
-                ]);
-            }
+        if (! $alreadyViewedToday) {
+            ProfileView::create([
+                'viewer_id' => Auth::id(),
+                'viewed_id' => $user->id,
+            ]);
         }
-
-        // این return همیشه اجرا می‌شود (مهم!)
-        return view('profile.show', compact('profileOwner'));
     }
 
+    // ۲. پاس دادن متغیر با نام 'user' به فایل بلید
+    return view('profile.show', compact('user'));
+}
     public function search(Request $request)
     {
         $query = User::query();
