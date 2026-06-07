@@ -48,10 +48,7 @@
                     @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-sm text-gray-600 dark:text-slate-300 bg-pink-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-transparent dark:border-slate-800">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-pink-600 dark:text-pink-400 text-base">📧 ایمیل:</span>
-                            <span>{{ $user->email }}</span>
-                        </div>
+                        
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-pink-600 dark:text-pink-400 text-base">💖 علاقه‌مند به:</span>
                             <span>{{ $user->interested_in }}</span>
@@ -60,10 +57,7 @@
                             <span class="font-bold text-pink-600 dark:text-pink-400 text-base">💰 درآمد:</span>
                             <span>{{ $user->salary }} میلیون تومان</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-pink-600 dark:text-pink-400 text-base">🛡️ نقش:</span>
-                            <span class="bg-pink-200 dark:bg-pink-900/60 text-pink-800 dark:text-pink-300 px-2 py-0.5 rounded-full text-xs font-bold">{{ $user->role }}</span>
-                        </div>
+                        
                         <div class="col-span-1 md:col-span-2 mt-2 border-t border-pink-100 dark:border-slate-700 pt-2">
                             <span class="font-bold text-pink-600 dark:text-pink-400 block mb-1 text-base">📝 بیوگرافی:</span>
                             <p class="italic leading-relaxed text-gray-700 dark:text-slate-400">{{ $user->bio ?? 'توضیحاتی ثبت نشده است.' }}</p>
