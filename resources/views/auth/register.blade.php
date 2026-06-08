@@ -30,61 +30,77 @@
                 
                 <div x-show="step === 1" x-transition:enter="transition ease-out duration-200" class="space-y-4">
                     <div>
-                        <label for="name" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.name') }}</label>
+                        <label for="name" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.name') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <input type="text" id="name" name="name"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
                                value="{{ old('name') }}" required placeholder="نام شما برای نمایش در پروفایل">
                     </div>
 
                     <div>
-                        <label for="email" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.email') }}</label>
+                        <label for="email" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.email') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <input type="email" id="email" name="email"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
                                value="{{ old('email') }}" required placeholder="name@example.com">
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.password') }}</label>
+                        <label for="password" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.password') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <input type="password" id="password" name="password"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
                                required placeholder="••••••••">
                     </div>
 
                     <div>
-                        <label for="password-confirm" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.password_confirm') }}</label>
+                        <label for="password-confirm" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.password_confirm') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <input type="password" id="password-confirm" name="password_confirmation"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
                                required placeholder="••••••••">
                     </div>
                 </div>
 
                 <div x-show="step === 2" x-transition:enter="transition ease-out duration-200" x-cloak class="space-y-4">
                     <div>
-                        <label for="gender" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.gender') }}</label>
-                        <select id="gender" name="gender" class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all">
+                        <label for="gender" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.gender') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
+                        <select id="gender" name="gender" class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all">
                             <option value="male">{{ __('Registerpage.male') }}</option>
                             <option value="female">{{ __('Registerpage.female') }}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="age" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.age') }}</label>
+                        <label for="age" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.age') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <input type="number" id="age" name="age" min="18" max="100"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
                                value="{{ old('age') }}" required placeholder="سن شما (حداقل ۱۸ سال)">
                     </div>
 
                     <div>
-                        <label for="city" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.city') }}</label>
+                        <label for="city" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.city') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <input type="text" id="city" name="city"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
                                value="{{ old('city') }}" required placeholder="مثال: تهران">
                     </div>
 
                     <div>
-                        <label for="marital_status" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.marital_status') }}</label>
+                        <label for="marital_status" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.marital_status') }} <span class="text-rose-500 mr-0.5">*</span>
+                        </label>
                         <select id="marital_status" name="marital_status" required
-                                class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all">
+                                class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200">
                             <option value="">{{ __('Registerpage.select') }}</option>
                             <option value="single">{{ __('Registerpage.single') }}</option>
                             <option value="married">{{ __('Registerpage.married') }}</option>
@@ -96,9 +112,11 @@
 
                 <div x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-cloak class="space-y-4">
                     <div>
-                        <label for="interested_in" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.interested_in') }}</label>
+                        <label for="interested_in" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.interested_in') }} <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
+                        </label>
                         <select id="interested_in" name="interested_in"
-                                class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all">
+                                class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all">
                             <option value="sport">ورزش / Sport</option>
                             <option value="travel">مسافرت / Voyage</option>
                             <option value="books">کتاب / Livre</option>
@@ -107,21 +125,27 @@
                     </div>
 
                     <div>
-                        <label for="salary" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.salary') }} (میلیون تومان)</label>
+                        <label for="salary" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.salary') }} (میلیون تومان) <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
+                        </label>
                         <input type="number" id="salary" name="salary" min="0"
-                               class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
                                value="{{ old('salary') }}" placeholder="میزان درآمد تقریبی ماهانه">
                     </div>
 
                     <div>
-                        <label for="bio" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.bio') }}</label>
+                        <label for="bio" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.bio') }} <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
+                        </label>
                         <textarea id="bio" name="bio" rows="2"
-                                  class="block w-full rounded-2xl border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all resize-none"
+                                  class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all resize-none"
                                   placeholder="کمی از خودتان بنویسید..."></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">{{ __('Registerpage.profile_picture') }}</label>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
+                            {{ __('Registerpage.profile_picture') }} <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
+                        </label>
                         <div class="flex items-center justify-center w-full">
                             <label class="flex flex-col items-center justify-center w-full h-20 border-2 border-gray-200 dark:border-slate-700 border-dashed rounded-2xl cursor-pointer bg-gray-50 dark:bg-slate-800/30 hover:bg-gray-100 transition duration-200">
                                 <div class="flex flex-col items-center justify-center pt-2 pb-2">
@@ -162,17 +186,8 @@
 
 <style>
     [x-cloak] { display: none !important; }
-    
-    /* بهینه‌سازی اکسپرینس اسکرول باکس داخلی روی آیفون و اندروید */
-    .overflow-y-auto {
-        -webkit-overflow-scrolling: touch;
-    }
-    .overflow-y-auto::-webkit-scrollbar {
-        width: 3px;
-    }
-    .overflow-y-auto::-webkit-scrollbar-thumb {
-        background-color: rgba(244, 63, 94, 0.2);
-        border-radius: 10px;
-    }
+    .overflow-y-auto { -webkit-overflow-scrolling: touch; }
+    .overflow-y-auto::-webkit-scrollbar { width: 3px; }
+    .overflow-y-auto::-webkit-scrollbar-thumb { background-color: rgba(244, 63, 94, 0.2); border-radius: 10px; }
 </style>
 @endsection
