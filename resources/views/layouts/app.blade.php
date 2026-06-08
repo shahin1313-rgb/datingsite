@@ -40,8 +40,6 @@
         
         {{-- منوی کشویی سایدبار (Mobile Drawer) --}}
         @auth
-            
-       
         <div x-show="sidebarOpen" x-cloak class="relative z-[1000] lg:hidden">
             <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="sidebarOpen = false"></div>
             <div class="fixed inset-y-0 right-0 w-72 bg-white shadow-2xl p-6 transition-transform"
@@ -53,22 +51,31 @@
                  x-transition:leave-start="translate-x-0"
                  x-transition:leave-end="translate-x-full">
                 
-                <div class="flex justify-between items-center mb-8 border-b pb-4">
-                    <span class="font-bold text-pink-600 text-lg">منوی دسترسی</span>
-                    <button @click="sidebarOpen = false" class="text-gray-400 hover:text-gray-600">
-                        <i class="fa fa-times text-2xl"></i>
+                <div class="flex flex-col items-center pb-4 mb-6 border-b border-gray-100 relative">
+                    <button @click="sidebarOpen = false" class="absolute top-0 left-0 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
                     </button>
+                    
+                    <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-pink-500 shadow-md mb-3 bg-gray-100 flex items-center justify-center">
+                        @if(auth()->user()->profile_picture)
+                            <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                        @else
+                            <i class="fa fa-user text-3xl text-gray-400"></i>
+                        @endif
+                    </div>
+                    
+                    <span class="font-bold text-gray-800 text-base">{{ auth()->user()->name }}</span>
                 </div>
          
                 <nav class="space-y-2">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
                         <i class="fa fa-th-large text-pink-500"></i> <span>داشبورد</span>
                     </a>
-                    <a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                    <a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-gray-700">
                         <i class="fa fa-envelope text-pink-500"></i> <span>پیام‌های من</span>
                     </a>
 
-                    <a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                    <a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-gray-700">
                         <i class="fa fa-heart text-pink-500"></i> <span>لیست لایک‌ها</span>
                     </a>
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
@@ -80,10 +87,10 @@
                     <a href="{{ route('search') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700 {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : '' }}">
                          <i class="fa fa-search w-5 text-pink-500"></i> <span>جستجوی پیشرفته</span>
                     </a>
-                    <a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition">
-                        <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
+                    <a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition text-amber-600">
+                        <i class="fa fa-crown text-amber-500"></i> <span class="font-bold">ارتقا به ویژه</span>
                     </a>
-                    <hr class="my-4">
+                    <hr class="my-4 border-gray-100">
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-xl transition">
@@ -93,7 +100,6 @@
                 </nav>
             </div>
         </div>
-
         @endauth
         
         {{-- نوبار --}}
@@ -119,7 +125,6 @@
                     {{-- دکمه بازگشت انتقال‌یافته به چپ (فقط در صفحات فرعی) --}}
                     @if(!request()->is('/') && !request()->routeIs('home'))
                         <button onclick="window.history.back()" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center" title="بازگشت">
-                            {{-- تغییر جهت خودکار فلش متناسب با زبان RTL/LTR --}}
                             <i class="fa {{ app()->getLocale() == 'fa' ? 'fa-arrow-left' : 'fa-arrow-left' }} text-lg"></i>
                         </button>
                     @endif
@@ -136,7 +141,6 @@
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:enter-start="transform opacity-0 scale-95"
                              x-transition:enter-end="transform opacity-100 scale-100"
-                             {{-- انطباق موقعیت باز شدن دراپ‌داون متناسب با جهت لایوت --}}
                              class="absolute {{ app()->getLocale() == 'fa' ? 'left-0' : 'right-0' }} mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
                             
                             <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
