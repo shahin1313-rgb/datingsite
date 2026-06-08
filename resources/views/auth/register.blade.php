@@ -6,6 +6,31 @@
         step: 1, 
         maxStep: 3, 
         imageUrl: null,
+        showErrors: false,
+
+        // بررسی ولید بودن فیلدهای گام فعلی
+        validateStep() {
+            this.showErrors = true;
+            
+            // پیدا کردن تمام اینپوت‌های رکوایرد در گام فعلی
+            const currentStepEl = document.getElementById('step-' + this.step);
+            const inputs = currentStepEl.querySelectorAll('[required]');
+            
+            let allValid = true;
+            inputs.forEach(input => {
+                if (!input.checkValidity()) {
+                    allValid = false;
+                }
+            });
+
+            if (allValid) {
+                this.showErrors = false; // ریست کردن خطاها برای مرحله بعد
+                this.step++;
+                // اسکرول به بالای باکس فیلدها در صورت نیاز
+                document.getElementById('fields-container').scrollTop = 0;
+            }
+        },
+
         updatePreview(event) {
             const file = event.target.files[0];
             if (file) {
@@ -37,19 +62,21 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" class="flex-1 flex flex-col justify-between overflow-hidden">
+        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" @submit="showErrors = true" class="flex-1 flex flex-col justify-between overflow-hidden">
             @csrf
 
-            <div class="flex-1 overflow-y-auto px-1 py-2 space-y-4 min-h-0">
+            <div id="fields-container" class="flex-1 overflow-y-auto px-1 py-2 space-y-4 min-h-0 scroll-smooth">
                 
-                <div x-show="step === 1" x-transition:enter="transition ease-out duration-200" class="space-y-4">
+                <div id="step-1" x-show="step === 1" x-transition:enter="transition ease-out duration-200" class="space-y-4">
                     <div>
                         <label for="name" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
                             {{ __('Registerpage.name') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <input type="text" id="name" name="name"
-                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
+                               class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               :class="showErrors && !document.getElementById('name')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'"
                                value="{{ old('name') }}" required placeholder="نام شما برای نمایش در پروفایل">
+                        <p x-show="showErrors && !document.getElementById('name')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ وارد کردن نام الزامی است</p>
                     </div>
 
                     <div>
@@ -57,8 +84,10 @@
                             {{ __('Registerpage.email') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <input type="email" id="email" name="email"
-                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
+                               class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               :class="showErrors && !document.getElementById('email')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'"
                                value="{{ old('email') }}" required placeholder="name@example.com">
+                        <p x-show="showErrors && !document.getElementById('email')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ یک ایمیل معتبر وارد کنید</p>
                     </div>
 
                     <div>
@@ -66,8 +95,10 @@
                             {{ __('Registerpage.password') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <input type="password" id="password" name="password"
-                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
+                               class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
+                               :class="showErrors && !document.getElementById('password')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'"
                                required placeholder="••••••••">
+                        <p x-show="showErrors && !document.getElementById('password')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ تعیین رمز عبور الزامی است</p>
                     </div>
 
                     <div>
@@ -75,12 +106,14 @@
                             {{ __('Registerpage.password_confirm') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <input type="password" id="password-confirm" name="password_confirmation"
-                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
+                               class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all" 
+                               :class="showErrors && !document.getElementById('password-confirm')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'"
                                required placeholder="••••••••">
+                        <p x-show="showErrors && !document.getElementById('password-confirm')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ تکرار رمز عبور الزامی است</p>
                     </div>
                 </div>
 
-                <div x-show="step === 2" x-transition:enter="transition ease-out duration-200" x-cloak class="space-y-4">
+                <div id="step-2" x-show="step === 2" x-transition:enter="transition ease-out duration-200" x-cloak class="space-y-4">
                     <div>
                         <label for="gender" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
                             {{ __('Registerpage.gender') }} <span class="text-rose-500 mr-0.5">*</span>
@@ -96,8 +129,10 @@
                             {{ __('Registerpage.age') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <input type="number" id="age" name="age" min="18" max="100"
-                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
+                               class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               :class="showErrors && !document.getElementById('age')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'"
                                value="{{ old('age') }}" required placeholder="سن شما (حداقل ۱۸ سال)">
+                        <p x-show="showErrors && !document.getElementById('age')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ وارد کردن سن (حداقل ۱۸ سال) الزامی است</p>
                     </div>
 
                     <div>
@@ -105,8 +140,10 @@
                             {{ __('Registerpage.city') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <input type="text" id="city" name="city"
-                               class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200"
+                               class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                               :class="showErrors && !document.getElementById('city')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'"
                                value="{{ old('city') }}" required placeholder="مثال: تهران">
+                        <p x-show="showErrors && !document.getElementById('city')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ وارد کردن نام شهر الزامی است</p>
                     </div>
 
                     <div>
@@ -114,17 +151,19 @@
                             {{ __('Registerpage.marital_status') }} <span class="text-rose-500 mr-0.5">*</span>
                         </label>
                         <select id="marital_status" name="marital_status" required
-                                class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all invalid:border-rose-200">
+                                class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
+                                :class="showErrors && !document.getElementById('marital_status')?.checkValidity() ? 'border-rose-500 ring-2 ring-rose-100 dark:ring-rose-950/30' : 'border-gray-200 dark:border-slate-700 focus:border-pink-500'">
                             <option value="">{{ __('Registerpage.select') }}</option>
                             <option value="single">{{ __('Registerpage.single') }}</option>
                             <option value="married">{{ __('Registerpage.married') }}</option>
                             <option value="divorced">{{ __('Registerpage.divorced') }}</option>
                             <option value="widowed">{{ __('Registerpage.widowed') }}</option>
                         </select>
+                        <p x-show="showErrors && !document.getElementById('marital_status')?.checkValidity()" x-cloak class="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">⚠️ انتخاب وضعیت تاهل الزامی است</p>
                     </div>
                 </div>
 
-                <div x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-cloak class="space-y-4">
+                <div id="step-3" x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-cloak class="space-y-4">
                     <div>
                         <label for="interested_in" class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5">
                             {{ __('Registerpage.interested_in') }} <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
@@ -161,7 +200,6 @@
                             {{ __('Registerpage.profile_picture') }} <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
                         </label>
                         <div class="flex items-center justify-center w-full">
-                            
                             <label x-show="!imageUrl" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-200 dark:border-slate-700 border-dashed rounded-2xl cursor-pointer bg-gray-50 dark:bg-slate-800/30 hover:bg-gray-100 dark:hover:bg-slate-800/50 transition duration-200">
                                 <div class="flex flex-col items-center justify-center pt-2 pb-2">
                                     <span class="text-2xl mb-1">📸</span>
@@ -178,7 +216,6 @@
                                     حذف و تغییر عکس
                                 </button>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -187,14 +224,14 @@
             <div class="flex items-center gap-3 pt-3 mt-2 border-t border-gray-100 dark:border-slate-800/80 flex-shrink-0 pb-2 sm:pb-0">
                 <button type="button" 
                         x-show="step > 1" 
-                        @click="step--"
+                        @click="step--; showErrors = false"
                         class="flex-1 py-3 text-center bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 font-bold rounded-2xl transition duration-300 select-none outline-none text-sm">
                     مرحله قبل
                 </button>
 
                 <button type="button" 
                         x-show="step < maxStep" 
-                        @click="step++"
+                        @click="validateStep()"
                         class="flex-1 py-3 text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-pink-100 dark:shadow-none hover:shadow-none transition duration-300 select-none outline-none text-sm">
                     مرحله بعد
                 </button>
