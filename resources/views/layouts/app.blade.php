@@ -65,12 +65,12 @@
                         <i class="fa fa-th-large text-pink-500"></i> <span>داشبورد</span>
                     </a>
                     <a href="{{ route('messages.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-envelope text-pink-500"></i> <span>پیام‌های من</span>
-</a>
+                        <i class="fa fa-envelope text-pink-500"></i> <span>پیام‌های من</span>
+                    </a>
 
-<a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
-    <i class="fa fa-heart text-pink-500"></i> <span>لیست لایک‌ها</span>
-</a>
+                    <a href="{{ route('likes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                        <i class="fa fa-heart text-pink-500"></i> <span>لیست لایک‌ها</span>
+                    </a>
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700">
                         <i class="fa fa-user-edit text-pink-500"></i> <span>ویرایش پروفایل</span>
                     </a>
@@ -81,8 +81,8 @@
                          <i class="fa fa-search w-5 text-pink-500"></i> <span>جستجوی پیشرفته</span>
                     </a>
                     <a href="{{ route('premium.upgrade') }}" class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 transition">
-    <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
-</a>
+                        <i class="fa fa-crown text-amber-400"></i> <span class="text-amber-400 font-bold">ارتقا به ویژه</span>
+                    </a>
                     <hr class="my-4">
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
@@ -95,53 +95,59 @@
         </div>
 
         @endauth
+        
         {{-- نوبار --}}
         <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 h-14 flex items-center">
             <div class="container mx-auto px-4 flex justify-between items-center">
+                
+                {{-- بخش راست: لوگو و منوی همبرگری --}}
                 <div class="flex items-center gap-3">
                     @auth
                     <button @click="sidebarOpen = true" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg lg:hidden">
                         <i class="fa fa-bars text-xl"></i>
                     </button>
-
                     @endauth
                     <a href="{{ url('/') }}" class="flex items-center gap-2">
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
-                        <span class="font-bold text-lg tracking-tight text-pink-600">DatingApp</span>
+                        <span class="font-bold text-lg tracking-tight text-pink-600">vlora</span>
                     </a>
                 </div>
 
-                 
-                {{-- دکمه بازگشت - فقط در صفحات غیر از صفحه اصلی نمایش داده می‌شود --}}
-            @if(!request()->is('/') && !request()->routeIs('home'))
-                <button onclick="window.history.back()" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors" title="بازگشت">
-                    <i class="fa fa-arrow-left text-lg"></i>
-                </button>
-            @endif
+                {{-- بخش چپ: دکمه بازگشت و آیکون تغییر زبان در یک راستا --}}
+                <div class="flex items-center gap-2">
+                    
+                    {{-- دکمه بازگشت انتقال‌یافته به چپ (فقط در صفحات فرعی) --}}
+                    @if(!request()->is('/') && !request()->routeIs('home'))
+                        <button onclick="window.history.back()" class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center" title="بازگشت">
+                            {{-- تغییر جهت خودکار فلش متناسب با زبان RTL/LTR --}}
+                            <i class="fa {{ app()->getLocale() == 'fa' ? 'fa-arrow-left' : 'fa-arrow-left' }} text-lg"></i>
+                        </button>
+                    @endif
 
-          
-                <div class="flex items-center gap-4">
-                   <div class="relative" x-data="{ langMenu: false }">
-                        <button @click="langMenu = !langMenu" class="text-gray-500 text-sm focus:outline-none p-2">
-                            <i class="fa-solid fa-globe"></i>
+                    {{-- منوی انتخاب زبان --}}
+                    <div class="relative" x-data="{ langMenu: false }">
+                        <button @click="langMenu = !langMenu" class="text-gray-500 text-sm focus:outline-none p-2 flex items-center justify-center">
+                            <i class="fa-solid fa-globe text-lg"></i>
                         </button>
                         
-                      <div x-show="langMenu" 
-     @click.away="langMenu = false" 
-     x-cloak 
-     x-transition:enter="transition ease-out duration-100"
-     x-transition:enter-start="transform opacity-0 scale-95"
-     x-transition:enter-end="transform opacity-100 scale-100"
-     class="absolute left-0 mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
-    
-    <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
-        <span class="text-base">🇮🇷</span> <span>فارسی</span>
-    </a>
-    <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
-        <span class="text-base">🇬🇧</span> <span>English</span>
-    </a>
-</div>
+                        <div x-show="langMenu" 
+                             @click.away="langMenu = false" 
+                             x-cloak 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             {{-- انطباق موقعیت باز شدن دراپ‌داون متناسب با جهت لایوت --}}
+                             class="absolute {{ app()->getLocale() == 'fa' ? 'left-0' : 'right-0' }} mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]">
+                            
+                            <a href="{{ url('lang/fa') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
+                                <span class="text-base">🇮🇷</span> <span>فارسی</span>
+                            </a>
+                            <a href="{{ url('lang/en') }}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors">
+                                <span class="text-base">🇬🇧</span> <span>English</span>
+                            </a>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </nav>
