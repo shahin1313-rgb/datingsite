@@ -2,7 +2,21 @@
 
 @section('content')
 <div class="fixed inset-0 sm:relative sm:min-h-screen bg-pink-50/30 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300 px-0 sm:px-4 sm:py-8"
-     x-data="{ step: 1, maxStep: 3 }">
+     x-data="{ 
+        step: 1, 
+        maxStep: 3, 
+        imageUrl: null,
+        updatePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.imageUrl = URL.createObjectURL(file);
+            }
+        },
+        clearPreview() {
+            this.imageUrl = null;
+            document.getElementById('profile_picture').value = '';
+        }
+     }">
     
     <div class="w-full h-full sm:h-auto sm:max-w-xl px-6 py-5 bg-white dark:bg-slate-900 sm:rounded-3xl sm:shadow-2xl border-0 sm:border border-pink-100/50 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 overflow-hidden">
         
@@ -147,13 +161,24 @@
                             {{ __('Registerpage.profile_picture') }} <span class="text-gray-400 text-xs font-normal">(اختیاری)</span>
                         </label>
                         <div class="flex items-center justify-center w-full">
-                            <label class="flex flex-col items-center justify-center w-full h-20 border-2 border-gray-200 dark:border-slate-700 border-dashed rounded-2xl cursor-pointer bg-gray-50 dark:bg-slate-800/30 hover:bg-gray-100 transition duration-200">
+                            
+                            <label x-show="!imageUrl" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-200 dark:border-slate-700 border-dashed rounded-2xl cursor-pointer bg-gray-50 dark:bg-slate-800/30 hover:bg-gray-100 dark:hover:bg-slate-800/50 transition duration-200">
                                 <div class="flex flex-col items-center justify-center pt-2 pb-2">
-                                    <span class="text-xl mb-0.5">📸</span>
+                                    <span class="text-2xl mb-1">📸</span>
                                     <p class="text-[11px] text-gray-500 dark:text-slate-400 font-semibold">انتخاب عکس پروفایل</p>
                                 </div>
-                                <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="hidden">
+                                <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="hidden" @change="updatePreview">
                             </label>
+
+                            <div x-show="imageUrl" x-cloak class="relative w-full flex flex-col items-center justify-center p-2 border border-pink-100 dark:border-slate-800 rounded-2xl bg-gray-50 dark:bg-slate-800/20">
+                                <div class="relative w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-pink-500">
+                                    <img :src="imageUrl" class="w-full h-full object-cover" alt="Profile Preview">
+                                </div>
+                                <button type="button" @click="clearPreview" class="mt-2 text-xs font-bold text-rose-500 hover:text-rose-600 transition duration-150">
+                                    حذف و تغییر عکس
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
