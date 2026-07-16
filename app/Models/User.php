@@ -32,7 +32,8 @@ class User extends Authenticatable
         'birth_year',
         'role',
         'interested_in',
-        'salary','premium_until', 'created_at', 'updated_at'
+        'salary','premium_until', 'created_at', 'updated_at','is_premium',         
+        'last_crypto_hash',
 
     ];
     // protected $attributes = [

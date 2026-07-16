@@ -65,7 +65,7 @@ function cryptoPayment() {
         statusClass: 'text-gray-500',
         
         // آدرس ولت شما (دریافت‌کننده وجه) یا آدرس کانتراکت
-        merchantAddress: '0xYourWalletAddressHere...', 
+        merchantAddress: '0x0a2F71b27902621f3E45356b96018e2358Ce8f89', 
         // مبلغ معادل به اتر (مثلاً برای $9.99 حدود 0.003 اتریوم - ترجیحاً از api بگیرید)
         amountInEth: '0.003', 
 

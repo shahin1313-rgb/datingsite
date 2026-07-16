@@ -33,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/upgrade', [PremiumController::class, 'upgrade'])->name('premium.upgrade');
     Route::post('/upgrade/verify-crypto', [PremiumController::class, 'verifyCrypto'])->name('premium.verifyCrypto');
 });
+
+
 // --- Authenticated User Routes ---
 Route::middleware('auth')->group(function () {
     
