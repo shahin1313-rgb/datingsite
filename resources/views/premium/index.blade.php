@@ -1,153 +1,87 @@
-@extends('layouts.app') {{-- یا هر نامی که برای لایوت اصلی دارید --}}
+@extends('layouts.app')
 
 @section('content')
-<div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 text-center" 
-     x-data="cryptoPayment()">
-    
-    <h2 class="text-xl font-bold text-gray-800 mb-2">Upgrade to Premium</h2>
-    <p class="text-sm text-gray-500 mb-6">Get noticed faster and chat without limits.</p>
+<!-- تغییر کلاس‌های دیو اصلی -->
+<div class="fixed inset-0 h-screen w-screen bg-gray-50 flex items-center justify-center p-4 overflow-hidden">        <div class="bg-white rounded-3xl shadow-xl p-6 text-center max-w-md w-full border border-gray-100">
+        
+        <h2 class="text-xl font-black text-gray-800 mb-2">ارتقای حساب با کریپتو</h2>
+        <p class="text-sm text-gray-500 mb-6">مبلغ مورد نظر را به ولت زیر واریز کرده و هش تراکنش را ثبت کنید.</p>
 
-    <!-- قیمت و ویژگی‌ها -->
-    <div class="bg-pink-50/50 rounded-2xl p-5 mb-6 border border-pink-100">
-        <span class="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-100 px-2.5 py-1 rounded-full">VIP Plan</span>
-        <div class="mt-4 mb-4">
-            <span class="text-3xl font-extrabold text-gray-900">$9.99</span>
-            <span class="text-gray-500 text-sm">/ mo</span>
-            <div class="text-xs text-amber-600 font-medium mt-1">(or equivalent in Crypto)</div>
+        <!-- نمایش پیام‌های خطا یا موفقیت لاراول -->
+        @if ($errors->any())
+            <div class="mb-4 p-3 bg-red-50 text-red-600 text-xs rounded-xl text-right">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="mb-4 p-3 bg-green-50 text-green-600 text-xs rounded-xl text-right font-bold">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- نمایش آدرس ولت و کیوآر کد -->
+        <div class="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-100">
+            <div class="flex justify-center mb-4">
+                <!-- تصویر QR Code آدرس ولت شما -->
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x0a2F71b27902621f3E45356b96018e2358Ce8f89" 
+                     alt="QR Code" 
+                     class="rounded-xl shadow-sm border p-1 bg-white">
+            </div>
+            
+            <p class="text-xs text-gray-400 mb-2">آدرس ولت ما (شبکه Sepolia یا Ethereum):</p>
+            
+            <!-- باکس آدرس ولت همراه با قابلیت کپی با کلیک -->
+            <div class="relative flex items-center">
+                <input type="text" readonly id="walletAddress" value="0x0a2F71b27902621f3E45356b96018e2358Ce8f89" 
+                       class="w-full bg-white p-3 pl-10 rounded-xl text-xs font-mono border border-gray-200 text-gray-700 text-center select-all focus:outline-none cursor-pointer">
+                <button type="button" onclick="copyWalletAddress()" class="absolute left-2 text-gray-400 hover:text-pink-600 p-1.5 transition">
+                    <i class="fa fa-copy text-sm"></i>
+                </button>
+            </div>
+            <span id="copyMessage" class="hidden text-xs text-green-600 mt-1 font-bold">کپی شد!</span>
+            
+            <div class="text-base font-black text-pink-600 mt-4">مبلغ واریزی: 0.003 ETH</div>
         </div>
 
-        <ul class="text-right space-y-3 max-w-xs mx-auto text-sm text-gray-600">
-            <li class="flex items-center justify-between">
-                <span><i class="fa fa-check-circle text-green-500 text-lg"></i></span>
-                <span>Unlimited Messages</span>
-            </li>
-            <li class="flex items-center justify-between">
-                <span><i class="fa fa-check-circle text-green-500 text-lg"></i></span>
-                <span>See who liked you</span>
-            </li>
-            <li class="flex items-center justify-between">
-                <span><i class="fa fa-check-circle text-green-500 text-lg"></i></span>
-                <span>Undo accidental skips</span>
-            </li>
-            <li class="flex items-center justify-between">
-                <span><i class="fa fa-check-circle text-green-500 text-lg"></i></span>
-                <span>Profile boost once a week</span>
-            </li>
-        </ul>
-    </div>
+        <!-- فرم ثبت تراکنش -->
+        <form action="{{ route('premium.verifyCrypto') }}" method="POST" class="space-y-4">
+            @csrf
+            <div class="text-right">
+                <label class="block text-xs font-bold text-gray-600 mb-2">هش تراکنش (Transaction Hash / TxID):</label>
+                <input type="text" 
+                       name="transaction_hash" 
+                       required 
+                       value="{{ old('transaction_hash') }}"
+                       placeholder="0x..." 
+                       class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm font-mono text-center">
+            </div>
 
-    <!-- بخش دکمه‌های پرداخت کریپتویی -->
-    <div class="space-y-3">
-        <!-- دکمه اتصال کیف پول / پرداخت -->
-        <button @click="payWithCrypto()" 
-                :disabled="loading"
-                class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50">
-            <i class="fa-solid fa-wallet text-lg" x-show="!loading"></i>
-            <i class="fa fa-spinner animate-spin" x-show="loading" x-cloak></i>
-            <span x-text="buttonText">Choose Plan (Pay with Crypto)</span>
-        </button>
-
-        <!-- نمایش آدرس کانتراکت یا وضعیت در صورت نیاز -->
-        <p x-show="statusMessage" x-text="statusMessage" class="text-xs mt-2" :class="statusClass" x-cloak></p>
+            <button type="submit" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-pink-500/20 hover:opacity-95 transition-all">
+                ثبت و ارتقای حساب
+            </button>
+        </form>
     </div>
 </div>
 
-@push('scripts')
-<!-- لود کردن کتابخانه Web3.js برای تعامل با متامسک -->
-<script src="https://cdn.jsdelivr.net/npm/web3@4.1.1/dist/web3.min.js"></script>
-
 <script>
-function cryptoPayment() {
-    return {
-        loading: false,
-        buttonText: 'Pay with Crypto / Connect Wallet',
-        statusMessage: '',
-        statusClass: 'text-gray-500',
-        
-        // آدرس ولت شما (دریافت‌کننده وجه) یا آدرس کانتراکت
-        merchantAddress: '0x0a2F71b27902621f3E45356b96018e2358Ce8f89', 
-        // مبلغ معادل به اتر (مثلاً برای $9.99 حدود 0.003 اتریوم - ترجیحاً از api بگیرید)
-        amountInEth: '0.003', 
+    // اسکریپت ساده برای کپی کردن آدرس ولت در کلیپ‌بورد کاربر
+    function copyWalletAddress() {
+        const copyText = document.getElementById("walletAddress");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // برای موبایل
 
-        async payWithCrypto() {
-            if (typeof window.ethereum === 'undefined') {
-                this.statusMessage = 'لطفاً ابتدا افزونه MetaMask را روی مرورگر خود نصب کنید.';
-                this.statusClass = 'text-red-500';
-                return;
-            }
-
-            this.loading = true;
-            this.buttonText = 'در حال ارتباط با کیف پول...';
-            
-            try {
-                // درخواست اتصال به کیف پول
-                const web3 = new Web3(window.ethereum);
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const userAddress = accounts[0];
-
-                this.buttonText = 'در انتظار تایید تراکنش...';
-
-                // ایجاد تراکنش ارسال اتریوم
-                const transactionParameters = {
-                    to: this.merchantAddress,
-                    from: userAddress,
-                    value: web3.utils.toHex(web3.utils.toWei(this.amountInEth, 'ether')),
-                };
-
-                // ارسال تراکنش به متامسک کاربر جهت تایید و امضا
-                const txHash = await window.ethereum.request({
-                    method: 'eth_sendTransaction',
-                    params: [transactionParameters],
-                });
-
-                this.statusMessage = 'تراکنش ارسال شد! در حال تایید در شبکه...';
-                this.statusClass = 'text-amber-500';
-
-                // ارسال TxHash به بک‌اند لاراول برای تایید نهایی و ارتقای حساب
-                this.verifyOnBackend(txHash);
-
-            } catch (error) {
-                console.error(error);
-                this.loading = false;
-                this.buttonText = 'Pay with Crypto / Connect Wallet';
-                this.statusMessage = 'عملیات پرداخت توسط کاربر لغو شد یا خطایی رخ داد.';
-                this.statusClass = 'text-red-500';
-            }
-        },
-
-        verifyOnBackend(txHash) {
-            // ارسال با fetch به لاراول
-            fetch("{{ route('premium.verifyCrypto') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ transaction_hash: txHash })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    this.statusMessage = 'حساب شما با موفقیت به ویژه ارتقا یافت!';
-                    this.statusClass = 'text-green-500 font-bold';
-                    this.buttonText = 'اکانت شما ویژه است';
-                    setTimeout(() => {
-                        window.location.href = "{{ route('dashboard') }}";
-                    }, 2000);
-                } else {
-                    this.statusMessage = 'خطا در تایید تراکنش: ' + data.message;
-                    this.statusClass = 'text-red-500';
-                    this.loading = false;
-                }
-            })
-            .catch(err => {
-                this.statusMessage = 'خطای شبکه در اتصال به سرور.';
-                this.statusClass = 'text-red-500';
-                this.loading = false;
-            });
-        }
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            const message = document.getElementById("copyMessage");
+            message.classList.remove("hidden");
+            setTimeout(() => {
+                message.classList.add("hidden");
+            }, 2000);
+        });
     }
-}
 </script>
-@endpush
 @endsection
