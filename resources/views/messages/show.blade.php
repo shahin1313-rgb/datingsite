@@ -264,15 +264,7 @@ function closePaymentModal() {
     m.classList.add('hidden'); m.classList.remove('flex');
 }
 function startPayment() {
-    if (!currentReceiver) return alert('خطا در شناسایی');
-    fetch("{{ route('payments.create') }}", {
-        method: "POST",
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ receiver_id: currentReceiver })
-    })
-    .then(res => res.json())
-    .then(data => data.payment_url ? window.location.href = data.payment_url : alert('خطا'))
-    .catch(err => console.error(err));
+    window.location.href = "{{ route('premium.upgrade') }}";
 }
 </script>
 

@@ -2,173 +2,146 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PremiumPayment;
+use App\Models\User;
+use App\Services\BscUsdtPaymentVerifier;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\DB;
+use Throwable;
+
 class PremiumController extends Controller
 {
-    public function index()
+    public function index(BscUsdtPaymentVerifier $verifier)
     {
-        return view('premium.index'); 
+        try {
+            $payment = $verifier->paymentDetails();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            abort(503, 'تنظیمات پرداخت Premium کامل نیست. با پشتیبانی تماس بگیرید.');
+        }
+
+        return view('premium.index', compact('payment'));
     }
 
-public function verifyRealCrypto(Request $request)
-{
-    $request->validate([
-        'transaction_hash' => [
-            'required',
-            'string',
-            'regex:/^0x([A-Fa-f0-9]{64})$/',
-            'unique:users,last_crypto_hash'
-        ],
-    ], [
-        'transaction_hash.required' => 'وارد کردن هش تراکنش الزامی است.',
-        'transaction_hash.regex' => 'فرمت هش تراکنش نامعتبر است.',
-        'transaction_hash.unique' => 'این تراکنش قبلاً استفاده شده است!',
-    ]);
-
-    $txHash = $request->input('transaction_hash');
-    
-    // استفاده از RPC رایگان و معتبر شبکه اصلی بایننس (BSC Mainnet)
-    $rpcUrl = "https://bsc-dataseed.binance.org/"; 
-
-    try {
-        $response = Http::post($rpcUrl, [
-            'jsonrpc' => '2.0',
-            'method' => 'eth_getTransactionByHash',
-            'params' => [$txHash],
-            'id' => 1
-        ]);
-
-        $txData = $response->json('result');
-
-        if (!$txData) {
-            return back()->withErrors(['transaction_hash' => 'تراکنشی با این مشخصات یافت نشد!'])->withInput();
-        }
-
-        // آدرس قرارداد رسمی تتر (USDT) روی شبکه اصلی بایننس (BSC)
-        $bscUsdtContract = strtolower("0x55d398326f99059fF775485246999027B3197955");
-        $txTo = strtolower($txData['to']);
-
-        if ($txTo !== $bscUsdtContract) {
-            return back()->withErrors(['transaction_hash' => 'این تراکنش مربوط به پرداخت تتر (USDT) در شبکه BSC نیست!'])->withInput();
-        }
-
-        $inputData = $txData['input'];
-        
-        // متد انتقال استاندارد
-        if (!str_starts_with($inputData, '0xa9059cbb')) {
-            return back()->withErrors(['transaction_hash' => 'نوع تراکنش معتبر نیست!'])->withInput();
-        }
-
-        // استخراج آدرس کیف پول شما (گیرنده)
-        $receiverHex = substr($inputData, 34, 40);
-        $receiverAddress = '0x' . $receiverHex;
-
-        // آدرس ولت مقصد (کیف پول دریافت‌کننده شما)
-        $ourWallet = strtolower("0x0a2F71b27902621f3E45356b96018e2358Ce8f89");
-
-        if (strtolower($receiverAddress) !== $ourWallet) {
-            return back()->withErrors(['transaction_hash' => 'این تتر به ولت فروشگاه واریز نشده است!'])->withInput();
-        }
-
-        // استخراج مبلغ ارسالی (تتر روی BSC دارای ۱۸ رقم اعشار است)
-        $valueHex = substr($inputData, 74, 64);
-        // تبدیل مقدار هگزسیمال بزرگ به دسی‌مال بر پایه ۱۸ رقم اعشار
-        $valueDecimal = gmp_strval(gmp_init($valueHex, 16));
-        $actualValue = floatval($valueDecimal) / pow(10, 18); 
-
-        // بررسی اینکه حداقل نیم دلار (0.5 USDT) واریز شده باشد
-        if ($actualValue < 0.5) {
-            return back()->withErrors(['transaction_hash' => 'مبلغ واریزی کمتر از نیم دلار (0.5 USDT) است!'])->withInput();
-        }
-
-    } catch (\Exception $e) {
-        return back()->withErrors(['transaction_hash' => 'خطایی در تایید تراکنش رخ داد: ' . $e->getMessage()])->withInput();
-    }
-
-    // ارتقای کاربر در صورت صحت اطلاعات
-    $user = Auth::user(); 
-    $user->update([ 
-        'is_premium' => true,
-        'last_crypto_hash' => $txHash
-    ]);
-
-    return redirect()->route('dashboard')->with('success', 'پرداخت واقعی نیم دلاری تتر شما با موفقیت تایید و اکانت فعال شد!');
-}
-
-public function verifyCrypto(Request $request)
-    {
-        // ۱. بررسی فرمت اولیه هش (هش‌های اتریوم همیشه با 0x شروع شده و ۶۶ کاراکتر هستند)
-        $request->validate([
+    public function verifyCrypto(
+        Request $request,
+        BscUsdtPaymentVerifier $verifier
+    ) {
+        $validated = $request->validate([
             'transaction_hash' => [
                 'required',
                 'string',
-                'regex:/^0x([A-Fa-f0-9]{64})$/', // بررسی دقیق الگوی هش‌های اتریوم
-                'unique:users,last_crypto_hash'
+                'regex:/^0x[A-Fa-f0-9]{64}$/',
             ],
         ], [
             'transaction_hash.required' => 'وارد کردن هش تراکنش الزامی است.',
-            'transaction_hash.regex' => 'فرمت هش تراکنش نامعتبر است. (باید با 0x شروع شده و شامل حروف و اعداد هگزادسیمال باشد)',
-            'transaction_hash.unique' => 'این تراکنش قبلاً در سیستم ثبت شده است!',
+            'transaction_hash.regex' =>
+                'هش تراکنش باید با 0x شروع شود و دقیقاً ۶۴ کاراکتر هگز داشته باشد.',
         ]);
 
-        $txHash = $request->input('transaction_hash');
-        
-        // ۲. استعلام مستقیم از بلاکچین (شبکه آزمایشی Sepolia) از طریق یک ارائه‌دهنده عمومی رایگان
-        $rpcUrl = "https://ethereum-sepolia-rpc.publicnode.com"; // یا آدرس اختصاصی شما در Infura/QuickNode
-        
-        try {
-            $response = Http::post($rpcUrl, [
-                'jsonrpc' => '2.0',
-                'method' => 'eth_getTransactionByHash',
-                'params' => [$txHash],
-                'id' => 1
-            ]);
+        $transactionHash = strtolower($validated['transaction_hash']);
 
-            if ($response->failed()) {
-                return back()->withErrors(['transaction_hash' => 'ارتباط با شبکه بلاکچین برقرار نشد. بعداً تلاش کنید.'])->withInput();
-            }
-
-            $txData = $response->json('result');
-
-            // اگر تراکنش اصلاً در بلاکچین پیدا نشد
-            if (!$txData) {
-                return back()->withErrors(['transaction_hash' => 'تراکنشی با این مشخصات در شبکه بلاکچین یافت نشد!'])->withInput();
-            }
-
-            // ۳. بررسی ولت مقصد (باید مطمئن شویم پول به ولت ما آمده، نه شخص دیگری)
-            $ourWallet = strtolower("0x0a2F71b27902621f3E45356b96018e2358Ce8f89");
-            $txTo = strtolower($txData['to']);
-
-            if ($txTo !== $ourWallet) {
-                return back()->withErrors(['transaction_hash' => 'این تراکنش به ولت ما ارسال نشده است!'])->withInput();
-            }
-
-            // ۴. بررسی مبلغ واریزی (درخواست ما 0.003 اتر بود)
-            // بلاکچین مبالغ را به واحد Wei برمی‌گرداند. (هر 1 اتر = 10^18 Wei)
-            // 0.003 ETH معادل 3000000000000000 Wei است که به هگزادسیمال می‌شود: 0xaa87bee538000
-            $requiredValueHex = "0xaa87bee538000"; 
-            $txValueHex = $txData['value'];
-
-            // تبدیل هگزادسیمال به عدد معمولی جهت مقایسه راحت‌تر
-            $txValue = hexdec($txValueHex);
-            $requiredValue = hexdec($requiredValueHex);
-
-            if ($txValue < $requiredValue) {
-                return back()->withErrors(['transaction_hash' => 'مبلغ واریزی کمتر از 0.003 ETH است!'])->withInput();
-            }
-
-        } catch (\Exception $e) {
-            return back()->withErrors(['transaction_hash' => 'خطایی در بررسی تراکنش رخ داد: ' . $e->getMessage()])->withInput();
+        if ($this->transactionAlreadyUsed($transactionHash)) {
+            return back()
+                ->withErrors([
+                    'transaction_hash' => 'این تراکنش قبلاً برای Premium استفاده شده است.',
+                ])
+                ->withInput();
         }
 
-        // ۵. در صورت موفقیت تمام مراحل بالا، اکانت ویژه می‌شود
-        $user = Auth::user(); 
-        $user->update([ 
-            'is_premium' => true,
-            'last_crypto_hash' => $txHash
-        ]);
+        try {
+            $verifiedPayment = $verifier->verify($transactionHash);
+        } catch (Throwable $exception) {
+            report($exception);
 
-        return redirect()->route('dashboard')->with('success', 'تراکنش شما تایید شد و حساب شما با موفقیت به حالت ویژه ارتقا یافت!');
+            return back()
+                ->withErrors([
+                    'transaction_hash' =>
+                        'تراکنش معتبر نیست، هنوز تأیید کافی ندارد یا پرداخت صحیح USDT روی BSC Mainnet پیدا نشد.',
+                ])
+                ->withInput();
+        }
+
+        try {
+            DB::transaction(function () use ($request, $verifiedPayment): void {
+                $user = User::query()
+                    ->whereKey($request->user()->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                PremiumPayment::create([
+                    'user_id' => $user->getKey(),
+                    'network' => $verifiedPayment['network'],
+                    'chain_id' => $verifiedPayment['chain_id'],
+                    'asset' => $verifiedPayment['asset'],
+                    'token_contract' => $verifiedPayment['token_contract'],
+                    'tx_hash' => $verifiedPayment['tx_hash'],
+                    'sender_address' => $verifiedPayment['sender_address'],
+                    'receiver_address' => $verifiedPayment['receiver_address'],
+                    'amount_atomic' => $verifiedPayment['amount_atomic'],
+                    'block_number' => $verifiedPayment['block_number'],
+                    'confirmations' => $verifiedPayment['confirmations'],
+                    'status' => 'verified',
+                    'verified_at' => now(),
+                ]);
+
+                $premiumStartsAt =
+                    $user->premium_until && $user->premium_until->isFuture()
+                        ? $user->premium_until->copy()
+                        : now();
+
+                $user->forceFill([
+                    'is_premium' => true,
+                    'premium_until' => $premiumStartsAt->addDays(
+                        $verifiedPayment['premium_days']
+                    ),
+                    'last_crypto_hash' => $verifiedPayment['tx_hash'],
+                ])->save();
+            }, 3);
+        } catch (QueryException $exception) {
+            if ($this->transactionAlreadyUsed($transactionHash)) {
+                return back()
+                    ->withErrors([
+                        'transaction_hash' =>
+                            'این تراکنش قبلاً برای Premium استفاده شده است.',
+                    ])
+                    ->withInput();
+            }
+
+            report($exception);
+
+            return back()
+                ->withErrors([
+                    'transaction_hash' => 'ثبت پرداخت انجام نشد. دوباره تلاش کنید.',
+                ])
+                ->withInput();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()
+                ->withErrors([
+                    'transaction_hash' => 'فعال‌سازی Premium انجام نشد. دوباره تلاش کنید.',
+                ])
+                ->withInput();
+        }
+
+        return redirect()
+            ->route('dashboard')
+            ->with(
+                'success',
+                sprintf(
+                    'پرداخت واقعی USDT تأیید شد و حساب شما برای %d روز ویژه شد.',
+                    $verifiedPayment['premium_days']
+                )
+            );
+    }
+
+    private function transactionAlreadyUsed(string $transactionHash): bool
+    {
+        return PremiumPayment::query()
+            ->where('tx_hash', $transactionHash)
+            ->exists();
     }
 }

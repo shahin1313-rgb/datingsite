@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     HomeController, AdminController, ReportController, MessageController,
     ProfileController, DashboardController, TicketController, BlockController,
-    LikeController, LanguageController, LandingController, PaymentController,
+    LikeController, LanguageController, LandingController, 
     PremiumController
 };
 use App\Http\Controllers\Auth\{
@@ -29,10 +29,7 @@ Route::middleware('guest')->group(function () {
 });
 
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/upgrade', [PremiumController::class, 'upgrade'])->name('premium.upgrade');
-    Route::post('/upgrade/verify-crypto', [PremiumController::class, 'verifyCrypto'])->name('premium.verifyCrypto');
-});
+
 
 
 // --- Authenticated User Routes ---
@@ -43,7 +40,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [ProfileController::class, 'search'])->name('search');
-    Route::get('/upgrade', [PremiumController::class, 'index'])->name('premium.upgrade');
+    Route::get(
+    '/upgrade',
+    [PremiumController::class, 'index']
+)->name('premium.upgrade');
+
+Route::post(
+    '/upgrade/verify-crypto',
+    [PremiumController::class, 'verifyCrypto']
+)
+    ->middleware('throttle:5,1')
+    ->name('premium.verifyCrypto');
+   
 
     // Profile Management
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -84,9 +92,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/unblock/{id}', [BlockController::class, 'unblock'])->name('user.unblock');
     Route::post('/report', [ReportController::class, 'store'])->name('report.store');
 
-    // Payments
-    Route::post('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-    Route::post('/payments/callback', [PaymentController::class, 'callback'])->name('payments.callback');
+    
 });
 
 // --- Admin Routes (Fully Secured) ---
