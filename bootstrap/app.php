@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
-use App\Http\Middleware\CheckAdmin; // Ensure this class exists in the specified namespace
+use App\Http\Middleware\EnsureUserIsNotBanned;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,16 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Register your middleware here
         $middleware->alias([
-            'admin' => AdminMiddleware::class, // Custom middleware
-            'auth' => Authenticate::class, // Default Laravel auth middleware
+            'admin' => AdminMiddleware::class,
+            'auth' => Authenticate::class,
+            'not_banned' => EnsureUserIsNotBanned::class,
         ]);
-         // اعمال میدل‌ورهای عمومی برای تمام درخواست‌های وب
-    $middleware->web(append: [
-        \App\Http\Middleware\SetLocale::class,
-    ]);
+
+        $middleware->web(append: [
+            SetLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->create();
