@@ -2,108 +2,189 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\ProfileView;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
+    /**
+     * نمایش فرم ویرایش پروفایل کاربر جاری.
+     */
     public function edit()
     {
-        return view('profile.edit', ['user' => Auth::user()]);
+        return view('profile.edit', [
+            'user' => Auth::user(),
+        ]);
     }
 
+    /**
+     * ذخیره تغییرات پروفایل کاربر جاری.
+     */
     public function update(Request $request)
     {
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name'            => 'required|string|max:255',
-            'email'           => 'required|email|max:255|unique:users,email,' . $user->id,
-            'city'            => 'nullable|string|max:255',
-            'bio'             => 'nullable|string|max:1000',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email,' . $user->id,
+            ],
+
+            'city' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'bio' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+
+            'profile_picture' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif',
+                'max:2048',
+            ],
         ]);
 
         if ($request->hasFile('profile_picture')) {
-            // حذف عکس قبلی (اگر وجود داشته باشد)
             if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
+                Storage::disk('public')->delete(
+                    $user->profile_picture
+                );
             }
 
-            $path = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $validated['profile_picture'] = $path;
+            $validated['profile_picture'] = $request
+                ->file('profile_picture')
+                ->store('profile_pictures', 'public');
         }
 
         $user->update($validated);
 
-        return redirect()->route('dashboard')->with('success', 'پروفایل با موفقیت بروزرسانی شد.');
+        return redirect()
+            ->route('dashboard')
+            ->with(
+                'success',
+                'پروفایل با موفقیت بروزرسانی شد.'
+            );
     }
 
+    /**
+     * نمایش عمومی یک پروفایل.
+     *
+     * اطلاعات خصوصی مانند email و role عمداً از دیتابیس
+     * دریافت نمی‌شوند و به قالب ارسال نخواهند شد.
+     */
     public function show($id)
-{
-    // ۱. تغییر نام متغیر به $user
-    $user = User::findOrFail($id);
+    {
+        $user = User::query()
+            ->select([
+                'id',
+                'name',
+                'city',
+                'bio',
+                'profile_picture',
+                'interested_in',
+                'salary',
+            ])
+            ->findOrFail($id);
 
-    // فقط اگر کاربر لاگین کرده باشد و پروفایل متعلق به خودش نباشد → بازدید ثبت شود
-    if (Auth::check() && Auth::id() !== $user->id) {
+        /*
+         * بازدید از پروفایل خود کاربر ثبت نمی‌شود.
+         */
+        if (Auth::id() !== $user->id) {
+            $alreadyViewedToday = ProfileView::query()
+                ->where('viewer_id', Auth::id())
+                ->where('viewed_id', $user->id)
+                ->whereDate('created_at', Carbon::today())
+                ->exists();
 
-        $alreadyViewedToday = ProfileView::where('viewer_id', Auth::id())
-            ->where('viewed_id', $user->id)
-            ->whereDate('created_at', Carbon::today())
-            ->exists();
-
-        if (! $alreadyViewedToday) {
-            ProfileView::create([
-                'viewer_id' => Auth::id(),
-                'viewed_id' => $user->id,
-            ]);
+            if (! $alreadyViewedToday) {
+                ProfileView::create([
+                    'viewer_id' => Auth::id(),
+                    'viewed_id' => $user->id,
+                ]);
+            }
         }
+
+        return view('profile.show', compact('user'));
     }
 
-    // ۲. پاس دادن متغیر با نام 'user' به فایل بلید
-    return view('profile.show', compact('user'));
-}
+    /**
+     * جست‌وجوی کاربران.
+     */
     public function search(Request $request)
     {
         $query = User::query();
 
         if ($request->filled('city')) {
-            $query->where('city', 'like', '%' . $request->city . '%');
+            $query->where(
+                'city',
+                'like',
+                '%' . $request->input('city') . '%'
+            );
         }
 
-        if ($request->filled('min_age') || $request->filled('max_age')) {
-            $minAge = $request->input('min_age', 18);
-            $maxAge = $request->input('max_age', 99);
+        if (
+            $request->filled('min_age') ||
+            $request->filled('max_age')
+        ) {
+            $minAge = (int) $request->input('min_age', 18);
+            $maxAge = (int) $request->input('max_age', 99);
 
-            $currentYear   = Carbon::now()->year;
-            $minBirthYear  = $currentYear - $maxAge; // کسی که maxAge داره → سال تولد کمتر
-            $maxBirthYear  = $currentYear - $minAge;
+            $currentYear = Carbon::now()->year;
 
-            $query->whereBetween('birth_year', [$minBirthYear, $maxBirthYear]);
+            $minBirthYear = $currentYear - $maxAge;
+            $maxBirthYear = $currentYear - $minAge;
+
+            $query->whereBetween('birth_year', [
+                $minBirthYear,
+                $maxBirthYear,
+            ]);
         }
 
         if ($request->filled('marital_status')) {
-            $query->where('marital_status', $request->marital_status);
+            $query->where(
+                'marital_status',
+                $request->input('marital_status')
+            );
         }
 
-        // اصلاح نام فیلد
         if ($request->filled('interested_in')) {
-            $query->where('interests', 'like', '%' . $request->interested_in . '%');
+            $query->where(
+                'interests',
+                'like',
+                '%' . $request->input('interested_in') . '%'
+            );
         }
 
-        if ($request->has('has_photo')) {
+        if ($request->boolean('has_photo')) {
             $query->whereNotNull('profile_picture');
         }
 
-        if ($request->has('is_active')) {
+        if ($request->boolean('is_active')) {
             $query->where('is_active', true);
         }
 
-        $profiles = $query->paginate(12); // تعداد منطقی‌تر
+        $profiles = $query
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
 
         return view('search', compact('profiles'));
     }
