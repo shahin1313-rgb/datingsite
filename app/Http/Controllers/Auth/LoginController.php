@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class LoginController extends Controller
 {
     use AuthenticatesUsers;
@@ -25,7 +26,7 @@ class LoginController extends Controller
     /**
      * پس از درست بودن ایمیل و رمز عبور اجرا می‌شود.
      */
-    protected function authenticated(Request $request, $user)
+   protected function authenticated(Request $request, $user)
     {
         if ((bool) $user->banned) {
             Auth::logout();
@@ -37,11 +38,24 @@ class LoginController extends Controller
                 ->route('login')
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'حساب کاربری شما توسط مدیریت مسدود شده است.',
+                    'email' => 'حساب کاربری شما مسدود شده است.',
                 ]);
         }
 
-        // فقط ورود موفق کاربر آزادشده ثبت شود
+        if ($user->role === 'admin') {
+            Auth::logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('admin.login')
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'email' => 'حساب‌های مدیریتی باید از صفحه ورود مدیریت وارد شوند.',
+                ]);
+        }
+
         $user->last_login_at = now();
         $user->save();
 

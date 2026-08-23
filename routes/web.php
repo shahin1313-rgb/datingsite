@@ -21,6 +21,7 @@ use App\Http\Controllers\Auth\{
     LoginController,
     RegisterController,
     ResetPasswordController,
+    AdminLoginController,
     ForgotPasswordController
 };
 
@@ -70,7 +71,7 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth','not_banned')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -244,9 +245,19 @@ Route::middleware('auth')->group(function () {
 | Admin Routes
 |--------------------------------------------------------------------------
 */
+// صفحه ورود مستقل مدیریت
+Route::get(
+    '/admin/login',
+    [AdminLoginController::class, 'showLoginForm']
+)->name('admin.login');
+
+Route::post(
+    '/admin/login',
+    [AdminLoginController::class, 'login']
+)->name('admin.login.submit');
 
 Route::prefix('admin')
-    ->middleware(['auth', 'admin'])
+    ->middleware(['auth','not_banned', 'admin'])
     ->name('admin.')
     ->group(function () {
 
