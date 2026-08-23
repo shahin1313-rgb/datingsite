@@ -157,7 +157,7 @@
         </nav>
 
         {{-- محتوای اصلی --}}
-        <main class="flex-grow p-4 pb-safe">
+        <main class="main-content w-full flex-1 p-4 md:p-8">
             <div class="max-w-md mx-auto"> 
                 @yield('content')
             </div>

@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
-use App\Http\Middleware\CheckAdmin; // Ensure this class exists in the specified namespace
+use App\Http\Middleware\EnsureUserIsNotBanned;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,16 +16,34 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Register your middleware here
         $middleware->alias([
-            'admin' => AdminMiddleware::class, // Custom middleware
-            'auth' => Authenticate::class, // Default Laravel auth middleware
+            'admin' => AdminMiddleware::class,
+            'auth' => Authenticate::class,
+            'not_banned' => EnsureUserIsNotBanned::class,
         ]);
-         // اعمال میدل‌ورهای عمومی برای تمام درخواست‌های وب
-    $middleware->web(append: [
-        \App\Http\Middleware\SetLocale::class,
-    ]);
+
+        /*
+         * درخواست صفحات مدیریت به ورود مدیریت منتقل شود.
+         * سایر صفحات همچنان از ورود معمولی استفاده می‌کنند.
+         */
+        $middleware->redirectGuestsTo(
+            function (Request $request): string {
+                if (
+                    $request->is('admin') ||
+                    $request->is('admin/*')
+                ) {
+                    return route('admin.login');
+                }
+
+                return route('login');
+            }
+        );
+
+        $middleware->web(append: [
+            SetLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->create();
