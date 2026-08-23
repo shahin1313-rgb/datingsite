@@ -211,7 +211,7 @@ public function store(Request $request)
     /**
      * 5. بررسی محدودیت پریمیوم برای پیام‌های بعدی
      */
-    if (! $sender->is_premium && ! $receiver->is_premium) {
+    if (! $sender->isPremium() && ! $receiver->isPremium()) {
         return response()->json([
             'error' => 'PREMIUM_REQUIRED',
             'receiver_id' => $receiver->id // مقدار درست جایگزین شد
