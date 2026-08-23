@@ -16,10 +16,22 @@
     <div class="p-2">
         <ul class="space-y-1">
             @forelse ($contacts as $userId => $messages)
-                @php
-                    $latestMessage = $messages->first();
-                    $contact = $latestMessage->sender_id == auth()->id() ? $latestMessage->receiver : $latestMessage->sender;
-                    $unreadCount = $unreadCounts[$userId] ?? 0;
+               @php
+                        $latestMessage = $messages->first();
+
+                        $contact = $latestMessage->sender_id == auth()->id()
+                            ? $latestMessage->receiver
+                            : $latestMessage->sender;
+
+                        $unreadCount = $unreadCounts[$userId] ?? 0;
+
+                        /*
+                        * پیام private برای فرستنده قابل مشاهده است،
+                        * اما متن آن نباید برای گیرنده در پیش‌نمایش نمایش داده شود.
+                        */
+                        $latestMessageIsPrivateForCurrentUser =
+                            $latestMessage->status === 'private'
+                            && (int) $latestMessage->receiver_id === (int) auth()->id();
                 @endphp
 
                 <li onclick="handleClick(event, '{{ route('messages.show', $contact->id) }}')"
@@ -42,7 +54,12 @@
                         
                         <div class="flex justify-between items-center mt-1">
                             <p class="text-sm {{ $unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500' }} truncate w-48">
-                                {{ $latestMessage->message }}
+                                    @if ($latestMessageIsPrivateForCurrentUser)
+                                        <i class="fas fa-lock ml-1" aria-hidden="true"></i>
+                                        پیام ویژه قفل است
+                                    @else
+                                        {{ $latestMessage->message }}
+                                    @endif
                             </p>
                             
                             <div class="flex space-x-2 stop-click">
