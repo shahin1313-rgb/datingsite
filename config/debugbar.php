@@ -14,7 +14,7 @@ return [
      |
      */
 
-    'enabled' => env('DEBUGBAR_ENABLED', null),
+    'enabled' => env('DEBUGBAR_ENABLED', false),
     'hide_empty_tabs' => false, // Hide tabs until they have content
     'except' => [
         'telescope*',
@@ -38,8 +38,8 @@ return [
      | Leaving it to null will allow localhost only.
      */
     'storage' => [
-        'enabled'    => true,
-        'open'       => env('DEBUGBAR_OPEN_STORAGE'), // bool/callback.
+        'enabled'    =>  env('DEBUGBAR_STORAGE_ENABLED', false),
+        'open'       => env('DEBUGBAR_OPEN_STORAGE', false), // bool/callback.
         'driver'     => 'file', // redis, file, pdo, socket, custom
         'path'       => storage_path('debugbar'), // For file driver
         'connection' => null,   // Leave null for default connection (Redis/PDO)
