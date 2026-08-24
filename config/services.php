@@ -14,7 +14,9 @@ return [
 
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
+
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
+
         'region' => env(
             'AWS_DEFAULT_REGION',
             'us-east-1'
@@ -23,6 +25,23 @@ return [
 
     'resend' => [
         'key' => env('RESEND_KEY'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cloudflare Turnstile
+    |--------------------------------------------------------------------------
+    */
+
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+
+        'verify_url' => env(
+            'TURNSTILE_VERIFY_URL',
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+        ),
     ],
 
     'slack' => [

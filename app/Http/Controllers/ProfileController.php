@@ -63,18 +63,52 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('profile_picture')) {
+            /*
+             * ابتدا عکس جدید ذخیره می‌شود.
+             */
+            $newPicturePath = $request
+                ->file('profile_picture')
+                ->store('profile_pictures', 'public');
+
+            /*
+             * فقط بعد از ذخیره موفق عکس جدید،
+             * عکس قبلی حذف می‌شود.
+             */
             if ($user->profile_picture) {
                 Storage::disk('public')->delete(
                     $user->profile_picture
                 );
             }
 
-            $validated['profile_picture'] = $request
-                ->file('profile_picture')
-                ->store('profile_pictures', 'public');
+            $validated['profile_picture'] =
+                $newPicturePath;
         }
 
-        $user->update($validated);
+        $emailChanged =
+            $validated['email'] !== $user->email;
+
+        $user->fill($validated);
+
+        /*
+         * اگر ایمیل تغییر کرده باشد، تأیید قبلی
+         * دیگر معتبر نیست.
+         */
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        /*
+         * برای ایمیل جدید، لینک تأیید تازه ارسال می‌شود.
+         */
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+
+            return redirect()
+                ->route('verification.notice')
+                ->with('resent', true);
+        }
 
         return redirect()
             ->route('dashboard')
@@ -87,8 +121,8 @@ class ProfileController extends Controller
     /**
      * نمایش عمومی یک پروفایل.
      *
-     * اطلاعات خصوصی مانند email و role عمداً از دیتابیس
-     * دریافت نمی‌شوند و به قالب ارسال نخواهند شد.
+     * اطلاعات خصوصی مانند email و role عمداً
+     * از دیتابیس دریافت نمی‌شوند.
      */
     public function show($id)
     {
@@ -111,7 +145,10 @@ class ProfileController extends Controller
             $alreadyViewedToday = ProfileView::query()
                 ->where('viewer_id', Auth::id())
                 ->where('viewed_id', $user->id)
-                ->whereDate('created_at', Carbon::today())
+                ->whereDate(
+                    'created_at',
+                    Carbon::today()
+                )
                 ->exists();
 
             if (! $alreadyViewedToday) {
@@ -122,7 +159,10 @@ class ProfileController extends Controller
             }
         }
 
-        return view('profile.show', compact('user'));
+        return view(
+            'profile.show',
+            compact('user')
+        );
     }
 
     /**
@@ -144,13 +184,23 @@ class ProfileController extends Controller
             $request->filled('min_age') ||
             $request->filled('max_age')
         ) {
-            $minAge = (int) $request->input('min_age', 18);
-            $maxAge = (int) $request->input('max_age', 99);
+            $minAge = (int) $request->input(
+                'min_age',
+                18
+            );
+
+            $maxAge = (int) $request->input(
+                'max_age',
+                99
+            );
 
             $currentYear = Carbon::now()->year;
 
-            $minBirthYear = $currentYear - $maxAge;
-            $maxBirthYear = $currentYear - $minAge;
+            $minBirthYear =
+                $currentYear - $maxAge;
+
+            $maxBirthYear =
+                $currentYear - $minAge;
 
             $query->whereBetween('birth_year', [
                 $minBirthYear,
@@ -169,16 +219,23 @@ class ProfileController extends Controller
             $query->where(
                 'interests',
                 'like',
-                '%' . $request->input('interested_in') . '%'
+                '%' .
+                $request->input('interested_in') .
+                '%'
             );
         }
 
         if ($request->boolean('has_photo')) {
-            $query->whereNotNull('profile_picture');
+            $query->whereNotNull(
+                'profile_picture'
+            );
         }
 
         if ($request->boolean('is_active')) {
-            $query->where('is_active', true);
+            $query->where(
+                'is_active',
+                true
+            );
         }
 
         $profiles = $query
@@ -186,6 +243,9 @@ class ProfileController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('search', compact('profiles'));
+        return view(
+            'search',
+            compact('profiles')
+        );
     }
 }

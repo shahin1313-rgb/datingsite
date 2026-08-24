@@ -2,14 +2,16 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Message;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * ثبت سرویس‌های برنامه.
      */
     public function register(): void
     {
@@ -17,25 +19,60 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * راه‌اندازی سرویس‌های برنامه.
      */
     public function boot(): void
     {
-        
-    view()->composer('*', function ($view) {
-        if (Auth::check()) {
-            $userId = Auth::id();
+        /*
+         * شخصی‌سازی ایمیل تأیید حساب.
+         *
+         * لینک امضاشده و امن Laravel حفظ می‌شود؛
+         * فقط عنوان و ظاهر ایمیل تغییر می‌کند.
+         */
+        VerifyEmail::toMailUsing(
+            function (
+                object $notifiable,
+                string $verificationUrl
+            ): MailMessage {
+                return (new MailMessage)
+                    ->subject(
+                        'تأیید ایمیل و فعال‌سازی حساب ولورا'
+                    )
+                    ->view('emails.verify-email', [
+                        'user' => $notifiable,
 
-            // تعداد کل پیام‌های خوانده‌نشده
-            $globalUnreadCount = Message::where('receiver_id', $userId)
-                ->whereNull('read_at')
-                ->count();
+                        'verificationUrl' =>
+                            $verificationUrl,
 
-         
-        } else {
+                        'expiresInMinutes' => (int) config(
+                            'auth.verification.expire',
+                            60
+                        ),
+                    ]);
+            }
+        );
+
+        /*
+         * نمایش تعداد پیام‌های خوانده‌نشده
+         * در تمام Viewهای سایت.
+         */
+        view()->composer('*', function ($view) {
+            if (Auth::check()) {
+                $globalUnreadCount = Message::query()
+                    ->where(
+                        'receiver_id',
+                        Auth::id()
+                    )
+                    ->whereNull('read_at')
+                    ->count();
+            } else {
                 $globalUnreadCount = 0;
             }
-               $view->with('globalUnreadCount', $globalUnreadCount);
-    });
+
+            $view->with(
+                'globalUnreadCount',
+                $globalUnreadCount
+            );
+        });
     }
 }
