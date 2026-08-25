@@ -5,14 +5,14 @@ namespace Tests\Feature;
 use App\Models\PremiumPayment;
 use App\Models\User;
 use App\Services\BscUsdtPaymentVerifier;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class PremiumPaymentSecurityTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private const TX_HASH =
         '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';

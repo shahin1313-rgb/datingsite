@@ -4,14 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Notifications\AdminTwoFactorCode;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class AdminTwoFactorAuthenticationTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private const PASSWORD = 'Secure-password-123';
 
