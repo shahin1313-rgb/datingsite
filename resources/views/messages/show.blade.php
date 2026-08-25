@@ -239,17 +239,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             if (container) {
-                const newMessageHtml = `
-                    <div class="flex justify-end items-end gap-2">
-                        <div class="max-w-[80%] relative">
-                            <div class="px-4 py-2.5 shadow-sm text-sm bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl rounded-br-none">
-                                ${messageText}
-                            </div>
-                        </div>
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', newMessageHtml);
-                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            const messageRow = document.createElement('div');
+            messageRow.className = 'flex justify-end items-end gap-2';
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'max-w-[80%] relative';
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className =
+                'px-4 py-2.5 shadow-sm text-sm bg-gradient-to-r ' +
+                'from-pink-500 to-rose-500 text-white rounded-2xl rounded-br-none';
+
+            // متن پیام فقط به‌عنوان متن نمایش داده می‌شود و HTML اجرا نمی‌شود.
+            messageBubble.textContent = messageText;
+
+            messageWrapper.appendChild(messageBubble);
+            messageRow.appendChild(messageWrapper);
+
+            const endMarker = document.getElementById('end-of-messages');
+
+            if (endMarker) {
+                container.insertBefore(messageRow, endMarker);
+            } else {
+                container.appendChild(messageRow);
             }
+
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
+                        }
             form.reset();
         }).catch(err => console.error(err));
     });
