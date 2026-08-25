@@ -22,8 +22,8 @@ use App\Http\Controllers\Auth\{
     RegisterController,
     ResetPasswordController,
     AdminLoginController,
-    ForgotPasswordController,
-    VerificationController
+    AdminTwoFactorController,
+    ForgotPasswordController
 };
 
 use App\Http\Controllers\Admin\{
@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\{
     AdminMessageController,
     AdminStateController,
     AdminTicketController,
+    AdminAuditLogController,
     PhotoController
 };
 
@@ -40,12 +41,15 @@ use App\Http\Controllers\Admin\{
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [LandingController::class, 'welcome']);
+Route::get(
+    '/',
+    [LandingController::class, 'welcome']
+);
 
-Route::get('/lang/{lang}', [
-    LanguageController::class,
-    'switch',
-]);
+Route::get(
+    '/lang/{lang}',
+    [LanguageController::class, 'switch']
+);
 
 Route::get('/test-modal', function () {
     return view('test-modal');
@@ -57,103 +61,82 @@ Route::get('/test-modal', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest')->group(function () {
-    Route::get(
-        '/login',
-        [LoginController::class, 'showLoginForm']
-    )->name('login');
+Route::middleware('guest')->group(
+    function (): void {
+        Route::get(
+            '/login',
+            [
+                LoginController::class,
+                'showLoginForm',
+            ]
+        )->name('login');
 
-    Route::post(
-        '/login',
-        [LoginController::class, 'login']
-    )->middleware('throttle:10,1');
+        Route::post(
+            '/login',
+            [
+                LoginController::class,
+                'login',
+            ]
+        );
 
-    Route::get(
-        '/register',
-        [RegisterController::class, 'showRegistrationForm']
-    )->name('register');
+        Route::get(
+            '/register',
+            [
+                RegisterController::class,
+                'showRegistrationForm',
+            ]
+        )->name('register');
 
-    /*
-     * هر IP حداکثر پنج درخواست ثبت‌نام
-     * در یک دقیقه می‌تواند ارسال کند.
-     */
-    Route::post(
-        '/register',
-        [RegisterController::class, 'register']
-    )->middleware('throttle:5,1');
-});
+        Route::post(
+            '/register',
+            [
+                RegisterController::class,
+                'register',
+            ]
+        );
+    }
+);
 
 /*
 |--------------------------------------------------------------------------
-| Email Verification and Logout
+| Authenticated User Routes
 |--------------------------------------------------------------------------
-|
-| کاربر تأییدنشده باید امکان مشاهده صفحه تأیید،
-| ارسال مجدد لینک و خروج از حساب را داشته باشد.
-|
 */
 
 Route::middleware([
     'auth',
     'not_banned',
-])->group(function () {
+])->group(function (): void {
     Route::post(
         '/logout',
-        [LoginController::class, 'logout']
+        [
+            LoginController::class,
+            'logout',
+        ]
     )->name('logout');
 
     Route::get(
-        '/email/verify',
-        [VerificationController::class, 'show']
-    )->name('verification.notice');
-
-    Route::get(
-        '/email/verify/{id}/{hash}',
-        [VerificationController::class, 'verify']
-    )
-        ->whereNumber('id')
-        ->name('verification.verify');
-
-    Route::post(
-        '/email/resend',
-        [VerificationController::class, 'resend']
-    )->name('verification.resend');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Verified User Routes
-|--------------------------------------------------------------------------
-|
-| کاربر تا قبل از تأیید ایمیل به هیچ‌کدام از
-| قسمت‌های اصلی سایت دسترسی ندارد.
-|
-*/
-
-Route::middleware([
-    'auth',
-    'verified',
-    'not_banned',
-])->group(function () {
-    /*
-    |--------------------------------------------------------------------------
-    | Main Pages
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get(
         '/home',
-        [HomeController::class, 'index']
+        [
+            HomeController::class,
+            'index',
+        ]
     )->name('home');
 
     Route::get(
         '/dashboard',
-        [DashboardController::class, 'index']
+        [
+            DashboardController::class,
+            'index',
+        ]
     )->name('dashboard');
 
     Route::get(
         '/search',
-        [ProfileController::class, 'search']
+        [
+            ProfileController::class,
+            'search',
+        ]
     )->name('search');
 
     /*
@@ -164,44 +147,53 @@ Route::middleware([
 
     Route::get(
         '/upgrade',
-        [PremiumController::class, 'index']
+        [
+            PremiumController::class,
+            'index',
+        ]
     )->name('premium.upgrade');
 
     Route::post(
         '/upgrade/verify-crypto',
-        [PremiumController::class, 'verifyCrypto']
+        [
+            PremiumController::class,
+            'verifyCrypto',
+        ]
     )
         ->middleware('throttle:5,1')
         ->name('premium.verifyCrypto');
 
     /*
     |--------------------------------------------------------------------------
-    | Profile Management
+    | Profile
     |--------------------------------------------------------------------------
     */
 
     Route::prefix('profile')
         ->name('profile.')
-        ->group(function () {
+        ->group(function (): void {
             Route::get(
                 '/edit',
-                [ProfileController::class, 'edit']
+                [
+                    ProfileController::class,
+                    'edit',
+                ]
             )->name('edit');
 
             Route::post(
                 '/update',
-                [ProfileController::class, 'update']
+                [
+                    ProfileController::class,
+                    'update',
+                ]
             )->name('update');
 
-            /*
-             * تنها مسیر مجاز نمایش پروفایل عمومی.
-             *
-             * مسیر قدیمی /profile/{id} که به
-             * HomeController متصل بود حذف شده است.
-             */
             Route::get(
                 '/id/{id}',
-                [ProfileController::class, 'show']
+                [
+                    ProfileController::class,
+                    'show',
+                ]
             )
                 ->whereNumber('id')
                 ->name('show');
@@ -227,9 +219,7 @@ Route::middleware([
             ForgotPasswordController::class,
             'sendResetLinkEmail',
         ]
-    )
-        ->middleware('throttle:5,1')
-        ->name('password.email');
+    )->name('password.email');
 
     Route::get(
         '/password/reset/{token}',
@@ -245,9 +235,7 @@ Route::middleware([
             ResetPasswordController::class,
             'reset',
         ]
-    )
-        ->middleware('throttle:5,1')
-        ->name('password.update');
+    )->name('password.update');
 
     /*
     |--------------------------------------------------------------------------
@@ -257,23 +245,30 @@ Route::middleware([
 
     Route::prefix('messages')
         ->name('messages.')
-        ->group(function () {
+        ->group(function (): void {
             Route::get(
                 '/',
-                [MessageController::class, 'index']
+                [
+                    MessageController::class,
+                    'index',
+                ]
             )->name('index');
 
             Route::get(
                 '/{user}',
-                [MessageController::class, 'show']
+                [
+                    MessageController::class,
+                    'show',
+                ]
             )->name('show');
 
             Route::post(
                 '/',
-                [MessageController::class, 'store']
-            )
-                ->middleware('throttle:20,1')
-                ->name('store');
+                [
+                    MessageController::class,
+                    'store',
+                ]
+            )->name('store');
         });
 
     /*
@@ -284,20 +279,28 @@ Route::middleware([
 
     Route::get(
         '/likes',
-        [LikeController::class, 'index']
+        [
+            LikeController::class,
+            'index',
+        ]
     )->name('likes.index');
 
     Route::get(
         '/likes/received',
-        [LikeController::class, 'index']
+        [
+            LikeController::class,
+            'index',
+        ]
     )->name('likes.received');
 
     Route::post(
         '/like/{likedUserId}',
-        [LikeController::class, 'store']
+        [
+            LikeController::class,
+            'store',
+        ]
     )
         ->whereNumber('likedUserId')
-        ->middleware('throttle:20,1')
         ->name('like.store');
 
     /*
@@ -308,23 +311,30 @@ Route::middleware([
 
     Route::prefix('dashboard/tickets')
         ->name('user.tickets.')
-        ->group(function () {
+        ->group(function (): void {
             Route::get(
                 '/',
-                [TicketController::class, 'index']
+                [
+                    TicketController::class,
+                    'index',
+                ]
             )->name('index');
 
             Route::get(
                 '/create',
-                [TicketController::class, 'create']
+                [
+                    TicketController::class,
+                    'create',
+                ]
             )->name('create');
 
             Route::post(
                 '/',
-                [TicketController::class, 'store']
-            )
-                ->middleware('throttle:5,1')
-                ->name('store');
+                [
+                    TicketController::class,
+                    'store',
+                ]
+            )->name('store');
         });
 
     /*
@@ -335,56 +345,92 @@ Route::middleware([
 
     Route::get(
         '/police',
-        [BlockController::class, 'index']
+        [
+            BlockController::class,
+            'index',
+        ]
     )->name('police.index');
 
     Route::post(
         '/block/{id}',
-        [BlockController::class, 'block']
+        [
+            BlockController::class,
+            'block',
+        ]
     )
         ->whereNumber('id')
-        ->middleware('throttle:20,1')
         ->name('user.block');
 
     Route::post(
         '/unblock/{id}',
-        [BlockController::class, 'unblock']
+        [
+            BlockController::class,
+            'unblock',
+        ]
     )
         ->whereNumber('id')
-        ->middleware('throttle:20,1')
         ->name('user.unblock');
 
     Route::post(
         '/report',
-        [ReportController::class, 'store']
-    )
-        ->middleware('throttle:5,1')
-        ->name('report.store');
+        [
+            ReportController::class,
+            'store',
+        ]
+    )->name('report.store');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Admin Login Routes
+| Admin Login and 2FA
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest')->group(function () {
-    Route::get(
-        '/admin/login',
-        [AdminLoginController::class, 'showLoginForm']
-    )->name('admin.login');
+Route::get(
+    '/admin/login',
+    [
+        AdminLoginController::class,
+        'showLoginForm',
+    ]
+)->name('admin.login');
 
-    Route::post(
-        '/admin/login',
-        [AdminLoginController::class, 'login']
-    )
-        ->middleware('throttle:5,1')
-        ->name('admin.login.submit');
-});
+Route::post(
+    '/admin/login',
+    [
+        AdminLoginController::class,
+        'login',
+    ]
+)->name('admin.login.submit');
+
+Route::get(
+    '/admin/two-factor',
+    [
+        AdminTwoFactorController::class,
+        'show',
+    ]
+)->name('admin.two-factor.form');
+
+Route::post(
+    '/admin/two-factor',
+    [
+        AdminTwoFactorController::class,
+        'verify',
+    ]
+)
+    ->middleware('throttle:10,1')
+    ->name('admin.two-factor.verify');
+
+Route::post(
+    '/admin/two-factor/cancel',
+    [
+        AdminTwoFactorController::class,
+        'cancel',
+    ]
+)->name('admin.two-factor.cancel');
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| Protected Admin Routes
 |--------------------------------------------------------------------------
 */
 
@@ -393,23 +439,24 @@ Route::prefix('admin')
         'auth',
         'not_banned',
         'admin',
+        'admin.2fa',
     ])
     ->name('admin.')
-    ->group(function () {
-        /*
-        |--------------------------------------------------------------------------
-        | Admin Dashboard
-        |--------------------------------------------------------------------------
-        */
-
+    ->group(function (): void {
         Route::get(
             '/',
-            [AdmineLteController::class, 'index']
+            [
+                AdmineLteController::class,
+                'index',
+            ]
         )->name('dashboard');
 
         Route::get(
             '/statedashboard',
-            [AdminStateController::class, 'index']
+            [
+                AdminStateController::class,
+                'index',
+            ]
         )->name('statedashboard');
 
         /*
@@ -418,41 +465,63 @@ Route::prefix('admin')
         |--------------------------------------------------------------------------
         */
 
-        Route::prefix('users')->group(function () {
-            Route::get(
-                '/',
-                [AdmineLteController::class, 'indexUser']
-            )->name('users');
+        Route::prefix('users')->group(
+            function (): void {
+                Route::get(
+                    '/',
+                    [
+                        AdmineLteController::class,
+                        'indexUser',
+                    ]
+                )->name('users');
 
-            Route::get(
-                '/{user}',
-                [AdmineLteController::class, 'showUser']
-            )->name('users.show');
+                Route::get(
+                    '/{user}',
+                    [
+                        AdmineLteController::class,
+                        'showUser',
+                    ]
+                )->name('users.show');
 
-            Route::post(
-                '/{user}/ban',
-                [AdmineLteController::class, 'ban']
-            )->name('users.ban');
+                Route::post(
+                    '/{user}/ban',
+                    [
+                        AdmineLteController::class,
+                        'ban',
+                    ]
+                )->name('users.ban');
 
-            Route::delete(
-                '/{user}',
-                [AdmineLteController::class, 'destroy']
-            )->name('users.destroy');
+                Route::delete(
+                    '/{user}',
+                    [
+                        AdmineLteController::class,
+                        'destroy',
+                    ]
+                )->name('users.destroy');
 
-            Route::patch(
-                '/make-admin/{id}',
-                [AdminController::class, 'makeAdmin']
-            )
-                ->whereNumber('id')
-                ->name('makeAdmin');
+                Route::patch(
+                    '/{user}/make-admin',
+                    [
+                        AdminController::class,
+                        'makeAdmin',
+                    ]
+                )->name('makeAdmin');
+            }
+        );
 
-            Route::patch(
-                '/toggle-ban/{id}',
-                [AdminController::class, 'toggleBan']
-            )
-                ->whereNumber('id')
-                ->name('toggleBan');
-        });
+        /*
+        |--------------------------------------------------------------------------
+        | Audit Logs
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/audit-logs',
+            [
+                AdminAuditLogController::class,
+                'index',
+            ]
+        )->name('audit-logs.index');
 
         /*
         |--------------------------------------------------------------------------
@@ -462,73 +531,103 @@ Route::prefix('admin')
 
         Route::get(
             '/messages',
-            [AdminMessageController::class, 'index']
+            [
+                AdminMessageController::class,
+                'index',
+            ]
         )->name('messages');
 
         Route::get(
             '/photos',
-            [PhotoController::class, 'index']
+            [
+                PhotoController::class,
+                'index',
+            ]
         )->name('photos.index');
 
         Route::delete(
             '/photos/{id}',
-            [PhotoController::class, 'destroy']
+            [
+                PhotoController::class,
+                'destroy',
+            ]
         )
             ->whereNumber('id')
             ->name('photos.destroy');
 
         /*
         |--------------------------------------------------------------------------
-        | Reports Management
+        | Reports
         |--------------------------------------------------------------------------
         */
 
         Route::get(
             '/reports',
-            [ReportController::class, 'index']
+            [
+                ReportController::class,
+                'index',
+            ]
         )->name('reports');
 
         Route::post(
             '/reports/{report}/resolve',
-            [ReportController::class, 'resolve']
+            [
+                ReportController::class,
+                'resolve',
+            ]
         )->name('reports.resolve');
 
         Route::delete(
             '/reports/{report}',
-            [ReportController::class, 'destroy']
+            [
+                ReportController::class,
+                'destroy',
+            ]
         )->name('reports.destroy');
 
         /*
         |--------------------------------------------------------------------------
-        | Ticket Management
+        | Tickets
         |--------------------------------------------------------------------------
         */
 
         Route::prefix('tickets')
             ->name('tickets.')
-            ->group(function () {
+            ->group(function (): void {
                 Route::get(
                     '/',
-                    [AdminTicketController::class, 'index']
+                    [
+                        AdminTicketController::class,
+                        'index',
+                    ]
                 )->name('index');
 
                 Route::get(
                     '/{id}',
-                    [AdminTicketController::class, 'show']
+                    [
+                        AdminTicketController::class,
+                        'show',
+                    ]
                 )
                     ->whereNumber('id')
                     ->name('show');
 
                 Route::post(
                     '/{id}/reply',
-                    [AdminTicketController::class, 'reply']
+                    [
+                        AdminTicketController::class,
+                        'reply',
+                    ]
                 )
                     ->whereNumber('id')
                     ->name('reply');
 
                 Route::post(
                     '/{id}/close',
-                    [AdminTicketController::class, 'close']
+                    [
+                        AdminTicketController::class,
+                        'close',
+                    ]
                 )
                     ->whereNumber('id')
                     ->name('close');

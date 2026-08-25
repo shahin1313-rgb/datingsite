@@ -2,22 +2,18 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * فیلدهای قابل مقداردهی.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -43,104 +39,146 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function matches()
     {
-        return $this->hasMany(MatchUser::class, 'user_id');
+        return $this->hasMany(
+            MatchUser::class,
+            'user_id'
+        );
     }
 
     public function sentMessages()
     {
-        return $this->hasMany(Message::class, 'sender_id');
+        return $this->hasMany(
+            Message::class,
+            'sender_id'
+        );
     }
 
     public function receivedMessages()
     {
-        return $this->hasMany(Message::class, 'receiver_id');
+        return $this->hasMany(
+            Message::class,
+            'receiver_id'
+        );
     }
 
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
     public function tickets()
     {
-        return $this->hasMany(Ticket::class);
+        return $this->hasMany(
+            Ticket::class
+        );
     }
 
     public function unreadMessagesCount()
     {
-        return $this->receivedMessages()
+        return $this
+            ->receivedMessages()
             ->whereNull('read_at')
             ->count();
     }
 
     public function reportsMade()
     {
-        return $this->hasMany(Report::class, 'reporter_id');
+        return $this->hasMany(
+            Report::class,
+            'reporter_id'
+        );
     }
 
     public function reportsReceived()
     {
-        return $this->hasMany(Report::class, 'reported_id');
+        return $this->hasMany(
+            Report::class,
+            'reported_id'
+        );
     }
 
     public function blockedUsers()
     {
-        return $this->hasMany(Block::class, 'blocker_id');
+        return $this->hasMany(
+            Block::class,
+            'blocker_id'
+        );
     }
 
     public function hasBlocked($userId)
     {
-        return $this->blockedUsers()
-            ->where('blocked_id', $userId)
+        return $this
+            ->blockedUsers()
+            ->where(
+                'blocked_id',
+                $userId
+            )
             ->exists();
     }
 
     public function isBlockedBy($userId)
     {
-        return Block::where('blocker_id', $userId)
-            ->where('blocked_id', $this->id)
+        return Block::query()
+            ->where(
+                'blocker_id',
+                $userId
+            )
+            ->where(
+                'blocked_id',
+                $this->id
+            )
             ->exists();
     }
 
     public function profileViewsReceived()
     {
-        return $this->hasMany(
-            ProfileView::class,
-            'viewed_id'
-        )->latest();
+        return $this
+            ->hasMany(
+                ProfileView::class,
+                'viewed_id'
+            )
+            ->latest();
     }
 
     public function profileViewsGiven()
     {
-        return $this->hasMany(
-            ProfileView::class,
-            'viewer_id'
-        )->latest();
+        return $this
+            ->hasMany(
+                ProfileView::class,
+                'viewer_id'
+            )
+            ->latest();
     }
 
     public function likes()
     {
-        return $this->hasMany(Like::class);
+        return $this->hasMany(
+            Like::class
+        );
     }
 
     public function likedUsers()
     {
-        return $this->belongsToMany(
-            User::class,
-            'likes',
-            'user_id',
-            'liked_user_id'
-        )->withTimestamps();
+        return $this
+            ->belongsToMany(
+                User::class,
+                'likes',
+                'user_id',
+                'liked_user_id'
+            )
+            ->withTimestamps();
     }
 
     public function likedByUsers()
     {
-        return $this->belongsToMany(
-            User::class,
-            'likes',
-            'liked_user_id',
-            'user_id'
-        )->withTimestamps();
+        return $this
+            ->belongsToMany(
+                User::class,
+                'likes',
+                'liked_user_id',
+                'user_id'
+            )
+            ->withTimestamps();
     }
 
     public function receivedLikes()
@@ -159,20 +197,15 @@ class User extends Authenticatable implements MustVerifyEmail
         );
     }
 
-    /**
-     * بررسی فعال‌بودن پریمیوم.
-     */
     public function isPremium(): bool
     {
         return $this->premium_until !== null
             && $this->premium_until->isFuture();
     }
 
-    /**
-     * اعطای پریمیوم برای تعداد مشخصی روز.
-     */
-    public function grantPremium(int $days = 30)
-    {
+    public function grantPremium(
+        int $days = 30
+    ): void {
         $now = Carbon::now();
 
         if (
@@ -180,9 +213,12 @@ class User extends Authenticatable implements MustVerifyEmail
             $this->premium_until->isFuture()
         ) {
             $this->premium_until =
-                $this->premium_until->addDays($days);
+                $this->premium_until->addDays(
+                    $days
+                );
         } else {
-            $this->premium_until = $now->addDays($days);
+            $this->premium_until =
+                $now->addDays($days);
         }
 
         $this->save();
@@ -190,30 +226,34 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(
+            Payment::class
+        );
     }
 
-    /**
-     * فیلدهای مخفی.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
+        'admin_two_factor_code_hash',
     ];
 
-    /**
-     * تبدیل نوع فیلدها.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'premium_until' => 'datetime',
+            'email_verified_at' =>
+                'datetime',
+
+            'password' =>
+                'hashed',
+
+            'premium_until' =>
+                'datetime',
+
+            'banned' =>
+                'boolean',
+
+            'admin_two_factor_expires_at' =>
+                'datetime',
         ];
     }
 }

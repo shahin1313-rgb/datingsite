@@ -3,33 +3,50 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Notifications\AdminTwoFactorCode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AdminLoginController extends Controller
 {
-    /**
-     * نمایش صفحه ورود مدیریت
+    /*
+     * یک Hash ثابت برای یکسان‌کردن زمان پاسخ، زمانی که ایمیل وجود ندارد.
      */
-    public function showLoginForm(Request $request): View|RedirectResponse
-    {
+    private const DUMMY_PASSWORD_HASH =
+        '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
+
+    public function showLoginForm(
+        Request $request
+    ): View|RedirectResponse {
         if ($request->user()) {
             return $this->redirectAuthenticatedUser($request);
+        }
+
+        if (
+            $request->session()->has(
+                'admin_2fa_user_id'
+            )
+        ) {
+            return redirect()->route(
+                'admin.two-factor.form'
+            );
         }
 
         return view('admin.auth.login');
     }
 
-    /**
-     * ورود مدیر
-     */
-    public function login(Request $request): RedirectResponse
-    {
+    public function login(
+        Request $request
+    ): RedirectResponse {
         if ($request->user()) {
             return $this->redirectAuthenticatedUser($request);
         }
@@ -41,19 +58,26 @@ class AdminLoginController extends Controller
                 'email',
                 'max:255',
             ],
+
             'password' => [
                 'required',
                 'string',
                 'max:255',
             ],
+
             'remember' => [
                 'nullable',
                 'boolean',
             ],
         ], [
-            'email.required' => 'واردکردن ایمیل الزامی است.',
-            'email.email' => 'فرمت ایمیل معتبر نیست.',
-            'password.required' => 'واردکردن رمز عبور الزامی است.',
+            'email.required' =>
+                'واردکردن ایمیل الزامی است.',
+
+            'email.email' =>
+                'فرمت ایمیل معتبر نیست.',
+
+            'password.required' =>
+                'واردکردن رمز عبور الزامی است.',
         ]);
 
         $throttleKey = $this->throttleKey(
@@ -61,82 +85,168 @@ class AdminLoginController extends Controller
             $request
         );
 
-        // جلوگیری از حمله حدس رمز
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            $seconds = RateLimiter::availableIn($throttleKey);
+        if (
+            RateLimiter::tooManyAttempts(
+                $throttleKey,
+                5
+            )
+        ) {
+            $seconds = RateLimiter::availableIn(
+                $throttleKey
+            );
 
             throw ValidationException::withMessages([
-                'email' => "تعداد تلاش‌های ورود بیش از حد مجاز است. {$seconds} ثانیه دیگر دوباره امتحان کنید.",
+                'email' =>
+                    "تعداد تلاش‌های ورود بیش از حد مجاز است. {$seconds} ثانیه دیگر دوباره امتحان کنید.",
             ]);
         }
 
-        /*
-         * فقط حساب مدیرِ بن‌نشده اجازه ورود دارد.
-         * پیام خطا عمداً عمومی است تا وجود حساب مدیر افشا نشود.
-         */
-        $authenticated = Auth::attempt([
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-            'role' => 'admin',
-            'banned' => false,
-        ], $request->boolean('remember'));
+        $admin = User::query()
+            ->where(
+                'email',
+                $validated['email']
+            )
+            ->first();
 
-        if (! $authenticated) {
-            RateLimiter::hit($throttleKey, 60);
+        $passwordIsValid = Hash::check(
+            $validated['password'],
+            $admin?->password
+                ?? self::DUMMY_PASSWORD_HASH
+        );
+
+        if (
+            ! $admin ||
+            ! $passwordIsValid ||
+            $admin->role !== 'admin' ||
+            (bool) $admin->banned
+        ) {
+            RateLimiter::hit(
+                $throttleKey,
+                60
+            );
 
             throw ValidationException::withMessages([
-                'email' => 'اطلاعات ورود مدیریت صحیح نیست.',
+                'email' =>
+                    'اطلاعات ورود مدیریت صحیح نیست.',
             ]);
         }
 
         RateLimiter::clear($throttleKey);
 
-        // جلوگیری از Session Fixation
+        $code = (string) random_int(
+            100000,
+            999999
+        );
+
+        $admin->forceFill([
+            'admin_two_factor_code_hash' =>
+                Hash::make($code),
+
+            'admin_two_factor_expires_at' =>
+                now()->addMinutes(5),
+        ])->save();
+
+        /*
+         * جلوگیری از Session Fixation.
+         */
         $request->session()->regenerate();
 
-        $admin = $request->user();
-
-        $admin->last_login_at = now();
-        $admin->save();
-
-        return redirect()->intended(
-            route('admin.dashboard')
+        $request->session()->forget(
+            'admin_2fa_verified_at'
         );
+
+        $request->session()->put([
+            'admin_2fa_user_id' =>
+                $admin->id,
+
+            'admin_2fa_remember' =>
+                $request->boolean('remember'),
+        ]);
+
+        try {
+            $admin->notify(
+                new AdminTwoFactorCode($code)
+            );
+        } catch (Throwable $exception) {
+            /*
+             * اگر ایمیل ارسال نشد، ورود بدون 2FA
+             * نباید امکان‌پذیر باشد.
+             */
+            $admin->forceFill([
+                'admin_two_factor_code_hash' =>
+                    null,
+
+                'admin_two_factor_expires_at' =>
+                    null,
+            ])->save();
+
+            $request->session()->forget([
+                'admin_2fa_user_id',
+                'admin_2fa_remember',
+            ]);
+
+            Log::error(
+                'Admin two-factor email could not be sent.',
+                [
+                    'admin_id' => $admin->id,
+                    'exception' => $exception,
+                ]
+            );
+
+            return back()
+                ->withInput(
+                    $request->only('email')
+                )
+                ->withErrors([
+                    'email' =>
+                        'ارسال کد تأیید ممکن نشد. تنظیمات ایمیل سرور را بررسی کنید.',
+                ]);
+        }
+
+        return redirect()
+            ->route('admin.two-factor.form')
+            ->with(
+                'status',
+                'کد تأیید به ایمیل مدیر ارسال شد.'
+            );
     }
 
-    /**
-     * تعیین کلید محدودیت ورود با ایمیل و IP
-     */
-    private function throttleKey(string $email, Request $request): string
-    {
+    private function throttleKey(
+        string $email,
+        Request $request
+    ): string {
         return Str::transliterate(
             Str::lower($email)
         ).'|'.$request->ip();
     }
 
-    /**
-     * رفتار در صورت ورود قبلی کاربر
-     */
     private function redirectAuthenticatedUser(
         Request $request
     ): RedirectResponse {
         $user = $request->user();
 
         if ((bool) $user->banned) {
-            Auth::logout();
-
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return redirect()
-                ->route('admin.login')
-                ->withErrors([
-                    'email' => 'این حساب کاربری مسدود شده است.',
-                ]);
+            return $this->logoutAndRedirect(
+                $request,
+                'این حساب کاربری مسدود شده است.'
+            );
         }
 
         if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
+            if (
+                $request->session()->has(
+                    'admin_2fa_verified_at'
+                )
+            ) {
+                return redirect()->route(
+                    'admin.dashboard'
+                );
+            }
+
+            return $this->logoutAndRedirect(
+                $request,
+                'برای ورود به مدیریت، تأیید دومرحله‌ای را تکمیل کنید.'
+            );
         }
 
         return redirect()
@@ -145,5 +255,21 @@ class AdminLoginController extends Controller
                 'error',
                 'برای ورود به مدیریت، ابتدا از حساب کاربری فعلی خارج شوید.'
             );
+    }
+
+    private function logoutAndRedirect(
+        Request $request,
+        string $message
+    ): RedirectResponse {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('admin.login')
+            ->withErrors([
+                'email' => $message,
+            ]);
     }
 }

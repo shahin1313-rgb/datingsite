@@ -1,116 +1,299 @@
 @extends('adminlte::page')
 
-@section('title', 'پنل ادمین')
-
-
-
+@section('title', 'جزئیات کاربر')
 
 @section('content')
-    <div class="container mt-5">
-        <div class="card shadow-lg mb-4">
+
+    @php
+        $isSelf =
+            auth()->id() === $user->id;
+
+        $isLastActiveAdmin =
+            $user->role === 'admin'
+            && ! $user->banned
+            && $activeAdminCount <= 1;
+
+        $cannotRestrict =
+            $isSelf
+            || $isLastActiveAdmin;
+    @endphp
+
+    <div class="container mt-4">
+
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                {{ $errors->first() }}
+            </div>
+        @endif
+
+        <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <div class="d-flex align-items-center mb-4">
 
-                    <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('images/default-avatar.png') }}"
-                        alt="avatar" class="rounded-circle border border-primary shadow" width="128" height="128">
+                <div
+                    class="d-flex align-items-center mb-4"
+                >
+                    <img
+                        src="{{ $user->profile_picture
+                            ? asset('storage/'.$user->profile_picture)
+                            : asset('images/default-avatar.png') }}"
+                        alt="تصویر {{ $user->name }}"
+                        class="rounded-circle border border-primary"
+                        width="128"
+                        height="128"
+                    >
 
-                    <div class="ms-4">
-                        <h2 class="h4 fw-bold text-dark">{{ $user->name }}</h2>
-                        <p class="mb-1 text-muted">{{ $user->email }}</p>
-                        <p class="text-secondary small">عضو شده در {{ $user->created_at->format('Y/m/d') }}</p>
+                    <div class="mr-4">
+                        <h2
+                            class="h4 font-weight-bold"
+                        >
+                            {{ $user->name }}
+                        </h2>
+
+                        <p class="mb-1 text-muted">
+                            {{ $user->email }}
+                        </p>
+
+                        <span
+                            class="badge {{ $user->role === 'admin'
+                                ? 'badge-primary'
+                                : 'badge-secondary' }}"
+                        >
+                            {{ $user->role === 'admin'
+                                ? 'مدیر'
+                                : 'کاربر' }}
+                        </span>
+
+                        @if ($isSelf)
+                            <span
+                                class="badge badge-info"
+                            >
+                                حساب شما
+                            </span>
+                        @endif
                     </div>
                 </div>
 
-                <div class="row g-3">
+                <div class="row">
+
                     <div class="col-md-4">
-                        <div class="alert alert-primary">
-                            <strong>سن:</strong> {{ $user->age ?? '---' }}
+                        <div
+                            class="alert alert-primary"
+                        >
+                            <strong>سن:</strong>
+                            {{ $user->age ?? '—' }}
                         </div>
                     </div>
+
                     <div class="col-md-4">
-                        <div class="alert alert-info">
-                            <strong>جنسیت:</strong> {{ $user->gender ?? '---' }}
+                        <div
+                            class="alert alert-info"
+                        >
+                            <strong>جنسیت:</strong>
+                            {{ $user->gender ?? '—' }}
                         </div>
                     </div>
+
                     <div class="col-md-4">
-                        <div class="alert alert-warning">
-                            <strong>شماره تماس:</strong> {{ $user->phone ?? '---' }}
+                        <div
+                            class="alert alert-secondary"
+                        >
+                            <strong>شهر:</strong>
+                            {{ $user->city ?? '—' }}
                         </div>
                     </div>
+
                     <div class="col-md-4">
-                        <div class="alert alert-danger">
+                        <div
+                            class="alert {{ $user->banned
+                                ? 'alert-danger'
+                                : 'alert-success' }}"
+                        >
                             <strong>وضعیت:</strong>
-                            @if ($user->banned)
-                                <span class="fw-bold text-danger">مسدود شده</span>
-                            @else
-                                <span class="fw-bold text-success">فعال</span>
-                            @endif
+
+                            {{ $user->banned
+                                ? 'مسدود'
+                                : 'فعال' }}
                         </div>
                     </div>
+
                     <div class="col-md-4">
-                        <div class="alert alert-success">
-                            <strong>IP آخرین ورود:</strong> {{ $user->last_login_ip ?? '---' }}
+                        <div
+                            class="alert alert-light"
+                        >
+                            <strong>عضویت:</strong>
+
+                            {{ $user->created_at
+                                ->format('Y/m/d') }}
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="alert alert-secondary">
-                            <strong>شهر:</strong> {{ $user->city ?? '---' }}
-                        </div>
+
+                </div>
+
+                <div
+                    class="p-3 border rounded bg-light mb-4"
+                >
+                    <h5>بیوگرافی</h5>
+
+                    <p class="mb-0">
+                        {{ $user->bio ?? 'ندارد' }}
+                    </p>
+                </div>
+
+                <div
+                    class="card card-outline card-warning"
+                >
+                    <div class="card-body">
+
+                        <label
+                            for="admin-current-password"
+                        >
+                            رمز عبور فعلی مدیر
+                        </label>
+
+                        <input
+                            id="admin-current-password"
+                            type="password"
+                            class="form-control"
+                            autocomplete="current-password"
+                            placeholder="برای عملیات حساس وارد کنید"
+                        >
+
                     </div>
                 </div>
 
-                <div class="mt-4 p-3 border rounded bg-light">
-                    <h5 class="mb-2">بیوگرافی:</h5>
-                    <p>{{ $user->bio ?? 'ندارد' }}</p>
-                </div>
+                <div
+                    class="d-flex justify-content-end flex-wrap"
+                    style="gap: .5rem;"
+                >
+                    <form
+                        method="POST"
+                        action="{{ route('admin.users.ban', $user) }}"
+                        class="sensitive-action-form"
+                        data-confirm="آیا از تغییر وضعیت این حساب مطمئن هستید؟"
+                    >
+                        @csrf
 
-                <div class="row text-center mt-4 g-3">
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light border rounded">
-                            <h5>{{ $user->messages_count ?? 0 }}</h5>
-                            <small class="text-muted">پیام‌ها</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light border rounded">
-                            <h5>{{ $user->likes_count ?? 0 }}</h5>
-                            <small class="text-muted">لایک‌ها</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light border rounded">
-                            <h5>{{ $user->reports_count ?? 0 }}</h5>
-                            <small class="text-muted">ریپورت‌ها</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="p-3 bg-light border rounded">
-                            <h5>{{ $user->visits_count ?? 0 }}</h5>
-                            <small class="text-muted">بازدید‌ها</small>
-                        </div>
-                    </div>
-                </div>
+                        <input
+                            type="hidden"
+                            name="current_password"
+                        >
 
-                <div class="mt-4 d-flex justify-content-end gap-2">
-                    @if ($user->banned)
-                        <form method="POST" action="{{ route('admin.users.unban', $user) }}">
+                        <button
+                            class="btn {{ $user->banned
+                                ? 'btn-success'
+                                : 'btn-warning' }}"
+                            @disabled($cannotRestrict)
+                        >
+                            {{ $user->banned
+                                ? 'رفع مسدودی'
+                                : 'مسدودکردن حساب' }}
+                        </button>
+                    </form>
+
+                    @if ($user->role !== 'admin')
+                        <form
+                            method="POST"
+                            action="{{ route('admin.makeAdmin', $user) }}"
+                            class="sensitive-action-form"
+                            data-confirm="این کاربر به مدیر ارتقا یابد؟"
+                        >
                             @csrf
-                            <button class="btn btn-success">آزادسازی حساب</button>
-                        </form>
-                    @else
-                        <form method="POST" action="{{ route('admin.users.ban', $user) }}">
-                            @csrf
-                            <button class="btn btn-danger">بن کردن کاربر</button>
+                            @method('PATCH')
+
+                            <input
+                                type="hidden"
+                                name="current_password"
+                            >
+
+                            <button
+                                class="btn btn-primary"
+                                @disabled($user->banned)
+                            >
+                                ارتقا به مدیر
+                            </button>
                         </form>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}">
+                    <form
+                        method="POST"
+                        action="{{ route('admin.users.destroy', $user) }}"
+                        class="sensitive-action-form"
+                        data-confirm="حذف حساب و داده‌های وابسته قابل بازگشت نیست. ادامه می‌دهید؟"
+                    >
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-dark" onclick="return confirm('آیا مطمئنی؟')">حذف کاربر</button>
+
+                        <input
+                            type="hidden"
+                            name="current_password"
+                        >
+
+                        <button
+                            class="btn btn-danger"
+                            @disabled($cannotRestrict)
+                        >
+                            حذف کاربر
+                        </button>
                     </form>
                 </div>
+
+                @if ($cannotRestrict)
+                    <p
+                        class="text-muted text-right mt-2"
+                    >
+                        حساب خودتان یا آخرین مدیر فعال
+                        قابل مسدود یا حذف نیست.
+                    </p>
+                @endif
+
             </div>
         </div>
     </div>
+@endsection
+
+@section('js')
+    <script>
+        document
+            .querySelectorAll(
+                '.sensitive-action-form'
+            )
+            .forEach(function (form) {
+                form.addEventListener(
+                    'submit',
+                    function (event) {
+                        const password =
+                            document
+                                .getElementById(
+                                    'admin-current-password'
+                                )
+                                .value;
+
+                        if (!password) {
+                            event.preventDefault();
+
+                            alert(
+                                'ابتدا رمز عبور فعلی مدیر را وارد کنید.'
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            !confirm(
+                                form.dataset.confirm
+                            )
+                        ) {
+                            event.preventDefault();
+                            return;
+                        }
+
+                        form
+                            .querySelector(
+                                'input[name="current_password"]'
+                            )
+                            .value = password;
+                    }
+                );
+            });
+    </script>
 @endsection

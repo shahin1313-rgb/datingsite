@@ -371,12 +371,12 @@ return [
             'icon' => 'fas fa-fw fa-chart-bar',
         ],
         [
-            'text' => 'multilevel',
+            'text' => 'گزارش عملیات مدیران',
             'icon' => 'fas fa-fw fa-share',
             'submenu' => [
                 [
                     'text' => 'level_one',
-                    'url' => '#',
+                    'url' => 'admin/audit-logs',
                 ],
                 [
                     'text' => 'level_one',
