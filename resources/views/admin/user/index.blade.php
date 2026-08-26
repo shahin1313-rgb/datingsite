@@ -7,7 +7,6 @@
 @endsection
 
 @section('content')
-
     @if (session('status'))
         <div class="alert alert-success">
             {{ session('status') }}
@@ -22,7 +21,6 @@
 
     <div class="card card-outline card-warning">
         <div class="card-body">
-
             <label
                 for="admin-current-password"
                 class="form-label"
@@ -42,13 +40,11 @@
                 این رمز فقط همراه همان درخواست ارسال می‌شود
                 و در گزارش عملیات ذخیره نمی‌شود.
             </small>
-
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
-
             <form
                 method="GET"
                 action="{{ route('admin.users') }}"
@@ -121,111 +117,81 @@
                     class="table table-bordered align-middle"
                 >
                     <thead>
-                    <tr>
-                        <th>شناسه</th>
-                        <th>نام</th>
-                        <th>ایمیل</th>
-                        <th>نقش</th>
-                        <th>وضعیت</th>
-                        <th>عملیات</th>
-                    </tr>
+                        <tr>
+                            <th>شناسه</th>
+                            <th>نام</th>
+                            <th>ایمیل</th>
+                            <th>نقش</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
                     </thead>
 
                     <tbody>
-                    @forelse ($users as $user)
+                        @forelse ($users as $user)
+                            @php
+                                $isSelf =
+                                    auth()->id() === $user->id;
 
-                        @php
-                            $isSelf =
-                                auth()->id() === $user->id;
+                                $isLastActiveAdmin =
+                                    $user->role === 'admin'
+                                    && ! $user->banned
+                                    && $activeAdminCount <= 1;
 
-                            $isLastActiveAdmin =
-                                $user->role === 'admin'
-                                && ! $user->banned
-                                && $activeAdminCount <= 1;
+                                $cannotRestrict =
+                                    $isSelf
+                                    || $isLastActiveAdmin;
+                            @endphp
 
-                            $cannotRestrict =
-                                $isSelf
-                                || $isLastActiveAdmin;
-                        @endphp
+                            <tr
+                                @class([
+                                    'table-danger' => $user->banned,
+                                ])
+                            >
+                                <td>
+                                    {{ $user->id }}
+                                </td>
 
-                        <tr
-                            @class([
-                                'table-danger' =>
-                                    $user->banned
-                            ])
-                        >
-                            <td>
-                                {{ $user->id }}
-                            </td>
-
-                            <td>
-                                <a
-                                    href="{{ route('admin.users.show', $user) }}"
-                                >
-                                    {{ $user->name }}
-                                </a>
-
-                                @if ($isSelf)
-                                    <span
-                                        class="badge badge-info"
+                                <td>
+                                    <a
+                                        href="{{ route('admin.users.show', $user) }}"
                                     >
-                                        حساب شما
-                                    </span>
-                                @endif
-                            </td>
+                                        {{ $user->name }}
+                                    </a>
 
-                            <td>
-                                {{ $user->email }}
-                            </td>
+                                    @if ($isSelf)
+                                        <span
+                                            class="badge badge-info"
+                                        >
+                                            حساب شما
+                                        </span>
+                                    @endif
+                                </td>
 
-                            <td>
-                                {{ $user->role === 'admin'
-                                    ? 'مدیر'
-                                    : 'کاربر' }}
-                            </td>
+                                <td>
+                                    {{ $user->email }}
+                                </td>
 
-                            <td>
-                                {{ $user->banned
-                                    ? 'مسدود'
-                                    : 'فعال' }}
-                            </td>
+                                <td>
+                                    {{ $user->role === 'admin'
+                                        ? 'مدیر'
+                                        : 'کاربر' }}
+                                </td>
 
-                            <td class="text-nowrap">
+                                <td>
+                                    {{ $user->banned
+                                        ? 'مسدود'
+                                        : 'فعال' }}
+                                </td>
 
-                                <form
-                                    action="{{ route('admin.users.ban', $user) }}"
-                                    method="POST"
-                                    class="d-inline sensitive-action-form"
-                                    data-confirm="آیا از تغییر وضعیت این حساب مطمئن هستید؟"
-                                >
-                                    @csrf
-
-                                    <input
-                                        type="hidden"
-                                        name="current_password"
-                                    >
-
-                                    <button
-                                        class="btn btn-sm {{ $user->banned
-                                            ? 'btn-success'
-                                            : 'btn-warning' }}"
-                                        @disabled($cannotRestrict)
-                                    >
-                                        {{ $user->banned
-                                            ? 'رفع مسدودی'
-                                            : 'مسدودکردن' }}
-                                    </button>
-                                </form>
-
-                                @if ($user->role !== 'admin')
+                                <td class="text-nowrap">
                                     <form
-                                        action="{{ route('admin.makeAdmin', $user) }}"
+                                        action="{{ route('admin.users.ban', $user) }}"
                                         method="POST"
                                         class="d-inline sensitive-action-form"
-                                        data-confirm="این کاربر به مدیر ارتقا یابد؟"
+                                        data-confirm="آیا از تغییر وضعیت این حساب مطمئن هستید؟"
                                     >
                                         @csrf
-                                        @method('PATCH')
 
                                         <input
                                             type="hidden"
@@ -233,90 +199,111 @@
                                         >
 
                                         <button
-                                            class="btn btn-sm btn-primary"
-                                            @disabled($user->banned)
+                                            type="submit"
+                                            class="btn btn-sm {{ $user->banned ? 'btn-success' : 'btn-warning' }}"
+                                            @disabled($cannotRestrict)
                                         >
-                                            ارتقا به مدیر
+                                            {{ $user->banned
+                                                ? 'رفع مسدودی'
+                                                : 'مسدودکردن' }}
                                         </button>
                                     </form>
-                                @endif
 
-                                <form
-                                    action="{{ route('admin.users.destroy', $user) }}"
-                                    method="POST"
-                                    class="d-inline sensitive-action-form"
-                                    data-confirm="حذف حساب و داده‌های وابسته قابل بازگشت نیست. ادامه می‌دهید؟"
+                                    @if ($user->role !== 'admin')
+                                        <form
+                                            action="{{ route('admin.makeAdmin', $user) }}"
+                                            method="POST"
+                                            class="d-inline sensitive-action-form"
+                                            data-confirm="این کاربر به مدیر ارتقا یابد؟"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <input
+                                                type="hidden"
+                                                name="current_password"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-primary"
+                                                @disabled($user->banned)
+                                            >
+                                                ارتقا به مدیر
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <form
+                                        action="{{ route('admin.users.destroy', $user) }}"
+                                        method="POST"
+                                        class="d-inline sensitive-action-form"
+                                        data-confirm="حذف حساب و داده‌های وابسته قابل بازگشت نیست. ادامه می‌دهید؟"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <input
+                                            type="hidden"
+                                            name="current_password"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            @disabled($cannotRestrict)
+                                        >
+                                            حذف
+                                        </button>
+                                    </form>
+
+                                    @if ($cannotRestrict)
+                                        <small
+                                            class="d-block text-muted mt-1"
+                                        >
+                                            حساب خودتان یا آخرین مدیر
+                                            فعال قابل مسدود یا حذف نیست.
+                                        </small>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td
+                                    colspan="6"
+                                    class="text-center text-muted"
                                 >
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <input
-                                        type="hidden"
-                                        name="current_password"
-                                    >
-
-                                    <button
-                                        class="btn btn-sm btn-danger"
-                                        @disabled($cannotRestrict)
-                                    >
-                                        حذف
-                                    </button>
-                                </form>
-
-                                @if ($cannotRestrict)
-                                    <small
-                                        class="d-block text-muted mt-1"
-                                    >
-                                        حساب خودتان یا آخرین مدیر فعال
-                                        قابل مسدود یا حذف نیست.
-                                    </small>
-                                @endif
-
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td
-                                colspan="6"
-                                class="text-center text-muted"
-                            >
-                                کاربری یافت نشد.
-                            </td>
-                        </tr>
-                    @endforelse
+                                    کاربری یافت نشد.
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-            {{ $users->links(
-                'pagination::bootstrap-5'
-            ) }}
-
+            {{ $users->links('pagination::bootstrap-5') }}
         </div>
     </div>
 @endsection
 
 @section('js')
-    <script>
+    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
         document
-            .querySelectorAll(
-                '.sensitive-action-form'
-            )
-            .forEach(function (form) {
+            .querySelectorAll('.sensitive-action-form')
+            .forEach((form) => {
                 form.addEventListener(
                     'submit',
-                    function (event) {
-                        const password =
-                            document
-                                .getElementById(
-                                    'admin-current-password'
-                                )
-                                .value;
+                    (event) => {
+                        const password = document
+                            .getElementById(
+                                'admin-current-password'
+                            )
+                            .value;
 
                         if (!password) {
                             event.preventDefault();
 
-                            alert(
+                            window.alert(
                                 'ابتدا رمز عبور فعلی مدیر را وارد کنید.'
                             );
 
@@ -324,7 +311,7 @@
                         }
 
                         if (
-                            !confirm(
+                            !window.confirm(
                                 form.dataset.confirm
                             )
                         ) {

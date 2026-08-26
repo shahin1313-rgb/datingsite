@@ -104,7 +104,7 @@
 
                 <button
                     type="button"
-                    onclick="copyWalletAddress()"
+                    id="copyWalletButton"
                     class="absolute left-2 text-gray-400 hover:text-pink-600 p-1.5 transition"
                     aria-label="کپی آدرس ولت"
                 >
@@ -169,7 +169,11 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+    document
+        .getElementById('copyWalletButton')
+        ?.addEventListener('click', copyWalletAddress);
+
     function copyWalletAddress() {
         const walletInput =
             document.getElementById('walletAddress');
@@ -180,6 +184,16 @@
         navigator.clipboard
             .writeText(walletInput.value)
             .then(() => {
+                copyMessage.classList.remove('hidden');
+
+                window.setTimeout(() => {
+                    copyMessage.classList.add('hidden');
+                }, 2000);
+            })
+            .catch(() => {
+                walletInput.select();
+                document.execCommand('copy');
+
                 copyMessage.classList.remove('hidden');
 
                 window.setTimeout(() => {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureAdminTwoFactorVerified;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\SetLocale;
@@ -15,39 +16,28 @@ return Application::configure(
 )
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
-        commands:
-            __DIR__.'/../routes/console.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(
-        function (
-            Middleware $middleware
-        ): void {
+        function (Middleware $middleware): void {
             $middleware->alias([
-                'admin' =>
-                    AdminMiddleware::class,
+                'admin' => AdminMiddleware::class,
 
-                'auth' =>
-                    Authenticate::class,
+                'auth' => Authenticate::class,
 
-                'not_banned' =>
-                    EnsureUserIsNotBanned::class,
+                'not_banned' => EnsureUserIsNotBanned::class,
 
-                'admin.2fa' =>
-                    EnsureAdminTwoFactorVerified::class,
+                'admin.2fa' => EnsureAdminTwoFactorVerified::class,
             ]);
 
             $middleware->redirectGuestsTo(
-                function (
-                    Request $request
-                ): string {
+                function (Request $request): string {
                     if (
                         $request->is('admin') ||
                         $request->is('admin/*')
                     ) {
-                        return route(
-                            'admin.login'
-                        );
+                        return route('admin.login');
                     }
 
                     return route('login');
@@ -57,14 +47,13 @@ return Application::configure(
             $middleware->web(
                 append: [
                     SetLocale::class,
+                    AddSecurityHeaders::class,
                 ]
             );
         }
     )
     ->withExceptions(
-        function (
-            Exceptions $exceptions
-        ): void {
+        function (Exceptions $exceptions): void {
             //
         }
     )

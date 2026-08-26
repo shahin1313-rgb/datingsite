@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('head')
-<script
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}"
     src="https://challenges.cloudflare.com/turnstile/v0/api.js"
     async
     defer

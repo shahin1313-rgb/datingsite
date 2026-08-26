@@ -1,5 +1,6 @@
-@php use Morilog\Jalali\Jalalian; @endphp
-
+@php
+    use Morilog\Jalali\Jalalian;
+@endphp
 
 @extends('adminlte::page')
 
@@ -10,48 +11,11 @@
 @endsection
 
 @section('content')
-
     @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success">
+            {{ session('status') }}
+        </div>
     @endif
-    {{--
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>شناسه</th>
-                <th>گزارش‌دهنده</th>
-                <th>کاربر گزارش‌شده</th>
-                <th>دلیل</th>
-                <th>تاریخ</th>
-                <th>عملیات</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($reports as $report)
-                <tr>
-                    <td>{{ $report->id }}</td>
-                    <td>{{ $report->reporter->name ?? 'نامشخص' }}</td>
-                    <td>{{ $report->reported->name ?? 'نامشخص' }}</td>
-                    <td>{{ $report->reason ?? 'بدون دلیل' }}</td>
-                    <td>{{ $report->created_at->format('Y-m-d H:i') }}</td>
-                    <td>
-                        @if (!$report->resolved)
-                            <form action="{{ route('admin.reports.resolve', $report) }}" method="POST">
-                                @csrf
-                                <button class="btn btn-success btn-sm" onclick="return confirm('بررسی شد؟')">بررسی شد</button>
-                            </form>
-                        @else
-                            <span class="badge bg-success">بررسی شده</span>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6" class="text-center">هیچ گزارشی ثبت نشده است.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table> --}}
 
     <table class="table table-bordered">
         <thead>
@@ -61,50 +25,86 @@
                 <th>دلیل</th>
                 <th>تاریخ</th>
                 <th>وضعیت</th>
-                <th>عملیات</th>
+                <th colspan="2">عملیات</th>
             </tr>
         </thead>
+
         <tbody>
-            @foreach ($reports as $report)
+            @forelse ($reports as $report)
                 <tr>
-                    <td>{{ $report->reporter->name }}</td>
-                    <td>{{ $report->reported->name }}</td>
-                    <td>{{ $report->reason ?? '-' }}</td>
-                    <td>{{ Jalalian::fromDateTime($report->created_at)->format('Y/m/d H:i') }}</td>
+                    <td>
+                        {{ $report->reporter->name ?? 'کاربر حذف‌شده' }}
+                    </td>
+
+                    <td>
+                        {{ $report->reported->name ?? 'کاربر حذف‌شده' }}
+                    </td>
+
+                    <td>
+                        {{ $report->reason ?? '-' }}
+                    </td>
+
+                    <td>
+                        {{ Jalalian::fromDateTime($report->created_at)->format('Y/m/d H:i') }}
+                    </td>
+
                     <td>
                         @if ($report->status === 'resolved')
-                            <span class="badge bg-success">بررسی شده</span>
+                            <span class="badge bg-success">
+                                بررسی شده
+                            </span>
                         @else
-                            <span class="badge bg-danger">بررسی نشده</span>
+                            <span class="badge bg-danger">
+                                بررسی نشده
+                            </span>
                         @endif
                     </td>
+
                     <td>
-                        <form action="{{ route('admin.reports.resolve', $report->id) }}" method="POST">
+                        <form
+                            action="{{ route('admin.reports.resolve', $report->id) }}"
+                            method="POST"
+                        >
                             @csrf
-                            <button type="submit"
-                                class="btn btn-sm {{ $report->status === 'resolved' ? 'btn-success' : 'btn-danger' }}">
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm {{ $report->status === 'resolved' ? 'btn-success' : 'btn-danger' }}"
+                            >
                                 {{ $report->status === 'resolved' ? 'بررسی شد' : 'بررسی نشده' }}
                             </button>
                         </form>
                     </td>
+
                     <td>
-                        <form action="{{ route('admin.reports.destroy', $report->id) }}" method="POST"
-                            onsubmit="return confirm('آیا از حذف این گزارش مطمئن هستید؟')">
+                        <form
+                            action="{{ route('admin.reports.destroy', $report->id) }}"
+                            method="POST"
+                            data-confirm="آیا از حذف این گزارش مطمئن هستید؟"
+                        >
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">🗑 حذف</button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                            >
+                                🗑 حذف
+                            </button>
                         </form>
                     </td>
-
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center">
+                        هیچ گزارشی ثبت نشده است.
+                    </td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
-    {{ $reports->appends(request()->query())->links() }}
-
     <div class="d-flex justify-content-center mt-4">
-        {!! $reports->links() !!}
+        {{ $reports->appends(request()->query())->links() }}
     </div>
-
 @endsection

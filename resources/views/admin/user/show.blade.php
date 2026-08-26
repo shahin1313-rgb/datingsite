@@ -3,7 +3,6 @@
 @section('title', 'جزئیات کاربر')
 
 @section('content')
-
     @php
         $isSelf =
             auth()->id() === $user->id;
@@ -19,7 +18,6 @@
     @endphp
 
     <div class="container mt-4">
-
         @if ($errors->any())
             <div class="alert alert-danger">
                 {{ $errors->first() }}
@@ -28,7 +26,6 @@
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-
                 <div
                     class="d-flex align-items-center mb-4"
                 >
@@ -43,9 +40,7 @@
                     >
 
                     <div class="mr-4">
-                        <h2
-                            class="h4 font-weight-bold"
-                        >
+                        <h2 class="h4 font-weight-bold">
                             {{ $user->name }}
                         </h2>
 
@@ -64,9 +59,7 @@
                         </span>
 
                         @if ($isSelf)
-                            <span
-                                class="badge badge-info"
-                            >
+                            <span class="badge badge-info">
                                 حساب شما
                             </span>
                         @endif
@@ -74,29 +67,22 @@
                 </div>
 
                 <div class="row">
-
                     <div class="col-md-4">
-                        <div
-                            class="alert alert-primary"
-                        >
+                        <div class="alert alert-primary">
                             <strong>سن:</strong>
                             {{ $user->age ?? '—' }}
                         </div>
                     </div>
 
                     <div class="col-md-4">
-                        <div
-                            class="alert alert-info"
-                        >
+                        <div class="alert alert-info">
                             <strong>جنسیت:</strong>
                             {{ $user->gender ?? '—' }}
                         </div>
                     </div>
 
                     <div class="col-md-4">
-                        <div
-                            class="alert alert-secondary"
-                        >
+                        <div class="alert alert-secondary">
                             <strong>شهر:</strong>
                             {{ $user->city ?? '—' }}
                         </div>
@@ -104,9 +90,7 @@
 
                     <div class="col-md-4">
                         <div
-                            class="alert {{ $user->banned
-                                ? 'alert-danger'
-                                : 'alert-success' }}"
+                            class="alert {{ $user->banned ? 'alert-danger' : 'alert-success' }}"
                         >
                             <strong>وضعیت:</strong>
 
@@ -117,16 +101,12 @@
                     </div>
 
                     <div class="col-md-4">
-                        <div
-                            class="alert alert-light"
-                        >
+                        <div class="alert alert-light">
                             <strong>عضویت:</strong>
 
-                            {{ $user->created_at
-                                ->format('Y/m/d') }}
+                            {{ $user->created_at->format('Y/m/d') }}
                         </div>
                     </div>
-
                 </div>
 
                 <div
@@ -139,14 +119,9 @@
                     </p>
                 </div>
 
-                <div
-                    class="card card-outline card-warning"
-                >
+                <div class="card card-outline card-warning">
                     <div class="card-body">
-
-                        <label
-                            for="admin-current-password"
-                        >
+                        <label for="admin-current-password">
                             رمز عبور فعلی مدیر
                         </label>
 
@@ -157,7 +132,6 @@
                             autocomplete="current-password"
                             placeholder="برای عملیات حساس وارد کنید"
                         >
-
                     </div>
                 </div>
 
@@ -179,9 +153,8 @@
                         >
 
                         <button
-                            class="btn {{ $user->banned
-                                ? 'btn-success'
-                                : 'btn-warning' }}"
+                            type="submit"
+                            class="btn {{ $user->banned ? 'btn-success' : 'btn-warning' }}"
                             @disabled($cannotRestrict)
                         >
                             {{ $user->banned
@@ -206,6 +179,7 @@
                             >
 
                             <button
+                                type="submit"
                                 class="btn btn-primary"
                                 @disabled($user->banned)
                             >
@@ -229,6 +203,7 @@
                         >
 
                         <button
+                            type="submit"
                             class="btn btn-danger"
                             @disabled($cannotRestrict)
                         >
@@ -238,40 +213,34 @@
                 </div>
 
                 @if ($cannotRestrict)
-                    <p
-                        class="text-muted text-right mt-2"
-                    >
+                    <p class="text-muted text-right mt-2">
                         حساب خودتان یا آخرین مدیر فعال
                         قابل مسدود یا حذف نیست.
                     </p>
                 @endif
-
             </div>
         </div>
     </div>
 @endsection
 
 @section('js')
-    <script>
+    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
         document
-            .querySelectorAll(
-                '.sensitive-action-form'
-            )
-            .forEach(function (form) {
+            .querySelectorAll('.sensitive-action-form')
+            .forEach((form) => {
                 form.addEventListener(
                     'submit',
-                    function (event) {
-                        const password =
-                            document
-                                .getElementById(
-                                    'admin-current-password'
-                                )
-                                .value;
+                    (event) => {
+                        const password = document
+                            .getElementById(
+                                'admin-current-password'
+                            )
+                            .value;
 
                         if (!password) {
                             event.preventDefault();
 
-                            alert(
+                            window.alert(
                                 'ابتدا رمز عبور فعلی مدیر را وارد کنید.'
                             );
 
@@ -279,7 +248,7 @@
                         }
 
                         if (
-                            !confirm(
+                            !window.confirm(
                                 form.dataset.confirm
                             )
                         ) {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="utf-8">
 
@@ -137,7 +138,11 @@
             border: 0;
             border-radius: 10px;
             font-weight: 700;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #1d4ed8
+            );
             box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
         }
 
@@ -176,7 +181,10 @@
 
     <div class="admin-brand">
         <div class="admin-brand-icon">
-            <i class="fas fa-user-shield" aria-hidden="true"></i>
+            <i
+                class="fas fa-user-shield"
+                aria-hidden="true"
+            ></i>
         </div>
 
         <h1>پنل مدیریت</h1>
@@ -209,7 +217,10 @@
                 @csrf
 
                 <div class="form-group">
-                    <label class="form-label" for="email">
+                    <label
+                        class="form-label"
+                        for="email"
+                    >
                         ایمیل مدیر
                     </label>
 
@@ -236,10 +247,19 @@
                             </span>
                         </div>
                     </div>
+
+                    @error('email')
+                        <span class="invalid-feedback d-block">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="password">
+                    <label
+                        class="form-label"
+                        for="password"
+                    >
                         رمز عبور
                     </label>
 
@@ -271,6 +291,12 @@
                             </button>
                         </div>
                     </div>
+
+                    @error('password')
+                        <span class="invalid-feedback d-block">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
                 <div class="form-group text-right">
@@ -328,13 +354,18 @@
     </a>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const passwordInput = document.getElementById('password');
-        const toggleButton = document.getElementById('password-toggle');
-        const passwordIcon = document.getElementById('password-icon');
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordInput =
+            document.getElementById('password');
 
-        toggleButton.addEventListener('click', function () {
+        const toggleButton =
+            document.getElementById('password-toggle');
+
+        const passwordIcon =
+            document.getElementById('password-icon');
+
+        toggleButton?.addEventListener('click', () => {
             const passwordIsHidden =
                 passwordInput.type === 'password';
 

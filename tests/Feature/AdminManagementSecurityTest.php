@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,9 @@ class AdminManagementSecurityTest extends TestCase
 
     public function test_admin_cannot_ban_their_own_account(): void
     {
+        $initialAuditCount =
+            AdminAuditLog::query()->count();
+
         $admin = $this->makeAdmin();
 
         $response = $this
@@ -22,7 +26,8 @@ class AdminManagementSecurityTest extends TestCase
             ->post(
                 route('admin.users.ban', $admin),
                 [
-                    'current_password' => self::PASSWORD,
+                    'current_password' =>
+                        self::PASSWORD,
                 ]
             );
 
@@ -34,14 +39,21 @@ class AdminManagementSecurityTest extends TestCase
             (bool) $admin->fresh()->banned
         );
 
+        /*
+         * عملیات ردشده نباید رکورد جدیدی ایجاد کند.
+         * رکوردهای قبلی جدول دست‌نخورده باقی می‌مانند.
+         */
         $this->assertDatabaseCount(
             'admin_audit_logs',
-            0
+            $initialAuditCount
         );
     }
 
     public function test_admin_cannot_delete_their_own_account(): void
     {
+        $initialAuditCount =
+            AdminAuditLog::query()->count();
+
         $admin = $this->makeAdmin();
 
         $response = $this
@@ -49,7 +61,8 @@ class AdminManagementSecurityTest extends TestCase
             ->delete(
                 route('admin.users.destroy', $admin),
                 [
-                    'current_password' => self::PASSWORD,
+                    'current_password' =>
+                        self::PASSWORD,
                 ]
             );
 
@@ -61,14 +74,20 @@ class AdminManagementSecurityTest extends TestCase
             'id' => $admin->id,
         ]);
 
+        /*
+         * درخواست نامعتبر نباید Audit Log جدید بسازد.
+         */
         $this->assertDatabaseCount(
             'admin_audit_logs',
-            0
+            $initialAuditCount
         );
     }
 
     public function test_wrong_password_blocks_sensitive_action(): void
     {
+        $initialAuditCount =
+            AdminAuditLog::query()->count();
+
         $admin = $this->makeAdmin();
         $target = $this->makeUser();
 
@@ -77,7 +96,8 @@ class AdminManagementSecurityTest extends TestCase
             ->post(
                 route('admin.users.ban', $target),
                 [
-                    'current_password' => 'wrong-password',
+                    'current_password' =>
+                        'wrong-password',
                 ]
             );
 
@@ -89,9 +109,12 @@ class AdminManagementSecurityTest extends TestCase
             (bool) $target->fresh()->banned
         );
 
+        /*
+         * رمز اشتباه نباید رکورد Audit جدید ایجاد کند.
+         */
         $this->assertDatabaseCount(
             'admin_audit_logs',
-            0
+            $initialAuditCount
         );
     }
 
@@ -105,7 +128,8 @@ class AdminManagementSecurityTest extends TestCase
             ->post(
                 route('admin.users.ban', $target),
                 [
-                    'current_password' => self::PASSWORD,
+                    'current_password' =>
+                        self::PASSWORD,
                 ]
             );
 
@@ -137,7 +161,8 @@ class AdminManagementSecurityTest extends TestCase
             ->patch(
                 route('admin.makeAdmin', $target),
                 [
-                    'current_password' => self::PASSWORD,
+                    'current_password' =>
+                        self::PASSWORD,
                 ]
             );
 
@@ -155,7 +180,8 @@ class AdminManagementSecurityTest extends TestCase
             [
                 'actor_id' => $admin->id,
                 'target_user_id' => $target->id,
-                'action' => 'user.promoted_to_admin',
+                'action' =>
+                    'user.promoted_to_admin',
             ]
         );
     }
