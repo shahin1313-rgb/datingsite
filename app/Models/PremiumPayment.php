@@ -9,6 +9,7 @@ class PremiumPayment extends Model
 {
     protected $fillable = [
         'user_id',
+        'payment_intent_id',
         'network',
         'chain_id',
         'asset',
@@ -36,5 +37,10 @@ class PremiumPayment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function paymentIntent(): BelongsTo
+    {
+        return $this->belongsTo(PremiumPaymentIntent::class);
     }
 }

@@ -14,21 +14,29 @@ class BscUsdtPaymentVerifier
     public const TOKEN_CONTRACT =
         '0x55d398326f99059ff775485246999027b3197955';
 
+    public const MAX_PAYMENT_REFERENCE = 999_999_999;
+
     private const TOKEN_DECIMALS = 18;
+
+    private const PAYMENT_REFERENCE_UNIT_ATOMIC = 10_000_000;
 
     private const TRANSFER_EVENT_TOPIC =
         '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
-    public function paymentDetails(): array
+    public function paymentDetails(?string $amountAtomic = null): array
     {
         $settings = $this->settings();
+
+        $amountAtomic = $amountAtomic === null
+            ? $settings['minimum_amount_atomic']
+            : $this->normalizeDecimalAmount($amountAtomic);
 
         return [
             'network' => 'BSC Mainnet',
             'asset' => 'USDT',
             'wallet_address' => $settings['wallet_address'],
             'amount' => $this->formatAtomicAmount(
-                $settings['minimum_amount_atomic'],
+                $amountAtomic,
                 self::TOKEN_DECIMALS
             ),
             'confirmations' => $settings['confirmations'],
@@ -36,7 +44,39 @@ class BscUsdtPaymentVerifier
         ];
     }
 
-    public function verify(string $transactionHash): array
+    public function paymentAmountForReference(
+        int $referenceCode
+    ): string {
+        if (
+            $referenceCode < 1 ||
+            $referenceCode > self::MAX_PAYMENT_REFERENCE
+        ) {
+            throw new RuntimeException(
+                'Invalid Premium payment reference.'
+            );
+        }
+
+        $settings = $this->settings();
+
+        $referenceAtomic = (string) (
+            $referenceCode * self::PAYMENT_REFERENCE_UNIT_ATOMIC
+        );
+
+        return $this->addDecimalStrings(
+            $settings['minimum_amount_atomic'],
+            $referenceAtomic
+        );
+    }
+
+    public function intentExpirationMinutes(): int
+    {
+        return $this->settings()['intent_expiration_minutes'];
+    }
+
+    public function verify(
+        string $transactionHash,
+        string $expectedAmountAtomic
+    ): array
     {
         $transactionHash = strtolower(trim($transactionHash));
 
@@ -45,6 +85,21 @@ class BscUsdtPaymentVerifier
         }
 
         $settings = $this->settings();
+
+        $expectedAmountAtomic = $this->normalizeDecimalAmount(
+            $expectedAmountAtomic
+        );
+
+        if (
+            $this->compareDecimalStrings(
+                $expectedAmountAtomic,
+                $settings['minimum_amount_atomic']
+            ) < 0
+        ) {
+            throw new RuntimeException(
+                'Expected payment amount is below the configured minimum.'
+            );
+        }
 
         $chainId = strtolower(
             (string) $this->rpc(
@@ -122,7 +177,8 @@ class BscUsdtPaymentVerifier
 
         $transfer = $this->findValidTransfer(
             $receipt,
-            $settings
+            $settings,
+            $expectedAmountAtomic
         );
 
         if ($transfer === null) {
@@ -183,10 +239,11 @@ class BscUsdtPaymentVerifier
 
     private function findValidTransfer(
         array $receipt,
-        array $settings
+        array $settings,
+        string $expectedAmountAtomic
     ): ?array {
         $requiredHex = $this->decimalToHex(
-            $settings['minimum_amount_atomic']
+            $expectedAmountAtomic
         );
 
         foreach (($receipt['logs'] ?? []) as $log) {
@@ -245,7 +302,7 @@ class BscUsdtPaymentVerifier
             if (
                 $receiverAddress !==
                     $settings['wallet_address'] ||
-                ! $this->hexIsGreaterThanOrEqual(
+                ! $this->hexValuesAreEqual(
                     $amountHex,
                     $requiredHex
                 )
@@ -302,6 +359,10 @@ class BscUsdtPaymentVerifier
             $settings['premium_days'] ?? 30
         );
 
+        $intentExpirationMinutes = (int) (
+            $settings['intent_expiration_minutes'] ?? 60
+        );
+
         if (
             ! filter_var(
                 $rpcUrl,
@@ -317,7 +378,9 @@ class BscUsdtPaymentVerifier
                 $minimumAmount
             ) ||
             $confirmations < 1 ||
-            $premiumDays < 1
+            $premiumDays < 1 ||
+            $intentExpirationMinutes < 5 ||
+            $intentExpirationMinutes > 1440
         ) {
             throw new RuntimeException(
                 'Premium payment configuration is invalid.'
@@ -330,6 +393,8 @@ class BscUsdtPaymentVerifier
             'minimum_amount_atomic' => $minimumAmount,
             'confirmations' => $confirmations,
             'premium_days' => $premiumDays,
+            'intent_expiration_minutes' =>
+                $intentExpirationMinutes,
         ];
     }
 
@@ -453,9 +518,9 @@ class BscUsdtPaymentVerifier
         return $decimal;
     }
 
-    private function hexIsGreaterThanOrEqual(
+    private function hexValuesAreEqual(
         string $actualHex,
-        string $requiredHex
+        string $expectedHex
     ): bool {
         $actual = ltrim(
             strtolower(
@@ -464,18 +529,70 @@ class BscUsdtPaymentVerifier
             '0'
         ) ?: '0';
 
-        $required = ltrim(
+        $expected = ltrim(
             strtolower(
-                preg_replace('/^0x/', '', $requiredHex)
+                preg_replace('/^0x/', '', $expectedHex)
             ),
             '0'
         ) ?: '0';
 
-        if (strlen($actual) !== strlen($required)) {
-            return strlen($actual) > strlen($required);
+        return hash_equals($expected, $actual);
+    }
+
+    private function normalizeDecimalAmount(string $amount): string
+    {
+        $amount = ltrim(trim($amount), '0');
+        $amount = $amount === '' ? '0' : $amount;
+
+        if (! preg_match('/^[0-9]+$/', $amount)) {
+            throw new RuntimeException(
+                'Invalid decimal token amount.'
+            );
         }
 
-        return strcmp($actual, $required) >= 0;
+        return $amount;
+    }
+
+    private function compareDecimalStrings(
+        string $left,
+        string $right
+    ): int {
+        $left = $this->normalizeDecimalAmount($left);
+        $right = $this->normalizeDecimalAmount($right);
+
+        if (strlen($left) !== strlen($right)) {
+            return strlen($left) <=> strlen($right);
+        }
+
+        return strcmp($left, $right);
+    }
+
+    private function addDecimalStrings(
+        string $left,
+        string $right
+    ): string {
+        $left = strrev($this->normalizeDecimalAmount($left));
+        $right = strrev($this->normalizeDecimalAmount($right));
+
+        $length = max(strlen($left), strlen($right));
+        $carry = 0;
+        $result = '';
+
+        for ($index = 0; $index < $length; $index++) {
+            $sum =
+                (int) ($left[$index] ?? 0) +
+                (int) ($right[$index] ?? 0) +
+                $carry;
+
+            $result .= (string) ($sum % 10);
+            $carry = intdiv($sum, 10);
+        }
+
+        if ($carry > 0) {
+            $result .= (string) $carry;
+        }
+
+        return strrev($result);
     }
 
     private function formatAtomicAmount(

@@ -15,7 +15,7 @@
         <p class="text-sm text-gray-500 mb-5">
             برای فعال‌شدن Premium به مدت
             {{ $payment['premium_days'] }}
-            روز، مبلغ مشخص‌شده را فقط روی BSC Mainnet بفرستید.
+            روز، مبلغ دقیق و اختصاصی این فاکتور را فقط روی BSC Mainnet بفرستید.
         </p>
 
         <div
@@ -26,6 +26,17 @@
             شبکه‌های Sepolia، Ethereum، BSC Testnet، TRC20 و
             سایر شبکه‌ها پذیرفته نمی‌شوند. ارسال روی شبکه اشتباه
             ممکن است باعث از دست‌رفتن دارایی شود.
+        </div>
+
+        <div
+            class="mb-5 p-3 bg-blue-50 text-blue-800 text-xs rounded-xl text-right border border-blue-200 leading-6"
+        >
+            این مبلغ فقط به حساب شما متصل است و تا ساعت
+            <strong dir="ltr">
+                {{ $payment['expires_at']->format('H:i') }}
+            </strong>
+            معتبر خواهد بود. مبلغ را گرد نکنید و دقیقاً همان عدد
+            نمایش‌داده‌شده را انتقال دهید.
         </div>
 
         @if ($errors->any())
@@ -71,10 +82,36 @@
                         مبلغ پرداخت
                     </span>
 
-                    <strong class="text-pink-600" dir="ltr">
-                        {{ $payment['amount'] }}
-                        {{ $payment['asset'] }}
-                    </strong>
+                    <div class="flex items-center justify-center gap-1" dir="ltr">
+                        <input
+                            type="text"
+                            readonly
+                            id="paymentAmount"
+                            value="{{ $payment['amount'] }}"
+                            class="w-28 bg-transparent text-pink-600 font-bold text-center focus:outline-none cursor-pointer"
+                            aria-label="مبلغ دقیق پرداخت"
+                        >
+
+                        <strong class="text-pink-600">
+                            {{ $payment['asset'] }}
+                        </strong>
+
+                        <button
+                            type="button"
+                            id="copyAmountButton"
+                            class="text-gray-400 hover:text-pink-600 p-1 transition"
+                            aria-label="کپی مبلغ دقیق"
+                        >
+                            <i class="fa fa-copy" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <span
+                        id="copyAmountMessage"
+                        class="hidden block text-[10px] text-green-600 mt-1 font-bold"
+                    >
+                        مبلغ کپی شد!
+                    </span>
                 </div>
             </div>
 
@@ -136,6 +173,12 @@
         >
             @csrf
 
+            <input
+                type="hidden"
+                name="payment_intent"
+                value="{{ $payment['intent_public_id'] }}"
+            >
+
             <div class="text-right">
                 <label
                     for="transaction_hash"
@@ -172,17 +215,23 @@
 <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
     document
         .getElementById('copyWalletButton')
-        ?.addEventListener('click', copyWalletAddress);
+        ?.addEventListener('click', () => {
+            copyValue('walletAddress', 'copyMessage');
+        });
 
-    function copyWalletAddress() {
-        const walletInput =
-            document.getElementById('walletAddress');
+    document
+        .getElementById('copyAmountButton')
+        ?.addEventListener('click', () => {
+            copyValue('paymentAmount', 'copyAmountMessage');
+        });
 
-        const copyMessage =
-            document.getElementById('copyMessage');
+    function copyValue(inputId, messageId) {
+        const input = document.getElementById(inputId);
+
+        const copyMessage = document.getElementById(messageId);
 
         navigator.clipboard
-            .writeText(walletInput.value)
+            .writeText(input.value)
             .then(() => {
                 copyMessage.classList.remove('hidden');
 
@@ -191,7 +240,7 @@
                 }, 2000);
             })
             .catch(() => {
-                walletInput.select();
+                input.select();
                 document.execCommand('copy');
 
                 copyMessage.classList.remove('hidden');

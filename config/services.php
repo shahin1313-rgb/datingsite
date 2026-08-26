@@ -77,6 +77,11 @@ return [
             'PREMIUM_DAYS',
             30
         ),
+
+        'intent_expiration_minutes' => (int) env(
+            'PREMIUM_PAYMENT_INTENT_MINUTES',
+            60
+        ),
     ],
 
 ];
