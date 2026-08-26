@@ -26,7 +26,7 @@
                     <div class="flex items-center gap-4">
                         <div class="relative">
                             <img
-                                src="{{ asset('storage/' . ($block->blocked->profile_picture ?? 'default.jpg')) }}"
+                                src="{{ $block->blocked->profilePhotoUrl() }}"
                                 alt="{{ $block->blocked->name ?? 'کاربر' }}"
                                 class="w-14 h-14 rounded-full object-cover border-2 border-pink-200 shadow-sm"
                             >

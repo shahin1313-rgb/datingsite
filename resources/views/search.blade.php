@@ -122,7 +122,7 @@
                         <div class="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 group">
                             {{-- Profile Image --}}
                             <div class="relative h-72 overflow-hidden">
-                                <img src="{{ $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : asset('images/default-avatar.png') }}" 
+                                <img src="{{ $profile->profilePhotoUrl() }}"
                                      class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="avatar">
                                 
                                 {{-- Status Badge --}}

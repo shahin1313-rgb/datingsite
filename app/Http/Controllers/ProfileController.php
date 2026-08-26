@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ProfileView;
 use App\Models\User;
+use App\Services\ProfilePhotoService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -25,8 +25,10 @@ class ProfileController extends Controller
     /**
      * ذخیره تغییرات پروفایل کاربر جاری.
      */
-    public function update(Request $request)
-    {
+    public function update(
+        Request $request,
+        ProfilePhotoService $photos
+    ) {
         $user = Auth::user();
 
         $validated = $request->validate([
@@ -74,6 +76,7 @@ class ProfileController extends Controller
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
+                'dimensions:max_width=4096,max_height=4096',
                 'max:2048',
             ],
         ], [
@@ -90,23 +93,13 @@ class ProfileController extends Controller
          */
         unset($validated['current_password']);
 
-        if ($request->hasFile('profile_picture')) {
-            /*
-             * ابتدا عکس جدید ذخیره می‌شود.
-             */
-            $newPicturePath = $request
-                ->file('profile_picture')
-                ->store('profile_pictures', 'public');
+        $oldPicturePath = $user->profile_picture;
+        $newPicturePath = null;
 
-            /*
-             * فقط بعد از ذخیره موفق عکس جدید،
-             * عکس قبلی حذف می‌شود.
-             */
-            if ($user->profile_picture) {
-                Storage::disk('public')->delete(
-                    $user->profile_picture
-                );
-            }
+        if ($request->hasFile('profile_picture')) {
+            $newPicturePath = $photos->store(
+                $request->file('profile_picture')
+            );
 
             $validated['profile_picture'] =
                 $newPicturePath;
@@ -125,7 +118,23 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
-        $user->save();
+        try {
+            $user->save();
+        } catch (\Throwable $exception) {
+            if ($newPicturePath !== null) {
+                $photos->delete($newPicturePath);
+            }
+
+            throw $exception;
+        }
+
+        /*
+         * The old file is removed only after the database points to the
+         * successfully stored private replacement.
+         */
+        if ($newPicturePath !== null) {
+            $photos->delete($oldPicturePath);
+        }
 
         /*
          * برای ایمیل جدید، لینک تأیید تازه ارسال می‌شود.

@@ -57,7 +57,7 @@
                 @foreach($latestLikers as $like)
                 <div class="flex-shrink-0 flex flex-col items-center group">
                     <div class="relative">
-                        <img src="{{ asset('storage/' . ($like->liker->profile_picture ?? 'default.jpg')) }}" 
+                        <img src="{{ $like->liker->profilePhotoUrl() }}"
                              class="w-20 h-20 rounded-[2rem] object-cover ring-4 ring-pink-50 group-hover:ring-pink-200 transition-all">
                         <span class="absolute -bottom-1 -right-1 bg-red-500 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
                             <i class="fa fa-heart text-[8px] text-white"></i>
@@ -74,7 +74,7 @@
             <div class="space-y-5">
                 @forelse($recentProfileViews as $view)
                 <div class="flex items-center gap-4 group">
-                    <img src="{{ asset('storage/' . ($view->viewer->profile_picture ?? 'default.jpg')) }}" 
+                    <img src="{{ $view->viewer->profilePhotoUrl() }}"
                          class="w-12 h-12 rounded-2xl object-cover">
                     <div class="flex-1">
                         <h4 class="text-sm font-bold text-gray-800 group-hover:text-pink-600 transition">{{ $view->viewer->name }}</h4>
@@ -99,7 +99,7 @@
                 @foreach ($recentUsers as $recentUser)
                 <a href="{{ route('profile.show', $recentUser->id) }}" class="flex-shrink-0 text-center group">
                     <div class="relative inline-block">
-                        <img src="{{ asset('storage/' . ($recentUser->profile_picture ?? 'default.jpg')) }}" 
+                        <img src="{{ $recentUser->profilePhotoUrl() }}"
                              class="w-16 h-16 rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-90 group-hover:scale-110 shadow-2xl">
                         <span class="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></span>
                     </div>

@@ -28,7 +28,7 @@
 
                         <td>
                             <img
-                                src="{{ asset('storage/' . $user->profile_picture) }}"
+                                src="{{ $user->profilePhotoUrl() }}"
                                 alt="{{ $user->name }}"
                                 width="80"
                                 height="80"

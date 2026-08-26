@@ -54,7 +54,7 @@
                 >
                     <div class="relative flex-shrink-0">
                         <img
-                            src="{{ asset('storage/' . $contact->profile_picture) }}"
+                            src="{{ $contact->profilePhotoUrl() }}"
                             alt="{{ $contact->name }}"
                             class="w-16 h-16 rounded-full object-cover ring-2 ring-white shadow-sm"
                         >

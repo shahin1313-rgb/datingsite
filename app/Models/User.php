@@ -65,6 +65,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'admin';
     }
 
+    public function profilePhotoUrl(): string
+    {
+        if (! $this->profile_picture) {
+            return asset('storage/default.png');
+        }
+
+        return route('profile.photo', [
+            'user' => $this->id,
+        ]);
+    }
+
     public function tickets()
     {
         return $this->hasMany(

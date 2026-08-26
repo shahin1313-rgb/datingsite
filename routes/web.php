@@ -8,6 +8,7 @@ use App\Http\Controllers\{
     ReportController,
     MessageController,
     ProfileController,
+    ProfilePhotoController,
     DashboardController,
     TicketController,
     BlockController,
@@ -169,6 +170,16 @@ Route::middleware([
             'search',
         ]
     )->name('search');
+
+    Route::get(
+        '/profile-photo/{user}',
+        [
+            ProfilePhotoController::class,
+            'show',
+        ]
+    )
+        ->whereNumber('user')
+        ->name('profile.photo');
 
     /*
     |--------------------------------------------------------------------------

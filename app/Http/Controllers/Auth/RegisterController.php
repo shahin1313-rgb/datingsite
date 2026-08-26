@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ProfilePhotoService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
@@ -37,8 +38,10 @@ class RegisterController extends Controller
     /**
      * ثبت‌نام کاربر جدید.
      */
-    public function register(Request $request)
-    {
+    public function register(
+        Request $request,
+        ProfilePhotoService $photos
+    ) {
         $validatedData = $request->validate([
             'name' => [
                 'required',
@@ -106,6 +109,7 @@ class RegisterController extends Controller
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
+                'dimensions:max_width=4096,max_height=4096',
                 'max:2048',
             ],
 
@@ -126,33 +130,44 @@ class RegisterController extends Controller
         $currentYear = (int) date('Y');
         $birthYear = $currentYear - $validatedData['age'];
 
-        if ($request->hasFile('profile_picture')) {
-            $path = $request
-                ->file('profile_picture')
-                ->store('profile_pictures', 'public');
+        $picturePath = null;
 
-            $validatedData['profile_picture'] = $path;
+        if ($request->hasFile('profile_picture')) {
+            $picturePath = $photos->store(
+                $request->file('profile_picture')
+            );
+
+            $validatedData['profile_picture'] =
+                $picturePath;
         }
 
-        $user = User::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make(
-                $validatedData['password']
-            ),
-            'gender' => $validatedData['gender'],
-            'age' => $validatedData['age'],
-            'birth_year' => $birthYear,
-            'city' => $validatedData['city'],
-            'interested_in' =>
-                $validatedData['interested_in'],
-            'salary' => $validatedData['salary'],
-            'marital_status' =>
-                $validatedData['marital_status'] ?? null,
-            'bio' => $validatedData['bio'] ?? null,
-            'profile_picture' =>
-                $validatedData['profile_picture'] ?? null,
-        ]);
+        try {
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make(
+                    $validatedData['password']
+                ),
+                'gender' => $validatedData['gender'],
+                'age' => $validatedData['age'],
+                'birth_year' => $birthYear,
+                'city' => $validatedData['city'],
+                'interested_in' =>
+                    $validatedData['interested_in'],
+                'salary' => $validatedData['salary'],
+                'marital_status' =>
+                    $validatedData['marital_status'] ?? null,
+                'bio' => $validatedData['bio'] ?? null,
+                'profile_picture' =>
+                    $validatedData['profile_picture'] ?? null,
+            ]);
+        } catch (\Throwable $exception) {
+            if ($picturePath !== null) {
+                $photos->delete($picturePath);
+            }
+
+            throw $exception;
+        }
 
         /*
          * این رویداد باعث ارسال ایمیل تأیید می‌شود.

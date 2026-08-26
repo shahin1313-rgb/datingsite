@@ -150,7 +150,7 @@
                     class="flex items-center space-x-reverse space-x-3 mb-8"
                 >
                     <img
-                        src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}"
+                        src="{{ auth()->user()->profilePhotoUrl() }}"
                         alt="Profile"
                         class="w-12 h-12 rounded-full profile-img"
                     >

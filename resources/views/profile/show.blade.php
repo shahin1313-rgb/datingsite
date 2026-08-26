@@ -17,7 +17,7 @@
                     <div class="flex justify-center">
                         @if ($user->profile_picture)
                             <img
-                                src="{{ asset('storage/' . $user->profile_picture) }}"
+                                src="{{ $user->profilePhotoUrl() }}"
                                 class="w-40 h-40 rounded-full border-4 border-white dark:border-slate-900 shadow-lg object-cover -mt-20 bg-white dark:bg-slate-800"
                                 alt="{{ $user->name }}"
                             >

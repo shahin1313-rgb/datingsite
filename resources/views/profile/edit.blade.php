@@ -17,7 +17,7 @@
                     <div class="relative">
                         <img
                             id="header-avatar"
-                            src="{{ asset('storage/' . $user->profile_picture) }}?v={{ time() }}"
+                            src="{{ $user->profilePhotoUrl() }}?v={{ time() }}"
                             class="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover ring-4 ring-pink-50/50"
                             alt="Profile Picture"
                         >
@@ -286,7 +286,7 @@
                         <div class="mt-4 flex justify-center">
                             <img
                                 id="preview"
-                                src="{{ asset('storage/' . $user->profile_picture) }}"
+                                src="{{ $user->profilePhotoUrl() }}"
                                 alt="پیش‌نمایش تصویر پروفایل"
                                 class="w-20 h-20 rounded-2xl object-cover border-2 border-pink-100 shadow-sm"
                             >

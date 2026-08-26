@@ -68,7 +68,7 @@
                         class="w-16 h-16 rounded-full border-2 border-white/50 overflow-hidden shadow-lg"
                     >
                         <img
-                            src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.jpg')) }}"
+                            src="{{ auth()->user()->profilePhotoUrl() }}"
                             alt="{{ auth()->user()->name }}"
                             class="w-full h-full object-cover"
                         >
@@ -180,7 +180,7 @@
                             >
                                 <div class="relative group">
                                     <img
-                                        src="{{ asset('storage/' . (auth()->user()->profile_picture ?? 'default.png')) }}"
+                                        src="{{ auth()->user()->profilePhotoUrl() }}"
                                         alt="{{ auth()->user()->name }}"
                                         class="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl bg-white"
                                     >

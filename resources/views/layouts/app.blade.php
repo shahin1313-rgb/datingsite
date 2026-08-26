@@ -116,7 +116,7 @@
                         >
                             @if(auth()->user()->profile_picture)
                                 <img
-                                    src="{{ asset('storage/' . auth()->user()->profile_picture) }}"
+                                    src="{{ auth()->user()->profilePhotoUrl() }}"
                                     alt="{{ auth()->user()->name }}"
                                     class="w-full h-full object-cover"
                                 >

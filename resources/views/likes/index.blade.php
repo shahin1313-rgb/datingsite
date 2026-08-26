@@ -44,7 +44,7 @@
     <div x-show="tab === 'received'" x-transition class="p-4 grid grid-cols-2 gap-4">
         @forelse($likedByUsers as $user)
             <div class="tinder-card h-64 shadow-md bg-white">
-                <img src="{{ asset('storage/' . ($user->profile_picture ?? 'default.jpg')) }}" class="w-full h-full object-cover">
+                <img src="{{ $user->profilePhotoUrl() }}" class="w-full h-full object-cover">
                 <div class="absolute inset-0 gradient-overlay"></div>
                 <div class="absolute bottom-3 right-3 left-3 text-white">
                     <p class="font-bold text-sm truncate">{{ $user->name }}، {{ $user->age ?? '۲۵' }}</p>
@@ -67,7 +67,7 @@
     <div x-show="tab === 'sent'" x-transition class="p-4 grid grid-cols-2 gap-4">
         @forelse($likedUsers as $user)
             <div class="tinder-card h-64 shadow-md opacity-90">
-                <img src="{{ asset('storage/' . ($user->profile_picture ?? 'default.jpg')) }}" class="w-full h-full object-cover grayscale-[30%]">
+                <img src="{{ $user->profilePhotoUrl() }}" class="w-full h-full object-cover grayscale-[30%]">
                 <div class="absolute inset-0 bg-black/20"></div>
                 <div class="absolute bottom-3 right-3 left-3 text-white">
                     <p class="font-bold text-sm truncate">{{ $user->name }}</p>

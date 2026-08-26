@@ -30,9 +30,7 @@
                     class="d-flex align-items-center mb-4"
                 >
                     <img
-                        src="{{ $user->profile_picture
-                            ? asset('storage/'.$user->profile_picture)
-                            : asset('images/default-avatar.png') }}"
+                        src="{{ $user->profilePhotoUrl() }}"
                         alt="تصویر {{ $user->name }}"
                         class="rounded-circle border border-primary"
                         width="128"

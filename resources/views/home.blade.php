@@ -91,7 +91,7 @@
                         <div class="bg-[#1E1E1E] rounded-3xl overflow-hidden border border-gray-800 hover:border-[#9B59B6] transition-all group">
                             {{-- Profile Image --}}
                             <div class="relative h-64 overflow-hidden">
-                                <img src="{{ $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : asset('images/default-avatar.png') }}" 
+                                <img src="{{ $profile->profilePhotoUrl() }}"
                                      class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="avatar">
                                 <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#1E1E1E] to-transparent h-24"></div>
                                 @if($profile->is_active)

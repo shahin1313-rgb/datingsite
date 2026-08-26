@@ -13,7 +13,7 @@
             <div class="w3-container w3-row">
                 <div class="w3-col s4">
                     <img
-                        src="{{ asset('storage/' . $user->profile_picture) }}"
+                        src="{{ $user->profilePhotoUrl() }}"
                         alt="{{ $user->name }}"
                         class="w3-circle w3-margin-right"
                         style="width:46px"
@@ -261,7 +261,7 @@
                     @foreach ($recentUsers as $recentUser)
                         <div class="slide">
                             <img
-                                src="{{ asset('storage/' . $recentUser->profile_picture) }}"
+                                src="{{ $recentUser->profilePhotoUrl() }}"
                                 alt="{{ $recentUser->name }}"
                             >
                         </div>

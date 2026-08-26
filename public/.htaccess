@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # User profile photos are private and must only be served by Laravel.
+    RewriteRule ^storage/profile_pictures(?:/|$) - [R=404,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

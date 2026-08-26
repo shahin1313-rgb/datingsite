@@ -98,7 +98,7 @@
 
                 <div class="relative ml-3">
                     <img
-                        src="{{ $user->profile_picture ? asset('storage/'.$user->profile_picture) : asset('storage/default.png') }}"
+                        src="{{ $user->profilePhotoUrl() }}"
                         alt="{{ $user->name }}"
                         class="w-10 h-10 rounded-full object-cover border-2 border-pink-50"
                     >

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Message;
-use Illuminate\Support\Facades\Storage;
+use App\Services\ProfilePhotoService;
 
 class PhotoController extends Controller
 {
@@ -16,16 +16,18 @@ class PhotoController extends Controller
         return view('admin.photos.index', compact('users'));
     }
 
-    public function destroy($id)
+    public function destroy(
+        $id,
+        ProfilePhotoService $photos
+    )
     {
         $user = User::findOrFail($id);
-
-        if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
-            Storage::disk('public')->delete($user->profile_picture);
-        }
+        $picturePath = $user->profile_picture;
 
         $user->profile_picture = null;
         $user->save();
+
+        $photos->delete($picturePath);
 
         // ارسال پیام به کاربر
         Message::create([
