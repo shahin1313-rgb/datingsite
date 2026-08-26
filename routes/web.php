@@ -299,7 +299,9 @@ Route::middleware([
                     MessageController::class,
                     'store',
                 ]
-            )->name('store');
+            )
+                ->middleware('throttle:messages.store')
+                ->name('store');
         });
 
     /*
@@ -365,7 +367,9 @@ Route::middleware([
                     TicketController::class,
                     'store',
                 ]
-            )->name('store');
+            )
+                ->middleware('throttle:tickets.store')
+                ->name('store');
         });
 
     /*
@@ -408,7 +412,9 @@ Route::middleware([
             ReportController::class,
             'store',
         ]
-    )->name('report.store');
+    )
+        ->middleware('throttle:reports.store')
+        ->name('report.store');
 });
 
 /*

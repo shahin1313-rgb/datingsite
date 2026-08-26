@@ -33,7 +33,7 @@ class AdminTicketController extends Controller
     public function reply(Request $request, $ticketId)
     {
         $request->validate([
-            'message' => 'required|string',
+            'message' => 'required|string|max:5000',
         ]);
 
         $ticket = Ticket::findOrFail($ticketId);

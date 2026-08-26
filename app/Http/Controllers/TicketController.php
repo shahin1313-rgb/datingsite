@@ -38,7 +38,7 @@ class TicketController extends Controller
     {
         $validated = $request->validate([
             'subject' => 'required|string|max:255',
-            'message' => 'required|string',
+            'message' => 'required|string|max:5000',
         ]);
 
         $request->user()->tickets()->create($validated);
@@ -69,7 +69,7 @@ class TicketController extends Controller
     public function reply(Request $request, Ticket $ticket)
     {
         $validated = $request->validate([
-            'message' => 'required|string',
+            'message' => 'required|string|max:5000',
         ]);
 
         $ownedTicket = $request->user()

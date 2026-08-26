@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Models\Message;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->configureContentRateLimits();
+
         /*
          * شخصی‌سازی ایمیل تأیید حساب.
          *
@@ -74,5 +79,61 @@ class AppServiceProvider extends ServiceProvider
                 $globalUnreadCount
             );
         });
+    }
+
+    /**
+     * محدودیت نرخ عملیات‌هایی که رکورد جدید در دیتابیس می‌سازند.
+     */
+    private function configureContentRateLimits(): void
+    {
+        $userKey = static function (Request $request): string {
+            $user = $request->user();
+
+            return $user
+                ? 'user:'.$user->getAuthIdentifier()
+                : 'ip:'.$request->ip();
+        };
+
+        RateLimiter::for(
+            'messages.store',
+            static function (Request $request) use ($userKey): array {
+                $key = $userKey($request);
+
+                return [
+                    Limit::perMinute(10)
+                        ->by('messages:minute:'.$key),
+                    Limit::perDay(200)
+                        ->by('messages:day:'.$key),
+                ];
+            }
+        );
+
+        RateLimiter::for(
+            'tickets.store',
+            static function (Request $request) use ($userKey): array {
+                $key = $userKey($request);
+
+                return [
+                    Limit::perHour(3)
+                        ->by('tickets:hour:'.$key),
+                    Limit::perDay(10)
+                        ->by('tickets:day:'.$key),
+                ];
+            }
+        );
+
+        RateLimiter::for(
+            'reports.store',
+            static function (Request $request) use ($userKey): array {
+                $key = $userKey($request);
+
+                return [
+                    Limit::perHour(5)
+                        ->by('reports:hour:'.$key),
+                    Limit::perDay(20)
+                        ->by('reports:day:'.$key),
+                ];
+            }
+        );
     }
 }
