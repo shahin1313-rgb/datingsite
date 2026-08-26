@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -42,6 +43,21 @@ class ProfileController extends Controller
                 'unique:users,email,' . $user->id,
             ],
 
+            /*
+             * رمز فعلی فقط زمانی اجباری است که آدرس ایمیل
+             * واقعاً تغییر کرده باشد.
+             */
+            'current_password' => [
+                Rule::requiredIf(
+                    fn (): bool =>
+                        $request->input('email') !==
+                        $user->email
+                ),
+                'nullable',
+                'string',
+                'current_password',
+            ],
+
             'city' => [
                 'nullable',
                 'string',
@@ -60,7 +76,19 @@ class ProfileController extends Controller
                 'mimes:jpeg,png,jpg,gif',
                 'max:2048',
             ],
+        ], [
+            'current_password.required' =>
+                'برای تغییر ایمیل، رمز عبور فعلی خود را وارد کنید.',
+
+            'current_password.current_password' =>
+                'رمز عبور فعلی صحیح نیست.',
         ]);
+
+        /*
+         * این فیلد فقط برای تأیید هویت است و نباید
+         * در مدل User ذخیره شود.
+         */
+        unset($validated['current_password']);
 
         if ($request->hasFile('profile_picture')) {
             /*

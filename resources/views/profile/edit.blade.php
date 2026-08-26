@@ -104,7 +104,50 @@
                                 class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all outline-none"
                                 required
                             >
+
+                            @error('email')
+                                <p
+                                    class="mt-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600"
+                                    role="alert"
+                                >
+                                    {{ $message }}
+                                </p>
+                            @enderror
                         </div>
+                    </div>
+
+                    <div>
+                        <label
+                            for="current_password"
+                            class="block text-sm font-semibold text-gray-600 mb-2 px-1"
+                        >
+                            {{ __('profile.current_password') }}
+                        </label>
+
+                        <input
+                            type="password"
+                            id="current_password"
+                            name="current_password"
+                            autocomplete="current-password"
+                            aria-describedby="current-password-help"
+                            class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all outline-none"
+                        >
+
+                        <p
+                            id="current-password-help"
+                            class="mt-2 px-1 text-xs leading-6 text-gray-500"
+                        >
+                            {{ __('profile.password_required_for_email_change') }}
+                        </p>
+
+                        @error('current_password')
+                            <p
+                                class="mt-2 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600"
+                                role="alert"
+                            >
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
                     <div

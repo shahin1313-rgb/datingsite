@@ -23,7 +23,8 @@ use App\Http\Controllers\Auth\{
     ResetPasswordController,
     AdminLoginController,
     AdminTwoFactorController,
-    ForgotPasswordController
+    ForgotPasswordController,
+    VerificationController
 };
 
 use App\Http\Controllers\Admin\{
@@ -114,6 +115,36 @@ Route::middleware([
             'logout',
         ]
     )->name('logout');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/email/verify',
+        [
+            VerificationController::class,
+            'show',
+        ]
+    )->name('verification.notice');
+
+    Route::get(
+        '/email/verify/{id}/{hash}',
+        [
+            VerificationController::class,
+            'verify',
+        ]
+    )->name('verification.verify');
+
+    Route::post(
+        '/email/resend',
+        [
+            VerificationController::class,
+            'resend',
+        ]
+    )->name('verification.resend');
 
     Route::get(
         '/home',
