@@ -146,7 +146,13 @@ Route::middleware([
             'resend',
         ]
     )->name('verification.resend');
+});
 
+Route::middleware([
+    'auth',
+    'not_banned',
+    'verified',
+])->group(function (): void {
     Route::get(
         '/home',
         [

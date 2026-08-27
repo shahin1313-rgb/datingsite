@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Block;
 use App\Models\User;
 use App\Services\ProfilePhotoService;
 use Illuminate\Http\Request;
@@ -22,38 +21,13 @@ class ProfilePhotoController extends Controller
             ! $viewer->isAdmin()
             && $viewer->id !== $user->id
         ) {
-            $blocked = Block::query()
-                ->where(function ($query) use (
-                    $viewer,
-                    $user
-                ): void {
-                    $query
-                        ->where(
-                            'blocker_id',
-                            $viewer->id
-                        )
-                        ->where(
-                            'blocked_id',
-                            $user->id
-                        );
-                })
-                ->orWhere(function ($query) use (
-                    $viewer,
-                    $user
-                ): void {
-                    $query
-                        ->where(
-                            'blocker_id',
-                            $user->id
-                        )
-                        ->where(
-                            'blocked_id',
-                            $viewer->id
-                        );
-                })
+            $visible = User::query()
+                ->publicMembers()
+                ->notBlockedWith($viewer)
+                ->whereKey($user->id)
                 ->exists();
 
-            abort_if($blocked, 404);
+            abort_unless($visible, 404);
         }
 
         $path = $user->profile_picture;

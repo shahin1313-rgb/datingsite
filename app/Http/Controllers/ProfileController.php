@@ -162,9 +162,14 @@ class ProfileController extends Controller
      * اطلاعات خصوصی مانند email و role عمداً
      * از دیتابیس دریافت نمی‌شوند.
      */
-    public function show($id)
+    public function show(
+        Request $request,
+        int $id
+    )
     {
-        $user = User::query()
+        $viewer = $request->user();
+
+        $query = User::query()
             ->select([
                 'id',
                 'name',
@@ -173,8 +178,19 @@ class ProfileController extends Controller
                 'profile_picture',
                 'interested_in',
                 'salary',
-            ])
-            ->findOrFail($id);
+            ]);
+
+        /*
+         * پروفایل خود کاربر همیشه قابل مشاهده است؛
+         * سایر پروفایل‌ها باید عمومی و بدون بلاک دوطرفه باشند.
+         */
+        if ((int) $id !== $viewer->id) {
+            $query
+                ->publicMembers()
+                ->notBlockedWith($viewer);
+        }
+
+        $user = $query->findOrFail($id);
 
         /*
          * بازدید از پروفایل خود کاربر ثبت نمی‌شود.
@@ -209,7 +225,8 @@ class ProfileController extends Controller
     public function search(SearchProfilesRequest $request)
     {
         $filters = $request->validated();
-        $query = User::query();
+        $query = User::query()
+            ->discoverableBy($request->user());
 
         if (! empty($filters['city'])) {
             $query->where(

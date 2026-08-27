@@ -180,6 +180,28 @@ class ProfilePhotoSecurityTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
+    public function test_non_admin_cannot_view_non_public_profile_photos(): void
+    {
+        $viewer = User::factory()->create();
+
+        foreach (
+            [
+                ['banned' => true],
+                ['email_verified_at' => null],
+                ['role' => 'admin'],
+            ]
+            as $attributes
+        ) {
+            $owner = $this->userWithPrivatePhoto(
+                $attributes
+            );
+
+            $this->actingAs($viewer)
+                ->get(route('profile.photo', $owner))
+                ->assertNotFound();
+        }
+    }
+
     public function test_admin_can_review_a_photo_despite_a_block(): void
     {
         $owner = $this->userWithPrivatePhoto();
@@ -198,9 +220,16 @@ class ProfilePhotoSecurityTest extends TestCase
             ->assertOk();
     }
 
-    private function userWithPrivatePhoto(): User
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    private function userWithPrivatePhoto(
+        array $attributes = []
+    ): User
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(
+            $attributes
+        );
         $path = 'profile_pictures/'.$user->id.'.jpg';
 
         Storage::disk('local')->put(

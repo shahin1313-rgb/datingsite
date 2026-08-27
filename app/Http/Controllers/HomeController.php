@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -17,10 +18,10 @@ class HomeController extends Controller
     /**
      * نمایش فهرست کاربران در صفحه اصلی.
      */
-    public function index()
+    public function index(Request $request)
     {
         $profiles = User::query()
-            ->where('id', '!=', auth()->id())
+            ->discoverableBy($request->user())
             ->latest()
             ->paginate(10);
 

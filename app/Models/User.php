@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -74,6 +75,55 @@ class User extends Authenticatable implements MustVerifyEmail
         return route('profile.photo', [
             'user' => $this->id,
         ]);
+    }
+
+    /**
+     * فقط حساب‌های عادی، فعال و دارای ایمیل تأییدشده
+     * اجازه حضور در بخش‌های عمومی کاربران را دارند.
+     */
+    public function scopePublicMembers(
+        Builder $query
+    ): Builder {
+        return $query
+            ->where('users.role', 'user')
+            ->where('users.banned', false)
+            ->whereNotNull('users.email_verified_at');
+    }
+
+    /**
+     * حساب‌هایی را حذف می‌کند که هر یک از دو کاربر
+     * دیگری را بلاک کرده است.
+     */
+    public function scopeNotBlockedWith(
+        Builder $query,
+        User $viewer
+    ): Builder {
+        return $query
+            ->whereNotIn(
+                'users.id',
+                Block::query()
+                    ->select('blocked_id')
+                    ->where('blocker_id', $viewer->id)
+            )
+            ->whereNotIn(
+                'users.id',
+                Block::query()
+                    ->select('blocker_id')
+                    ->where('blocked_id', $viewer->id)
+            );
+    }
+
+    /**
+     * سیاست مشترک خانه، جست‌وجو و لایک.
+     */
+    public function scopeDiscoverableBy(
+        Builder $query,
+        User $viewer
+    ): Builder {
+        return $query
+            ->publicMembers()
+            ->notBlockedWith($viewer)
+            ->where('users.id', '!=', $viewer->id);
     }
 
     public function tickets()

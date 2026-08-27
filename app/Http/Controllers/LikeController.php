@@ -2,34 +2,44 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Like;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class LikeController extends Controller
 {
-    public function store($likedUserId)
+    public function store(
+        Request $request,
+        int $likedUserId
+    )
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        // اگر خودت را لایک نکنی
-        if ($user->id == $likedUserId) {
+        if ($user->id === $likedUserId) {
             return back()->with('error', 'نمی‌توانید خودتان را لایک کنید.');
         }
+
+        /*
+         * شناسه مقصد به تنهایی قابل اعتماد نیست. مقصد باید یک
+         * کاربر عمومی باشد و هیچ بلاکی در هیچ‌یک از دو جهت وجود نداشته باشد.
+         */
+        User::query()
+            ->discoverableBy($user)
+            ->findOrFail($likedUserId);
 
         Like::firstOrCreate([
             'user_id' => $user->id,
             'liked_user_id' => $likedUserId,
         ]);
 
-        // بررسی اینکه آیا طرف مقابل هم قبلا من را لایک کرده؟
-    $isMatch = Like::where('user_id', $likedUserId)
-                   ->where('liked_user_id', $user->id)
-                   ->exists();
+        $isMatch = Like::query()
+            ->where('user_id', $likedUserId)
+            ->where('liked_user_id', $user->id)
+            ->exists();
 
-    if ($isMatch) {
-        return back()->with('success', 'تبریک! شما با هم مچ شدید. پیام بدید!');
-    }
+        if ($isMatch) {
+            return back()->with('success', 'تبریک! شما با هم مچ شدید. پیام بدید!');
+        }
 
         return back()->with('success', 'کاربر لایک شد.');
     }
@@ -45,16 +55,22 @@ class LikeController extends Controller
     //     ]);
     // }
 
-    public function index()
+    public function index(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
+        $likedUsers = $user
+            ->likedUsers()
+            ->discoverableBy($user)
+            ->latest('likes.created_at')
+            ->get();
 
-        // دریافت لیست‌ها به همراه داده‌های پایه برای سرعت بیشتر
-    $likedUsers = $user->likedUsers()->latest()->get(); 
-    $likedByUsers = $user->likedByUsers()->latest()->get();
-        
-  
+        $likedByUsers = $user
+            ->likedByUsers()
+            ->discoverableBy($user)
+            ->latest('likes.created_at')
+            ->get();
+
         return view('likes.index', compact('likedUsers', 'likedByUsers'));
     }
 }
