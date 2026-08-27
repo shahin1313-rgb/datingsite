@@ -2,28 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Message;
-use Carbon\Carbon;
-
+use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class LandingController extends Controller
 {
-    public function welcome()
-{
-    // تعداد کل پیام‌ها
-    $totalMessages = \App\Models\Message::count();
+    private const MESSAGE_STATISTICS_CACHE_KEY = 'landing.message-statistics.v1';
 
-    // پیام‌های این ماه
-    $monthlyMessages = \App\Models\Message::whereMonth('created_at', now()->month)
-                        ->whereYear('created_at', now()->year)
-                        ->count();
+    private const MESSAGE_STATISTICS_CACHE_TTL_SECONDS = 300;
 
-    // پیام‌های امروز
-    $todayMessages = \App\Models\Message::whereDate('created_at', today())->count();
+    public function welcome(): View
+    {
+        $statistics = Cache::remember(
+            self::MESSAGE_STATISTICS_CACHE_KEY,
+            self::MESSAGE_STATISTICS_CACHE_TTL_SECONDS,
+            static function (): array {
+                $now = now();
 
+                return [
+                    'totalMessages' => Message::count(),
+                    'monthlyMessages' => Message::query()
+                        ->whereBetween('created_at', [
+                            $now->copy()->startOfMonth(),
+                            $now->copy()->endOfMonth(),
+                        ])
+                        ->count(),
+                    'todayMessages' => Message::query()
+                        ->whereBetween('created_at', [
+                            $now->copy()->startOfDay(),
+                            $now->copy()->endOfDay(),
+                        ])
+                        ->count(),
+                ];
+            }
+        );
 
-    return view('welcome', compact('totalMessages', 'monthlyMessages', 'todayMessages'));
-}
-
+        return view('welcome', $statistics);
+    }
 }

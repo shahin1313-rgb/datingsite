@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchProfilesRequest;
 use App\Models\ProfileView;
 use App\Models\User;
 use App\Services\ProfilePhotoService;
@@ -205,31 +206,26 @@ class ProfileController extends Controller
     /**
      * جست‌وجوی کاربران.
      */
-    public function search(Request $request)
+    public function search(SearchProfilesRequest $request)
     {
+        $filters = $request->validated();
         $query = User::query();
 
-        if ($request->filled('city')) {
+        if (! empty($filters['city'])) {
             $query->where(
                 'city',
                 'like',
-                '%' . $request->input('city') . '%'
+                '%' . $filters['city'] . '%'
             );
         }
 
         if (
-            $request->filled('min_age') ||
-            $request->filled('max_age')
+            isset($filters['min_age']) ||
+            isset($filters['max_age'])
         ) {
-            $minAge = (int) $request->input(
-                'min_age',
-                18
-            );
+            $minAge = (int) ($filters['min_age'] ?? 18);
 
-            $maxAge = (int) $request->input(
-                'max_age',
-                99
-            );
+            $maxAge = (int) ($filters['max_age'] ?? 100);
 
             $currentYear = Carbon::now()->year;
 
@@ -245,30 +241,27 @@ class ProfileController extends Controller
             ]);
         }
 
-        if ($request->filled('marital_status')) {
+        if (! empty($filters['marital_status'])) {
             $query->where(
                 'marital_status',
-                $request->input('marital_status')
+                $filters['marital_status']
             );
         }
 
-        if ($request->filled('interested_in')) {
+        if (! empty($filters['interested_in'])) {
             $query->where(
-                'interests',
-                'like',
-                '%' .
-                $request->input('interested_in') .
-                '%'
+                'interested_in',
+                $filters['interested_in']
             );
         }
 
-        if ($request->boolean('has_photo')) {
+        if ($filters['has_photo'] ?? false) {
             $query->whereNotNull(
                 'profile_picture'
             );
         }
 
-        if ($request->boolean('is_active')) {
+        if ($filters['is_active'] ?? false) {
             $query->where(
                 'is_active',
                 true

@@ -169,7 +169,9 @@ Route::middleware([
             ProfileController::class,
             'search',
         ]
-    )->name('search');
+    )
+        ->middleware('throttle:30,1')
+        ->name('search');
 
     Route::get(
         '/profile-photo/{user}',
