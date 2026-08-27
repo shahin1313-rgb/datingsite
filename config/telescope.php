@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAdminTwoFactorVerified;
 use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
 
@@ -16,7 +17,7 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', true),
+    'enabled' => env('TELESCOPE_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -95,6 +96,7 @@ return [
     'middleware' => [
         'web',
         Authorize::class,
+        EnsureAdminTwoFactorVerified::class,
     ],
 
     /*
