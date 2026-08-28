@@ -109,6 +109,28 @@ class AppServiceProvider extends ServiceProvider
         };
 
         RateLimiter::for(
+            'profile-photo-upload',
+            static function (Request $request) use ($userKey): array {
+                /*
+                 * Ordinary profile edits must not consume the expensive
+                 * image-processing quota.
+                 */
+                if (! $request->files->has('profile_picture')) {
+                    return [Limit::none()];
+                }
+
+                $key = $userKey($request);
+
+                return [
+                    Limit::perMinute(2)
+                        ->by('profile-photo:minute:'.$key),
+                    Limit::perHour(10)
+                        ->by('profile-photo:hour:'.$key),
+                ];
+            }
+        );
+
+        RateLimiter::for(
             'messages.store',
             static function (Request $request) use ($userKey): array {
                 $key = $userKey($request);

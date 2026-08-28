@@ -14,7 +14,18 @@ class ProfilePhotoService
 
     private const MAX_SOURCE_DIMENSION = 4096;
 
+    public const MAX_SOURCE_PIXELS = 6_000_000;
+
     private const MAX_OUTPUT_DIMENSION = 1600;
+
+    /*
+     * GD commonly needs more than the raw four bytes per pixel while
+     * decoding/resampling. A conservative estimate lets us fail with a
+     * validation error before PHP reaches an uncatchable memory exhaustion.
+     */
+    private const ESTIMATED_GD_BYTES_PER_PIXEL = 8;
+
+    private const GD_MEMORY_RESERVE_BYTES = 16 * 1024 * 1024;
 
     /**
      * Decode and re-encode an uploaded image before storing it.
@@ -170,17 +181,46 @@ class ProfilePhotoService
 
         $imageInfo = @getimagesizefromstring($contents);
 
+        if ($imageInfo === false) {
+            $this->invalidPhoto(
+                'ابعاد تصویر نامعتبر یا بیش از حد مجاز است.'
+            );
+        }
+
+        $sourceWidth = (int) ($imageInfo[0] ?? 0);
+        $sourceHeight = (int) ($imageInfo[1] ?? 0);
+
         if (
-            $imageInfo === false
-            || $imageInfo[0] < 1
-            || $imageInfo[1] < 1
-            || $imageInfo[0] > self::MAX_SOURCE_DIMENSION
-            || $imageInfo[1] > self::MAX_SOURCE_DIMENSION
+            $sourceWidth < 1
+            || $sourceHeight < 1
+            || $sourceWidth > self::MAX_SOURCE_DIMENSION
+            || $sourceHeight > self::MAX_SOURCE_DIMENSION
         ) {
             $this->invalidPhoto(
                 'ابعاد تصویر نامعتبر یا بیش از حد مجاز است.'
             );
         }
+
+        if (
+            $sourceWidth > intdiv(
+                self::MAX_SOURCE_PIXELS,
+                $sourceHeight
+            )
+        ) {
+            $this->invalidPhoto(
+                'مجموع ابعاد تصویر نباید بیشتر از ۶ مگاپیکسل باشد.'
+            );
+        }
+
+        $orientation = $imageInfo['mime'] === 'image/jpeg'
+            ? $this->readExifOrientation($sourcePath)
+            : 1;
+
+        $this->assertGdMemoryBudget(
+            $sourceWidth,
+            $sourceHeight,
+            $orientation
+        );
 
         $image = @imagecreatefromstring($contents);
 
@@ -192,27 +232,18 @@ class ProfilePhotoService
             if ($imageInfo['mime'] === 'image/jpeg') {
                 $image = $this->applyExifOrientation(
                     $image,
-                    $sourcePath
+                    $orientation
                 );
             }
 
             $sourceWidth = imagesx($image);
             $sourceHeight = imagesy($image);
-            $scale = min(
-                1,
-                self::MAX_OUTPUT_DIMENSION
-                    / max($sourceWidth, $sourceHeight)
-            );
 
-            $targetWidth = max(
-                1,
-                (int) round($sourceWidth * $scale)
-            );
-
-            $targetHeight = max(
-                1,
-                (int) round($sourceHeight * $scale)
-            );
+            [$targetWidth, $targetHeight] =
+                $this->scaledDimensions(
+                    $sourceWidth,
+                    $sourceHeight
+                );
 
             $canvas = imagecreatetruecolor(
                 $targetWidth,
@@ -283,28 +314,8 @@ class ProfilePhotoService
 
     private function applyExifOrientation(
         GdImage $image,
-        string $sourcePath
+        int $orientation
     ): GdImage {
-        if (! function_exists('exif_read_data')) {
-            return $image;
-        }
-
-        $exif = @exif_read_data(
-            $sourcePath,
-            'IFD0',
-            true
-        );
-
-        if (! is_array($exif)) {
-            return $image;
-        }
-
-        $orientation = (int) (
-            $exif['IFD0']['Orientation']
-            ?? $exif['Orientation']
-            ?? 1
-        );
-
         if (in_array($orientation, [2, 4, 5, 7], true)) {
             imageflip(
                 $image,
@@ -338,6 +349,151 @@ class ProfilePhotoService
         imagedestroy($image);
 
         return $rotated;
+    }
+
+    private function readExifOrientation(
+        string $sourcePath
+    ): int {
+        if (! function_exists('exif_read_data')) {
+            return 1;
+        }
+
+        $exif = @exif_read_data(
+            $sourcePath,
+            'IFD0',
+            true
+        );
+
+        if (! is_array($exif)) {
+            return 1;
+        }
+
+        $orientation = (int) (
+            $exif['IFD0']['Orientation']
+            ?? $exif['Orientation']
+            ?? 1
+        );
+
+        return in_array(
+            $orientation,
+            range(1, 8),
+            true
+        ) ? $orientation : 1;
+    }
+
+    /**
+     * @return array{0: int, 1: int}
+     */
+    private function scaledDimensions(
+        int $sourceWidth,
+        int $sourceHeight
+    ): array {
+        $scale = min(
+            1,
+            self::MAX_OUTPUT_DIMENSION
+                / max($sourceWidth, $sourceHeight)
+        );
+
+        return [
+            max(
+                1,
+                (int) round($sourceWidth * $scale)
+            ),
+            max(
+                1,
+                (int) round($sourceHeight * $scale)
+            ),
+        ];
+    }
+
+    private function assertGdMemoryBudget(
+        int $sourceWidth,
+        int $sourceHeight,
+        int $orientation
+    ): void {
+        $memoryLimit = $this->memoryLimitInBytes();
+
+        if ($memoryLimit === null) {
+            return;
+        }
+
+        $rotationRequired = in_array(
+            $orientation,
+            [5, 6, 7, 8],
+            true
+        );
+
+        $orientedWidth = $rotationRequired
+            ? $sourceHeight
+            : $sourceWidth;
+
+        $orientedHeight = $rotationRequired
+            ? $sourceWidth
+            : $sourceHeight;
+
+        [$targetWidth, $targetHeight] =
+            $this->scaledDimensions(
+                $orientedWidth,
+                $orientedHeight
+            );
+
+        $sourceBuffer = $sourceWidth
+            * $sourceHeight
+            * self::ESTIMATED_GD_BYTES_PER_PIXEL;
+
+        $rotationBuffer = $rotationRequired
+            ? $sourceBuffer
+            : 0;
+
+        $targetBuffer = $targetWidth
+            * $targetHeight
+            * self::ESTIMATED_GD_BYTES_PER_PIXEL;
+
+        $required = $sourceBuffer
+            + $rotationBuffer
+            + $targetBuffer
+            + self::GD_MEMORY_RESERVE_BYTES;
+
+        $available = max(
+            0,
+            $memoryLimit - memory_get_usage(true)
+        );
+
+        if ($required > $available) {
+            $this->invalidPhoto(
+                'ابعاد تصویر نسبت به حافظه امن پردازش بیش از حد بزرگ است.'
+            );
+        }
+    }
+
+    private function memoryLimitInBytes(): ?int
+    {
+        $value = trim((string) ini_get('memory_limit'));
+
+        if ($value === '' || $value === '-1') {
+            return null;
+        }
+
+        if (
+            preg_match(
+                '/\A(\d+)([KMG]?)\z/i',
+                $value,
+                $matches
+            ) !== 1
+        ) {
+            return null;
+        }
+
+        $multiplier = match (strtoupper($matches[2])) {
+            'G' => 1024 ** 3,
+            'M' => 1024 ** 2,
+            'K' => 1024,
+            default => 1,
+        };
+
+        $bytes = (int) $matches[1] * $multiplier;
+
+        return $bytes > 0 ? $bytes : null;
     }
 
     private function legacySourcePath(

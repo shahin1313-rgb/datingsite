@@ -95,7 +95,7 @@ Route::middleware('guest')->group(
                 RegisterController::class,
                 'register',
             ]
-        );
+        )->middleware('throttle:profile-photo-upload');
 
         /*
         |--------------------------------------------------------------------------
@@ -276,7 +276,9 @@ Route::middleware([
                     ProfileController::class,
                     'update',
                 ]
-            )->name('update');
+            )
+                ->middleware('throttle:profile-photo-upload')
+                ->name('update');
 
             Route::get(
                 '/id/{id}',

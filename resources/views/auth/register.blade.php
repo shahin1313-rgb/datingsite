@@ -603,6 +603,12 @@
                                     >
                                         انتخاب عکس پروفایل
                                     </p>
+
+                                    <p
+                                        class="text-[10px] text-gray-400 dark:text-slate-500 mt-1"
+                                    >
+                                        حداکثر ۲ مگابایت و ۶ مگاپیکسل
+                                    </p>
                                 </div>
 
                                 <input

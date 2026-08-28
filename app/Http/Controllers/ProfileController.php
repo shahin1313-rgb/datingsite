@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SearchProfilesRequest;
 use App\Models\ProfileView;
 use App\Models\User;
+use App\Rules\SafeProfilePhotoDimensions;
 use App\Services\ProfilePhotoService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -75,10 +76,12 @@ class ProfileController extends Controller
 
             'profile_picture' => [
                 'nullable',
+                'bail',
+                'max:2048',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
                 'dimensions:max_width=4096,max_height=4096',
-                'max:2048',
+                new SafeProfilePhotoDimensions(),
             ],
         ], [
             'current_password.required' =>

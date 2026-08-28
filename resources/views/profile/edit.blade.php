@@ -271,17 +271,31 @@
                                     >
                                         یک تصویر خیره‌کننده انتخاب کنید
                                     </p>
+
+                                    <p
+                                        class="text-xs text-gray-400 mt-1"
+                                    >
+                                        JPG، PNG یا GIF؛ حداکثر ۲ مگابایت و ۶ مگاپیکسل
+                                    </p>
                                 </div>
 
                                 <input
                                     type="file"
                                     id="profile_picture"
                                     name="profile_picture"
-                                    accept="image/*"
+                                    accept=".jpeg,.jpg,.png,.gif,image/jpeg,image/png,image/gif"
                                     class="hidden"
                                 >
                             </label>
                         </div>
+
+                        @error('profile_picture')
+                            <p
+                                class="text-xs text-rose-500 font-bold mt-2"
+                            >
+                                {{ $message }}
+                            </p>
+                        @enderror
 
                         <div class="mt-4 flex justify-center">
                             <img

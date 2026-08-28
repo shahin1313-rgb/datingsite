@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\SafeProfilePhotoDimensions;
 use App\Services\ProfilePhotoService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -107,10 +108,12 @@ class RegisterController extends Controller
 
             'profile_picture' => [
                 'nullable',
+                'bail',
+                'max:2048',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
                 'dimensions:max_width=4096,max_height=4096',
-                'max:2048',
+                new SafeProfilePhotoDimensions(),
             ],
 
             'cf-turnstile-response' => [

@@ -8,6 +8,7 @@ use App\Services\ProfilePhotoService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ProfilePhotoSecurityTest extends TestCase
@@ -23,6 +24,143 @@ class ProfilePhotoSecurityTest extends TestCase
 
         Storage::fake('local');
         Storage::fake('public');
+    }
+
+    public function test_service_rejects_photo_over_total_pixel_budget_before_decode(): void
+    {
+        $this->requireGd();
+
+        $photo = $this->syntheticPngUpload(
+            3000,
+            2500
+        );
+
+        try {
+            app(ProfilePhotoService::class)->store($photo);
+            $this->fail(
+                'The oversized image should have been rejected.'
+            );
+        } catch (ValidationException $exception) {
+            $this->assertSame(
+                'مجموع ابعاد تصویر نباید بیشتر از ۶ مگاپیکسل باشد.',
+                $exception->errors()['profile_picture'][0] ?? null
+            );
+        }
+
+        $this->assertSame(
+            [],
+            Storage::disk('local')->allFiles()
+        );
+    }
+
+    public function test_profile_update_rejects_photo_over_total_pixel_budget(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from(route('profile.edit'))
+            ->post(
+                route('profile.update'),
+                $this->profilePayload($user, [
+                    'profile_picture' =>
+                        $this->syntheticPngUpload(
+                            3000,
+                            2500
+                        ),
+                ])
+            )
+            ->assertRedirect(route('profile.edit'))
+            ->assertSessionHasErrors('profile_picture');
+
+        $this->assertNull(
+            $user->fresh()->profile_picture
+        );
+
+        $this->assertSame(
+            [],
+            Storage::disk('local')->allFiles()
+        );
+    }
+
+    public function test_profile_photo_upload_is_limited_to_two_per_minute(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (range(1, 2) as $attempt) {
+            $this->actingAs($user)
+                ->post(
+                    route('profile.update'),
+                    $this->profilePayload($user, [
+                        'profile_picture' =>
+                            UploadedFile::fake()->create(
+                                'invalid-'.$attempt.'.jpg',
+                                1,
+                                'image/jpeg'
+                            ),
+                    ])
+                )
+                ->assertSessionHasErrors(
+                    'profile_picture'
+                );
+        }
+
+        $this->actingAs($user)
+            ->post(
+                route('profile.update'),
+                $this->profilePayload($user, [
+                    'profile_picture' =>
+                        UploadedFile::fake()->create(
+                            'blocked.jpg',
+                            1,
+                            'image/jpeg'
+                        ),
+                ])
+            )
+            ->assertStatus(429);
+    }
+
+    public function test_profile_edits_without_photo_do_not_consume_photo_quota(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (range(1, 3) as $attempt) {
+            $this->actingAs($user)
+                ->post(
+                    route('profile.update'),
+                    $this->profilePayload($user, [
+                        'name' => 'Updated user '.$attempt,
+                    ])
+                )
+                ->assertRedirect(route('dashboard'));
+        }
+
+        $this->assertSame(
+            'Updated user 3',
+            $user->fresh()->name
+        );
+    }
+
+    public function test_registration_photo_upload_is_limited_by_ip(): void
+    {
+        foreach (range(1, 2) as $attempt) {
+            $this->post(route('register'), [
+                'profile_picture' =>
+                    UploadedFile::fake()->create(
+                        'invalid-registration-'.$attempt.'.jpg',
+                        1,
+                        'image/jpeg'
+                    ),
+            ])->assertSessionHasErrors('profile_picture');
+        }
+
+        $this->post(route('register'), [
+            'profile_picture' =>
+                UploadedFile::fake()->create(
+                    'blocked-registration.jpg',
+                    1,
+                    'image/jpeg'
+                ),
+        ])->assertStatus(429);
     }
 
     public function test_photo_is_reencoded_without_uploaded_metadata(): void
@@ -250,6 +388,57 @@ class ProfilePhotoSecurityTest extends TestCase
             extension_loaded('gd'),
             'PHP GD extension must be enabled.'
         );
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
+    private function profilePayload(
+        User $user,
+        array $overrides = []
+    ): array {
+        return array_merge([
+            'name' => $user->name,
+            'email' => $user->email,
+            'city' => $user->city,
+            'bio' => $user->bio,
+        ], $overrides);
+    }
+
+    private function syntheticPngUpload(
+        int $width,
+        int $height
+    ): UploadedFile {
+        $header = pack(
+            'NNCCCCC',
+            $width,
+            $height,
+            8,
+            2,
+            0,
+            0,
+            0
+        );
+
+        $png = "\x89PNG\r\n\x1a\n"
+            .$this->pngChunk('IHDR', $header)
+            .$this->pngChunk('IEND', '');
+
+        return UploadedFile::fake()->createWithContent(
+            'oversized.png',
+            $png
+        );
+    }
+
+    private function pngChunk(
+        string $type,
+        string $data
+    ): string {
+        return pack('N', strlen($data))
+            .$type
+            .$data
+            .pack('N', crc32($type.$data));
     }
 
     private function jpegWithMetadataMarker(): string
