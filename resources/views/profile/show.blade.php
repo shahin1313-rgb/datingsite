@@ -154,6 +154,8 @@
                                 <form
                                     action="{{ route('user.block', $user->id) }}"
                                     method="POST"
+                                    data-sweet-block
+                                    data-block-name="{{ $user->name }}"
                                     data-confirm="با مسدود کردن این کاربر، ارتباط و لایک‌های قبلی حذف می‌شوند. ادامه می‌دهید؟"
                                 >
                                     @csrf

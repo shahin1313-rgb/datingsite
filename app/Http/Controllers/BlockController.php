@@ -35,10 +35,18 @@ class BlockController extends Controller
         $user = $request->user();
 
         if ($user->id === $id) {
-            return back()->with('error', 'You cannot block yourself.');
+            $message = 'نمی‌توانید حساب خودتان را مسدود کنید.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                ], 422);
+            }
+
+            return back()->with('error', $message);
         }
 
-        User::query()
+        $target = User::query()
             ->publicMembers()
             ->findOrFail($id);
 
@@ -70,9 +78,18 @@ class BlockController extends Controller
          * block. Redirect to a route that remains accessible instead of
          * returning to a page that will now respond with 404.
          */
+        $message = $target->name.' با موفقیت مسدود شد.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'redirect_url' => route('messages.index'),
+            ]);
+        }
+
         return redirect()
             ->route('messages.index')
-            ->with('success', 'User blocked successfully.');
+            ->with('success', $message);
     }
 
     public function unblock(

@@ -31,6 +31,7 @@ class ResponsiveSafetyActionsTest extends TestCase
             ->get(route('profile.show', $target->id))
             ->assertOk()
             ->assertSee('data-profile-block', false)
+            ->assertSee('data-sweet-block', false)
             ->assertSee('data-report-open', false)
             ->assertSee(route('user.block', $target->id), false)
             ->assertSee(route('report.store'), false);
@@ -46,6 +47,7 @@ class ResponsiveSafetyActionsTest extends TestCase
             ->assertOk()
             ->assertSee('id="chatSafetyMenuButton"', false)
             ->assertSee('data-chat-block', false)
+            ->assertSee('data-sweet-block', false)
             ->assertSee('data-chat-report-open', false)
             ->assertSee(route('user.block', $target->id), false)
             ->assertSee(route('report.store'), false);
@@ -81,6 +83,25 @@ class ResponsiveSafetyActionsTest extends TestCase
         $this->actingAs($viewer)
             ->post(route('user.block', $target->id))
             ->assertRedirect(route('messages.index'));
+
+        $this->assertDatabaseHas('blocks', [
+            'blocker_id' => $viewer->id,
+            'blocked_id' => $target->id,
+        ]);
+    }
+
+    public function test_block_json_response_supports_sweet_alert_flow(): void
+    {
+        $viewer = User::factory()->create();
+        $target = User::factory()->create();
+
+        $this->actingAs($viewer)
+            ->postJson(route('user.block', $target->id))
+            ->assertOk()
+            ->assertJson([
+                'message' => $target->name.' با موفقیت مسدود شد.',
+                'redirect_url' => route('messages.index'),
+            ]);
 
         $this->assertDatabaseHas('blocks', [
             'blocker_id' => $viewer->id,

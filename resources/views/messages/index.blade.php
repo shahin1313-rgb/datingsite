@@ -126,6 +126,8 @@
                                     <form
                                         method="POST"
                                         action="{{ route('user.block', $contact->id) }}"
+                                        data-sweet-block
+                                        data-block-name="{{ $contact->name }}"
                                         data-confirm="آیا از بلاک کردن این کاربر مطمئن هستید؟"
                                     >
                                         @csrf
