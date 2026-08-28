@@ -74,6 +74,16 @@ class ProfileController extends Controller
                 'max:1000',
             ],
 
+            'marital_status' => [
+                'nullable',
+                Rule::in([
+                    'single',
+                    'married',
+                    'divorced',
+                    'widowed',
+                ]),
+            ],
+
             'profile_picture' => [
                 'nullable',
                 'bail',

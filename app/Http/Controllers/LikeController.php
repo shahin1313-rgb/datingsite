@@ -27,21 +27,37 @@ class LikeController extends Controller
             ->discoverableBy($user)
             ->findOrFail($likedUserId);
 
-        Like::firstOrCreate([
+        $like = Like::firstOrCreate([
             'user_id' => $user->id,
             'liked_user_id' => $likedUserId,
         ]);
 
-        $isMatch = Like::query()
+        $liked = $like->wasRecentlyCreated;
+
+        if (! $liked) {
+            $like->delete();
+        }
+
+        $isMatch = $liked && Like::query()
             ->where('user_id', $likedUserId)
             ->where('liked_user_id', $user->id)
             ->exists();
 
-        if ($isMatch) {
-            return back()->with('success', 'تبریک! شما با هم مچ شدید. پیام بدید!');
+        $message = match (true) {
+            ! $liked => 'لایک برداشته شد.',
+            $isMatch => 'تبریک! شما با هم مچ شدید. پیام بدید!',
+            default => 'کاربر لایک شد.',
+        };
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'liked' => $liked,
+                'matched' => $isMatch,
+                'message' => $message,
+            ]);
         }
 
-        return back()->with('success', 'کاربر لایک شد.');
+        return back()->with('success', $message);
     }
 
     // The following index() method is commented out to avoid redeclaration error.

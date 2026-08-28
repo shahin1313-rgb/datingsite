@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Message;
 use App\Models\ProfileView;
 use App\Models\User;
 use Carbon\Carbon;
@@ -67,6 +68,50 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $messagesCount = Message::query()
+            ->where(function ($query) use (
+                $userId,
+                $discoverableByUser
+            ): void {
+                $query
+                    ->where(function ($sent) use (
+                        $userId,
+                        $discoverableByUser
+                    ): void {
+                        $sent
+                            ->where('sender_id', $userId)
+                            ->whereHas(
+                                'receiver',
+                                $discoverableByUser
+                            );
+                    })
+                    ->orWhere(function ($received) use (
+                        $userId,
+                        $discoverableByUser
+                    ): void {
+                        $received
+                            ->where('receiver_id', $userId)
+                            ->whereHas(
+                                'sender',
+                                $discoverableByUser
+                            );
+                    });
+            })
+            ->count();
+
+        $membershipDaysRemaining = 0;
+
+        if ($user->isPremium()) {
+            $remainingSeconds =
+                $user->premium_until->getTimestamp()
+                - now()->getTimestamp();
+
+            $membershipDaysRemaining = max(
+                0,
+                (int) ceil($remainingSeconds / 86400)
+            );
+        }
+
         return view('dashboard', compact(
             'user',
             'recentUsers',
@@ -74,6 +119,8 @@ class DashboardController extends Controller
             'totalViews',
             'todayViews',
             'latestViewers',
+            'messagesCount',
+            'membershipDaysRemaining',
             'likesCount',
             'todayLikes',
             'latestLikers'

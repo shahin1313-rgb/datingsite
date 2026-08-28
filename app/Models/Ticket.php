@@ -14,7 +14,8 @@ class Ticket extends Model
     }
     public function replies()
     {
-        return $this->hasMany(Ticket::class, 'parent_id');
+        return $this->hasMany(Ticket::class, 'parent_id')
+            ->oldest();
     }
 
     public function parent()

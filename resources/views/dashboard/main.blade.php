@@ -34,7 +34,7 @@
             <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
                 <i class="fa fa-wallet text-xl"></i>
             </div>
-            <span class="block text-2xl font-black text-gray-800">۲۳</span>
+            <span class="block text-2xl font-black text-gray-800">{{ $membershipDaysRemaining }}</span>
             <span class="text-sm text-gray-500 font-medium">اعتبار (روز)</span>
         </div>
 

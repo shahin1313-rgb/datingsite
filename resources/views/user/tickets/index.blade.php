@@ -52,6 +52,38 @@
                         {{ $ticket->status === 'open' ? 'باز' : 'بسته' }}
                     </span>
                 </div>
+
+                @if ($ticket->replies->isNotEmpty())
+                    <div class="mt-5 border-t border-gray-100 pt-4 space-y-3">
+                        <h4 class="text-sm font-bold text-gray-700">
+                            پاسخ‌های پشتیبانی
+                        </h4>
+
+                        @foreach ($ticket->replies as $reply)
+                            @php
+                                $isAdminReply = $reply->user?->isAdmin() ?? false;
+                            @endphp
+
+                            <div
+                                class="rounded-xl p-4 {{ $isAdminReply ? 'bg-indigo-50 border-r-4 border-indigo-500' : 'bg-gray-50 border-r-4 border-gray-300' }}"
+                            >
+                                <div class="flex items-center justify-between gap-3 mb-2 text-xs">
+                                    <span class="font-bold {{ $isAdminReply ? 'text-indigo-700' : 'text-gray-700' }}">
+                                        {{ $isAdminReply ? 'مدیریت پشتیبانی' : ($reply->user?->name ?? 'کاربر حذف‌شده') }}
+                                    </span>
+
+                                    <span class="text-gray-400">
+                                        {{ $reply->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
+
+                                <p class="text-gray-700 leading-7">
+                                    {{ $reply->message }}
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         @empty
             <p class="text-gray-500 text-center mt-6">هیچ تیکتی ثبت نشده است.</p>

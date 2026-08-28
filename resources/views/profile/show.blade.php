@@ -406,6 +406,8 @@
             'input[name="_token"]'
         ).value;
 
+        button.disabled = true;
+
         fetch(form.action, {
             method: 'POST',
             headers: {
@@ -414,12 +416,15 @@
                 'X-Requested-With': 'XMLHttpRequest',
             },
         })
-        .then((response) => {
+        .then(async (response) => {
             if (!response.ok) {
                 throw new Error('Request failed');
             }
 
-            if (icon.classList.contains('far')) {
+            return response.json();
+        })
+        .then((data) => {
+            if (data.liked) {
                 icon.className = 'fa fa-heart text-xl';
 
                 button.className =
@@ -449,6 +454,11 @@
         })
         .catch((error) => {
             console.error('خطا در ارسال لایک:', error);
+
+            alert('ثبت تغییر لایک انجام نشد. لطفاً دوباره تلاش کنید.');
+        })
+        .finally(() => {
+            button.disabled = false;
         });
     }
 </script>
