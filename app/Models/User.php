@@ -14,6 +14,10 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ONLINE_WINDOW_MINUTES = 5;
+
+    public const PRESENCE_WRITE_INTERVAL_SECONDS = 60;
+
     protected $fillable = [
         'name',
         'email',
@@ -124,6 +128,31 @@ class User extends Authenticatable implements MustVerifyEmail
             ->publicMembers()
             ->notBlockedWith($viewer)
             ->where('users.id', '!=', $viewer->id);
+    }
+
+    /**
+     * کاربرانی که در پنج دقیقه اخیر فعالیت داشته‌اند.
+     */
+    public function scopeOnline(
+        Builder $query
+    ): Builder {
+        return $query->where(
+            'users.last_seen_at',
+            '>=',
+            Carbon::now()->subMinutes(
+                self::ONLINE_WINDOW_MINUTES
+            )
+        );
+    }
+
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at !== null &&
+            $this->last_seen_at->gte(
+                Carbon::now()->subMinutes(
+                    self::ONLINE_WINDOW_MINUTES
+                )
+            );
     }
 
     public function tickets()
@@ -307,6 +336,9 @@ class User extends Authenticatable implements MustVerifyEmail
                 'hashed',
 
             'premium_until' =>
+                'datetime',
+
+            'last_seen_at' =>
                 'datetime',
 
             'banned' =>

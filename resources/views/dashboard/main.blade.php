@@ -6,8 +6,10 @@
             <p class="text-gray-500 mt-1">خلاصه وضعیت فعالیت‌های شما در یک نگاه</p>
         </div>
         <div class="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-            <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-2"></span>
-            <span class="text-sm font-bold text-gray-700">وضعیت شما: آنلاین</span>
+            <span class="w-3 h-3 {{ auth()->user()->isOnline() ? 'bg-green-500 animate-pulse' : 'bg-gray-400' }} rounded-full mr-2"></span>
+            <span class="text-sm font-bold text-gray-700">
+                وضعیت شما: {{ auth()->user()->isOnline() ? 'آنلاین' : 'آفلاین' }}
+            </span>
         </div>
     </header>
 
@@ -101,7 +103,9 @@
                     <div class="relative inline-block">
                         <img src="{{ $recentUser->profilePhotoUrl() }}"
                              class="w-16 h-16 rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-90 group-hover:scale-110 shadow-2xl">
-                        <span class="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></span>
+                        @if ($recentUser->isOnline())
+                            <span class="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></span>
+                        @endif
                     </div>
                     <p class="mt-3 text-xs font-medium text-gray-400 group-hover:text-white transition">{{ $recentUser->name }}</p>
                 </a>

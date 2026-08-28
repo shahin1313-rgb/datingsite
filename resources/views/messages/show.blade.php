@@ -103,9 +103,11 @@
                         class="w-10 h-10 rounded-full object-cover border-2 border-pink-50"
                     >
 
-                    <span
-                        class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
-                    ></span>
+                    @if ($user->isOnline())
+                        <span
+                            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
+                        ></span>
+                    @endif
                 </div>
 
                 <div class="mr-3">
@@ -115,10 +117,8 @@
                         {{ $user->name }}
                     </div>
 
-                    <div
-                        class="text-[10px] text-green-500 font-medium"
-                    >
-                        آنلاین
+                    <div class="text-[10px] {{ $user->isOnline() ? 'text-green-500' : 'text-gray-400' }} font-medium">
+                        {{ $user->isOnline() ? 'آنلاین' : 'آفلاین' }}
                     </div>
                 </div>
             </div>

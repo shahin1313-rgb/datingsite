@@ -94,7 +94,7 @@
                                 <img src="{{ $profile->profilePhotoUrl() }}"
                                      class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="avatar">
                                 <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#1E1E1E] to-transparent h-24"></div>
-                                @if($profile->is_active)
+                                @if($profile->isOnline())
                                     <span class="absolute top-4 right-4 bg-green-500 w-3 h-3 rounded-full border-2 border-white animate-pulse"></span>
                                 @endif
                             </div>

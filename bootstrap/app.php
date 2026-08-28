@@ -5,6 +5,7 @@ use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureAdminTwoFactorVerified;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\UpdateUserLastSeen;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -48,6 +49,7 @@ return Application::configure(
                 append: [
                     SetLocale::class,
                     AddSecurityHeaders::class,
+                    UpdateUserLastSeen::class,
                 ]
             );
         }

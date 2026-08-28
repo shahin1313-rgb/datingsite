@@ -279,10 +279,7 @@ class ProfileController extends Controller
         }
 
         if ($filters['is_active'] ?? false) {
-            $query->where(
-                'is_active',
-                true
-            );
+            $query->online();
         }
 
         $profiles = $query

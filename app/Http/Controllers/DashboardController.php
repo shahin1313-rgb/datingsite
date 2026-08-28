@@ -40,8 +40,8 @@ class DashboardController extends Controller
 
         $recentUsers = User::query()
             ->discoverableBy($user)
-            ->whereNotNull('last_login_at')
-            ->latest('last_login_at')
+            ->online()
+            ->latest('last_seen_at')
             ->take(3)
             ->get();
 

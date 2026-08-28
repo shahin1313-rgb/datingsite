@@ -135,24 +135,24 @@ class MessageDashboardAccessSecurityTest extends TestCase
     {
         $viewer = User::factory()->create();
         $visible = User::factory()->create([
-            'last_login_at' => now()->subMinutes(5),
+            'last_seen_at' => now()->subSeconds(5),
         ]);
         $blockedByViewer = User::factory()->create([
-            'last_login_at' => now()->subMinutes(4),
+            'last_seen_at' => now()->subSeconds(4),
         ]);
         $blockedViewer = User::factory()->create([
-            'last_login_at' => now()->subMinutes(3),
+            'last_seen_at' => now()->subSeconds(3),
         ]);
         $admin = User::factory()->create([
             'role' => 'admin',
-            'last_login_at' => now()->subMinutes(2),
+            'last_seen_at' => now()->subSeconds(2),
         ]);
         $banned = User::factory()->create([
             'banned' => true,
-            'last_login_at' => now()->subMinute(),
+            'last_seen_at' => now()->subSecond(),
         ]);
         $unverified = User::factory()->unverified()->create([
-            'last_login_at' => now(),
+            'last_seen_at' => now(),
         ]);
 
         Block::create([

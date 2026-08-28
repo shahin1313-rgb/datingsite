@@ -126,7 +126,7 @@
                                      class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="avatar">
                                 
                                 {{-- Status Badge --}}
-                                @if($profile->is_active)
+                                @if($profile->isOnline())
                                     <div class="absolute top-4 left-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
                                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                                         <span class="text-[10px] font-bold text-gray-700">آنلاین</span>
