@@ -147,7 +147,8 @@
                 >
                     @if (
                         $message->status === 'private' &&
-                        ! $isOwn
+                        ! $isOwn &&
+                        ! $canViewPrivateMessages
                     )
                         <div
                             class="bg-white border-2 border-dashed border-pink-200 p-4 rounded-2xl rounded-bl-none max-w-[85%] shadow-sm"

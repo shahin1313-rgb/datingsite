@@ -135,6 +135,7 @@ class MessageController extends Controller
             'user' => $recipient,
             'messages' => $messages,
             'selectedUser' => $recipient,
+            'canViewPrivateMessages' => $authUser->isPremium(),
         ]);
     }
 
