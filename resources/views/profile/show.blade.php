@@ -142,14 +142,58 @@
                                 </form>
                             @endif
                         </div>
+
+                        @if (
+                            auth()->check() &&
+                            auth()->id() !== $user->id
+                        )
+                            <div
+                                class="grid grid-cols-2 gap-3 max-w-sm mx-auto mt-4"
+                                aria-label="اقدامات ایمنی"
+                            >
+                                <form
+                                    action="{{ route('user.block', $user->id) }}"
+                                    method="POST"
+                                    data-confirm="با مسدود کردن این کاربر، ارتباط و لایک‌های قبلی حذف می‌شوند. ادامه می‌دهید؟"
+                                >
+                                    @csrf
+
+                                    <button
+                                        type="submit"
+                                        data-profile-block
+                                        class="w-full min-h-12 px-4 rounded-2xl border-2 border-red-100 dark:border-red-950 text-red-600 dark:text-red-400 hover:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 font-bold transition flex items-center justify-center gap-2"
+                                    >
+                                        <i
+                                            class="fas fa-user-slash"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                        مسدود کردن
+                                    </button>
+                                </form>
+
+                                <button
+                                    type="button"
+                                    data-report-open
+                                    class="w-full min-h-12 px-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 font-bold transition flex items-center justify-center gap-2"
+                                >
+                                    <i
+                                        class="fas fa-flag"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                    گزارش کاربر
+                                </button>
+                            </div>
+                        @endif
                     </div>
 
-                    @if (session('status'))
+                    @if (session('success') || session('status'))
                         <div
                             class="mt-4 bg-green-50 dark:bg-green-950/40 border-r-4 border-green-500 text-green-700 dark:text-green-400 p-4 rounded-xl text-sm"
-                            role="alert"
+                            role="status"
                         >
-                            {{ session('status') }}
+                            {{ session('success') ?? session('status') }}
                         </div>
                     @endif
 
@@ -214,51 +258,6 @@
                         </a>
                     </div>
 
-                    @if (
-                        auth()->check() &&
-                        auth()->id() !== $user->id
-                    )
-                        <div
-                            class="w-full flex flex-col sm:flex-row gap-3 mt-4 border-t border-gray-100 dark:border-slate-800 pt-4"
-                        >
-                            <form
-                                action="{{ route('report.store') }}"
-                                method="POST"
-                                class="flex-1"
-                            >
-                                @csrf
-
-                                <input
-                                    type="hidden"
-                                    name="reported_id"
-                                    value="{{ $user->id }}"
-                                >
-
-                                <input
-                                    type="hidden"
-                                    name="reason"
-                                    value="گزارش سریع / بررسی پروفایل"
-                                >
-
-                                <button
-                                    type="submit"
-                                    class="w-full bg-white dark:bg-slate-900 border-2 border-red-100 dark:border-red-950 hover:border-red-500 dark:hover:border-red-500 text-red-500 dark:text-red-400 font-bold py-3 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-sm"
-                                >
-                                    <span>🚫</span>
-                                    گزارش سریع
-                                </button>
-                            </form>
-
-                            <button
-                                type="button"
-                                data-report-open
-                                class="flex-1 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-bold py-3 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 border-2 border-transparent hover:border-amber-200 dark:hover:border-amber-900 shadow-sm"
-                            >
-                                <span>⚠️</span>
-                                گزارش با جزئیات
-                            </button>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>

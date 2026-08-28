@@ -22,7 +22,7 @@
         right: 0;
         margin-left: auto;
         margin-right: auto;
-        max-width: 28rem;
+        max-width: 56rem;
         top: var(--nav-top-height);
         height: calc(
             100dvh -
@@ -80,7 +80,7 @@
 
 <div class="chat-wrapper">
     <div
-        class="flex flex-col bg-gray-50 mx-auto w-full max-w-md shadow-2xl relative"
+        class="flex flex-col bg-gray-50 mx-auto w-full max-w-4xl shadow-2xl relative"
         style="height: calc(100dvh - 3.5rem);"
     >
         <div
@@ -123,19 +123,88 @@
                 </div>
             </div>
 
-            <button
-                type="button"
-                class="text-gray-400 p-2"
-                aria-label="گزینه‌های گفتگو"
-            >
-                <i class="fas fa-ellipsis-v"></i>
-            </button>
+            <div class="relative">
+                <button
+                    id="chatSafetyMenuButton"
+                    type="button"
+                    class="min-w-11 min-h-11 text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 rounded-full transition"
+                    aria-label="گزینه‌های ایمنی گفتگو"
+                    aria-controls="chatSafetyMenu"
+                    aria-expanded="false"
+                >
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+
+                <div
+                    id="chatSafetyMenu"
+                    class="hidden absolute left-0 mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-30"
+                    role="menu"
+                >
+                    <a
+                        href="{{ route('profile.show', $user->id) }}"
+                        class="min-h-11 px-4 flex items-center gap-3 text-sm text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:bg-gray-50"
+                        role="menuitem"
+                    >
+                        <i
+                            class="fas fa-user text-gray-400"
+                            aria-hidden="true"
+                        ></i>
+
+                        مشاهده پروفایل
+                    </a>
+
+                    <button
+                        type="button"
+                        data-chat-report-open
+                        class="w-full min-h-11 px-4 flex items-center gap-3 text-sm text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:bg-amber-50"
+                        role="menuitem"
+                    >
+                        <i
+                            class="fas fa-flag"
+                            aria-hidden="true"
+                        ></i>
+
+                        گزارش کاربر
+                    </button>
+
+                    <form
+                        action="{{ route('user.block', $user->id) }}"
+                        method="POST"
+                        data-confirm="با مسدود کردن این کاربر، ارتباط و لایک‌های قبلی حذف می‌شوند. ادامه می‌دهید؟"
+                    >
+                        @csrf
+
+                        <button
+                            type="submit"
+                            data-chat-block
+                            class="w-full min-h-11 px-4 flex items-center gap-3 text-sm text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:bg-red-50"
+                            role="menuitem"
+                        >
+                            <i
+                                class="fas fa-user-slash"
+                                aria-hidden="true"
+                            ></i>
+
+                            مسدود کردن
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <div
             id="messagesContainer"
             class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[#fdf2f4]/30"
         >
+            @if (session('success'))
+                <div
+                    class="p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm"
+                    role="status"
+                >
+                    {{ session('success') }}
+                </div>
+            @endif
+
             @if ($messages->hasPages())
                 <nav
                     class="flex items-center justify-between gap-3 pb-2"
@@ -282,6 +351,81 @@
 </div>
 
 <div
+    id="chatReportModal"
+    class="fixed inset-0 z-[110] hidden items-center justify-center p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="chatReportTitle"
+>
+    <div
+        class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+        data-chat-report-close
+    ></div>
+
+    <div
+        class="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+    >
+        <div
+            class="px-6 py-4 bg-amber-50 border-b border-amber-100 flex items-center justify-between"
+        >
+            <h3
+                id="chatReportTitle"
+                class="text-lg font-bold text-amber-800"
+            >
+                گزارش {{ $user->name }}
+            </h3>
+
+            <button
+                type="button"
+                data-chat-report-close
+                class="min-w-11 min-h-11 text-gray-500 hover:text-gray-700 rounded-full"
+                aria-label="بستن پنجره گزارش"
+            >
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form
+            action="{{ route('report.store') }}"
+            method="POST"
+            class="p-6"
+        >
+            @csrf
+
+            <input
+                type="hidden"
+                name="reported_id"
+                value="{{ $user->id }}"
+            >
+
+            <label
+                for="chat_report_reason"
+                class="block text-sm font-bold text-gray-700 mb-2"
+            >
+                دلیل گزارش
+            </label>
+
+            <textarea
+                id="chat_report_reason"
+                name="reason"
+                rows="4"
+                maxlength="255"
+                required
+                class="w-full rounded-2xl border-gray-200 focus:border-amber-500 focus:ring-amber-500 resize-none"
+                placeholder="لطفاً موضوع را کوتاه و روشن توضیح دهید..."
+            ></textarea>
+
+            <button
+                type="submit"
+                class="w-full min-h-12 mt-5 rounded-2xl bg-red-600 hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 text-white font-bold transition"
+            >
+                ارسال گزارش
+            </button>
+        </form>
+    </div>
+</div>
+
+<div
     id="paymentModal"
     class="fixed inset-0 z-[100] hidden items-center justify-center px-6"
 >
@@ -380,6 +524,87 @@
 
         const closePaymentButton =
             document.getElementById('closePaymentButton');
+
+        const safetyMenuButton =
+            document.getElementById('chatSafetyMenuButton');
+
+        const safetyMenu =
+            document.getElementById('chatSafetyMenu');
+
+        const reportModal =
+            document.getElementById('chatReportModal');
+
+        const closeSafetyMenu = () => {
+            safetyMenu?.classList.add('hidden');
+            safetyMenuButton?.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+        };
+
+        const closeReportModal = () => {
+            reportModal?.classList.add('hidden');
+            reportModal?.classList.remove('flex');
+            safetyMenuButton?.focus();
+        };
+
+        safetyMenuButton?.addEventListener(
+            'click',
+            (event) => {
+                event.stopPropagation();
+
+                const willOpen =
+                    safetyMenu?.classList.contains('hidden');
+
+                safetyMenu?.classList.toggle('hidden');
+                safetyMenuButton.setAttribute(
+                    'aria-expanded',
+                    willOpen ? 'true' : 'false'
+                );
+            }
+        );
+
+        safetyMenu?.addEventListener(
+            'click',
+            (event) => event.stopPropagation()
+        );
+
+        document.addEventListener('click', closeSafetyMenu);
+
+        document
+            .querySelector('[data-chat-report-open]')
+            ?.addEventListener('click', () => {
+                closeSafetyMenu();
+                reportModal?.classList.remove('hidden');
+                reportModal?.classList.add('flex');
+                document
+                    .getElementById('chat_report_reason')
+                    ?.focus();
+            });
+
+        document
+            .querySelectorAll('[data-chat-report-close]')
+            .forEach((element) => {
+                element.addEventListener(
+                    'click',
+                    closeReportModal
+                );
+            });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+
+            closeSafetyMenu();
+
+            if (
+                reportModal &&
+                !reportModal.classList.contains('hidden')
+            ) {
+                closeReportModal();
+            }
+        });
 
         startPaymentButton?.addEventListener(
             'click',

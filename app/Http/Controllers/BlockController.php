@@ -65,7 +65,14 @@ class BlockController extends Controller
                 ->delete();
         });
 
-        return back()->with('success', 'User blocked successfully.');
+        /*
+         * The profile and chat become intentionally undiscoverable after a
+         * block. Redirect to a route that remains accessible instead of
+         * returning to a page that will now respond with 404.
+         */
+        return redirect()
+            ->route('messages.index')
+            ->with('success', 'User blocked successfully.');
     }
 
     public function unblock(

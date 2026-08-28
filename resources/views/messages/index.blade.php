@@ -1,7 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-md mx-auto bg-gray-50 min-h-screen pb-20">
+<div class="w-full max-w-4xl mx-auto bg-gray-50 min-h-screen pb-20">
+    @if (session('success'))
+        <div
+            class="m-3 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm"
+            role="status"
+        >
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="sticky top-0 bg-white/80 backdrop-blur-md z-10 p-4 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400">
             Messages
@@ -67,7 +76,7 @@
                     </div>
 
                     <div
-                        class="ml-4 flex-1 border-b border-gray-100 pb-3 group-last:border-0"
+                        class="ml-4 min-w-0 flex-1 border-b border-gray-100 pb-3 group-last:border-0"
                     >
                         <div class="flex justify-between items-baseline">
                             <h3
@@ -83,7 +92,7 @@
 
                         <div class="flex justify-between items-center mt-1">
                             <p
-                                class="text-sm {{ $unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500' }} truncate w-48"
+                                class="min-w-0 flex-1 text-sm {{ $unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500' }} truncate"
                             >
                                 @if ($latestMessageIsPrivateForCurrentUser)
                                     <i
@@ -97,7 +106,7 @@
                                 @endif
                             </p>
 
-                            <div class="flex space-x-2 stop-click">
+                            <div class="flex items-center gap-2 stop-click">
                                 @if (auth()->user()->hasBlocked($contact->id))
                                     <form
                                         method="POST"
@@ -107,9 +116,10 @@
 
                                         <button
                                             type="submit"
-                                            class="text-xs font-bold text-blue-500 hover:underline"
+                                            data-mobile-block-action
+                                            class="min-h-10 px-2 text-xs font-bold text-blue-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
                                         >
-                                            Unblock
+                                            رفع مسدودی
                                         </button>
                                     </form>
                                 @else
@@ -122,9 +132,11 @@
 
                                         <button
                                             type="submit"
-                                            class="opacity-0 group-hover:opacity-100 text-xs font-bold text-gray-300 hover:text-red-500 transition-opacity"
+                                            data-mobile-block-action
+                                            class="min-h-10 px-2 text-xs font-bold text-red-600 sm:text-gray-500 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg transition-colors"
+                                            aria-label="مسدود کردن {{ $contact->name }}"
                                         >
-                                            Block
+                                            مسدود کردن
                                         </button>
                                     </form>
                                 @endif

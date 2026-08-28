@@ -302,7 +302,10 @@
 
         {{-- محتوای اصلی --}}
         <main class="main-content w-full flex-1 p-4 md:p-8">
-            <div class="max-w-md mx-auto">
+            <div
+                data-app-content-container
+                class="w-full max-w-7xl mx-auto"
+            >
                 @yield('content')
             </div>
         </main>
