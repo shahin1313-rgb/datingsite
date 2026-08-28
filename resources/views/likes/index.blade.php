@@ -49,7 +49,7 @@
                 <div class="absolute bottom-3 right-3 left-3 text-white">
                     <p class="font-bold text-sm truncate">{{ $user->name }}، {{ $user->age ?? '۲۵' }}</p>
                     <div class="flex gap-2 mt-2">
-                        <form action="{{ route('likes.store', $user->id) }}" method="POST" class="flex-1">
+                        <form action="{{ route('like.store', $user->id) }}" method="POST" class="flex-1">
                             @csrf
                             <button class="w-full bg-pink-500 py-1.5 rounded-lg text-[10px] font-bold shadow-lg">لایک متقابل</button>
                         </form>
