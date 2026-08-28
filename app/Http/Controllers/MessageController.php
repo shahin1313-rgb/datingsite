@@ -2,236 +2,223 @@
 
 namespace App\Http\Controllers;
 
-use id;
-use App\Models\User;
 use App\Models\Message;
-use App\Models\Profile;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class MessageController extends Controller
 {
-
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // $userId = auth()->id();
-        $authUser = Auth::user();
+        $authUser = $request->user();
         $userId = $authUser->id;
 
-        // Fetch users who sent messages to the logged-in user, along with the latest message
-        $contacts = Message::where('receiver_id', $userId)
-            ->orWhere('sender_id', $userId)
-            ->with('sender', 'receiver')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->groupBy(function ($message) use ($userId) {
-                return $message->sender_id == $userId ? $message->receiver_id : $message->sender_id;
-            });
+        /*
+         * A conversation may remain in the database after a block or an
+         * account-status change. Only load conversations whose other party
+         * is still discoverable by the signed-in user.
+         */
+        $discoverableUserIds = fn (): Builder =>
+            User::query()
+                ->discoverableBy($authUser)
+                ->select('users.id');
 
-        // Count unread messages for each contact
+        $contacts = Message::query()
+            ->where(
+                function (Builder $query) use (
+                    $userId,
+                    $discoverableUserIds
+                ): void {
+                    $query
+                        ->where(
+                            function (Builder $sent) use (
+                                $userId,
+                                $discoverableUserIds
+                            ): void {
+                                $sent
+                                    ->where('sender_id', $userId)
+                                    ->whereIn(
+                                        'receiver_id',
+                                        $discoverableUserIds()
+                                    );
+                            }
+                        )
+                        ->orWhere(
+                            function (Builder $received) use (
+                                $userId,
+                                $discoverableUserIds
+                            ): void {
+                                $received
+                                    ->where('receiver_id', $userId)
+                                    ->whereIn(
+                                        'sender_id',
+                                        $discoverableUserIds()
+                                    );
+                            }
+                        );
+                }
+            )
+            ->with(['sender', 'receiver'])
+            ->latest()
+            ->get()
+            ->groupBy(
+                fn (Message $message): int =>
+                    (int) ((int) $message->sender_id === (int) $userId
+                        ? $message->receiver_id
+                        : $message->sender_id)
+            );
+
         $unreadCounts = [];
+
         foreach ($contacts as $contactUserId => $messages) {
-            $unreadCounts[$contactUserId] = $messages->where('receiver_id', $userId)->where('is_read', false)->count();
+            $unreadCounts[$contactUserId] = $messages
+                ->where('receiver_id', $userId)
+                ->where('is_read', false)
+                ->count();
         }
 
-
-        return view('messages.index', compact('contacts', 'unreadCounts', 'authUser'));
+        return view(
+            'messages.index',
+            compact('contacts', 'unreadCounts', 'authUser')
+        );
     }
 
-    // Show messaging box for a specific user
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
-        // Get the authenticated user
-        $authUser = Auth::user();
+        $authUser = $request->user();
+        $recipient = $this->discoverableRecipient(
+            $authUser,
+            (int) $user->getKey()
+        );
 
-        // Mark messages as read
-        Message::where('sender_id', $user->id)
+        /*
+         * Authorize the recipient before changing read state. This prevents
+         * an IDOR request from having any side effect.
+         */
+        Message::query()
+            ->where('sender_id', $recipient->id)
             ->where('receiver_id', $authUser->id)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
+        $messages = Message::query()
+            ->where(
+                function (Builder $query) use (
+                    $authUser,
+                    $recipient
+                ): void {
+                    $query
+                        ->where('sender_id', $authUser->id)
+                        ->where('receiver_id', $recipient->id);
+                }
+            )
+            ->orWhere(
+                function (Builder $query) use (
+                    $authUser,
+                    $recipient
+                ): void {
+                    $query
+                        ->where('sender_id', $recipient->id)
+                        ->where('receiver_id', $authUser->id);
+                }
+            )
+            ->oldest()
+            ->get();
 
-        // Fetch the profile of the selected user (or your own if needed)
-        // $profile = User::where('user_id', $user->id)->first();
-        $selectedUser = User::find($user);
-
-
-        // Mark unread messages as read
-        // Message::where('sender_id', $id)
-        // ->where('receiver_id', $authId)
-        // ->where('is_read', false)
-        // ->update(['is_read' => true]);
-
-        // Get messages between the authenticated user and the selected user
-        $messages = Message::where(function ($query) use ($authUser, $user) {
-            $query->where('sender_id', $authUser->id)->where('receiver_id', $user->id);
-        })->orWhere(function ($query) use ($authUser, $user) {
-            $query->where('sender_id', $user->id)->where('receiver_id', $authUser->id);
-        })->orderBy('created_at', 'asc')->get();
-
-        return view('messages.show', compact('user', 'messages', 'selectedUser'));
+        return view('messages.show', [
+            'user' => $recipient,
+            'messages' => $messages,
+            'selectedUser' => $recipient,
+        ]);
     }
 
+    public function store(Request $request)
+    {
+        $sender = $request->user();
 
+        $validated = $request->validate([
+            'receiver_id' => ['required', 'integer'],
+            'message' => ['required', 'string', 'max:1000'],
+        ]);
 
+        /*
+         * The same query protects nonexistent, blocked, banned, unverified,
+         * admin and self IDs. findOrFail deliberately returns 404 so the
+         * endpoint cannot be used as an account-enumeration oracle.
+         */
+        $receiver = $this->discoverableRecipient(
+            $sender,
+            (int) $validated['receiver_id']
+        );
 
-//    public function store(Request $request)
-// {
-//     dd('STORE HIT');
-// }
-// public function store(Request $request)
-// {
-//     $sender = Auth::user();
+        $messagesCount = Message::query()
+            ->where(
+                function (Builder $query) use (
+                    $sender,
+                    $receiver
+                ): void {
+                    $query
+                        ->where('sender_id', $sender->id)
+                        ->where('receiver_id', $receiver->id);
+                }
+            )
+            ->orWhere(
+                function (Builder $query) use (
+                    $sender,
+                    $receiver
+                ): void {
+                    $query
+                        ->where('sender_id', $receiver->id)
+                        ->where('receiver_id', $sender->id);
+                }
+            )
+            ->count();
 
-//     $request->validate([
-//         'receiver_id' => 'required|exists:users,id|not_in:' . $sender->id,
-//         'message'     => 'required|string|max:1000',
-//     ]);
+        if ($messagesCount === 0) {
+            Message::create([
+                'sender_id' => $sender->id,
+                'receiver_id' => $receiver->id,
+                'message' => $validated['message'],
+                'status' => 'private',
+            ]);
 
-//     $receiver = User::findOrFail($request->receiver_id);
-
-//     // چک بلاک
-//     if ($sender->isBlockedBy($receiver->id) || $sender->hasBlocked($receiver->id)) {
-//         return response()->json([
-//             'error' => 'BLOCKED'
-//         ], 403);
-//     }
-
-//     // تعداد کل پیام‌ها بین دو طرف (دوطرفه)
-//     $messagesCount = Message::where(function ($q) use ($sender, $receiver) {
-//             $q->where('sender_id', $sender->id)
-//               ->where('receiver_id', $receiver->id);
-//         })
-//         ->orWhere(function ($q) use ($sender, $receiver) {
-//             $q->where('sender_id', $receiver->id)
-//               ->where('receiver_id', $sender->id);
-//         })
-//         ->count();
-
-//     /**
-//      * 1️⃣ پیام اول → آزاد، فقط فرستنده می‌بیند
-//      */
-//     if ($messagesCount === 0) {
-
-//         Message::create([
-//             'sender_id'   => $sender->id,
-//             'receiver_id' => $receiver->id,
-//             'message'     => $request->message,
-//             'status'      => 'private', // فقط فرستنده
-//             'is_read'     => false,
-//         ]);
-
-//         return response()->json([
-//             'success' => true,
-//             'type'    => 'FIRST_MESSAGE_PRIVATE'
-//         ]);
-//     }
-
-//     /**
-//      * 2️⃣ پیام دوم به بعد → نیاز به پریمیوم یکی از دو طرف
-//      */
-//     if (! $sender->is_premium && ! $receiver->is_premium) {
-//         return response()->json([
-//             'error' => 'PREMIUM_REQUIRED',
-//             'receiver_id' => $receiverId
-//         ], 402);
-//     }
-
-//     /**
-//      * 3️⃣ ارسال پیام عادی
-//      */
-//     Message::create([
-//         'sender_id'   => $sender->id,
-//         'receiver_id' => $receiver->id,
-//         'message'     => $request->message,
-//         'status'      => 'sent',
-//         'is_read'     => false,
-//     ]);
-
-//     return response()->json([
-//         'success' => true
-//     ]);
-
-// }
-public function store(Request $request)
-{
-    $sender = Auth::user();
-
-    // 1. اعتبارسنجی ورودی‌ها
-    $request->validate([
-        'receiver_id' => 'required|exists:users,id|not_in:' . $sender->id,
-        'message'     => 'required|string|max:1000',
-    ]);
-
-    $receiver = User::findOrFail($request->receiver_id);
-
-    // 2. چک کردن وضعیت بلاک
-    // توجه: متدهای isBlockedBy و hasBlocked باید در مدل User شما تعریف شده باشند
-    if (method_exists($sender, 'isBlockedBy')) {
-        if ($sender->isBlockedBy($receiver->id) || $sender->hasBlocked($receiver->id)) {
             return response()->json([
-                'error' => 'BLOCKED'
-            ], 403);
+                'success' => true,
+                'type' => 'FIRST_MESSAGE_PRIVATE',
+            ]);
         }
-    }
 
-    // 3. محاسبه تعداد پیام‌های رد و بدل شده (دوطرفه)
-    $messagesCount = Message::where(function ($q) use ($sender, $receiver) {
-            $q->where('sender_id', $sender->id)->where('receiver_id', $receiver->id);
-        })
-        ->orWhere(function ($q) use ($sender, $receiver) {
-            $q->where('sender_id', $receiver->id)->where('receiver_id', $sender->id);
-        })
-        ->count();
+        if (! $sender->isPremium() && ! $receiver->isPremium()) {
+            return response()->json([
+                'error' => 'PREMIUM_REQUIRED',
+                'receiver_id' => $receiver->id,
+            ], 402);
+        }
 
-    /**
-     * 4. قانون پیام اول (رایگان اما مخفی برای گیرنده تا زمان پریمیوم شدن)
-     */
-    if ($messagesCount === 0) {
-        $message = Message::create([
-            'sender_id'   => $sender->id,
+        Message::create([
+            'sender_id' => $sender->id,
             'receiver_id' => $receiver->id,
-            'message'     => $request->message,
-            'status'      => 'private', 
-            'is_read'     => false,
+            'message' => $validated['message'],
+            'status' => 'sent',
         ]);
 
         return response()->json([
             'success' => true,
-            'type'    => 'FIRST_MESSAGE_PRIVATE'
         ]);
     }
 
-    /**
-     * 5. بررسی محدودیت پریمیوم برای پیام‌های بعدی
-     */
-    if (! $sender->isPremium() && ! $receiver->isPremium()) {
-        return response()->json([
-            'error' => 'PREMIUM_REQUIRED',
-            'receiver_id' => $receiver->id // مقدار درست جایگزین شد
-        ], 402);
+    private function discoverableRecipient(
+        User $sender,
+        int $receiverId
+    ): User {
+        return User::query()
+            ->discoverableBy($sender)
+            ->findOrFail($receiverId);
     }
-
-    /**
-     * 6. ارسال پیام عادی (اگر یکی پریمیوم باشد)
-     */
-    Message::create([
-        'sender_id'   => $sender->id,
-        'receiver_id' => $receiver->id,
-        'message'     => $request->message,
-        'status'      => 'sent',
-        'is_read'     => false,
-    ]);
-
-    return response()->json([
-        'success' => true
-    ]);
-}    
-
 }

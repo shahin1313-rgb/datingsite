@@ -2,75 +2,81 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProfileView;
 use App\Models\User;
-use App\Models\ProfileView; 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $user = $request->user();
+        $userId = $user->id;
 
-        // Fetch a specific user by ID
-        // $user = User::findOrFail($userId);
-        // return view('dashboard',compact('user'));
+        /*
+         * Reuse the same membership and two-way block policy used by public
+         * profile discovery. Apply it before limits and counts so hidden
+         * accounts cannot affect either dashboard identities or statistics.
+         */
+        $discoverableByUser = fn ($query) =>
+            $query->discoverableBy($user);
 
-        // return view('dashboard');
+        $visibleProfileViews = ProfileView::query()
+            ->where('viewed_id', $userId)
+            ->whereHas('viewer', $discoverableByUser);
 
-        // Fetch the authenticated user
-        $user = Auth::user();
-        $userId = $user->id; 
+        $totalViews = (clone $visibleProfileViews)->count();
 
+        $todayViews = (clone $visibleProfileViews)
+            ->whereDate('created_at', Carbon::today())
+            ->count();
 
-        // آمار بازدیدها
-    $totalViews = ProfileView::where('viewed_id', $userId)->count();
-
-    $todayViews = ProfileView::where('viewed_id', $userId)
-        ->whereDate('created_at', Carbon::today())
-        ->count();
-
-    $latestViewers = ProfileView::where('viewed_id', $userId)
-        ->latest()
-        ->take(3)
-        ->with('viewer')
-        ->get();
-
-
-        // Fetch the 10 most recently logged-in users
-        $recentUsers = User::whereNotNull('last_login_at')
-            ->orderBy('last_login_at', 'desc')
+        $latestViewers = (clone $visibleProfileViews)
+            ->with(['viewer' => $discoverableByUser])
+            ->latest()
             ->take(3)
             ->get();
 
-        $recentProfileViews = Auth::user()
-            ->profileViewsReceived()
-            ->with('viewer')
+        $recentUsers = User::query()
+            ->discoverableBy($user)
+            ->whereNotNull('last_login_at')
+            ->latest('last_login_at')
+            ->take(3)
+            ->get();
+
+        $recentProfileViews = (clone $visibleProfileViews)
+            ->with(['viewer' => $discoverableByUser])
+            ->latest()
             ->take(5)
             ->get();
 
+        $visibleLikes = $user
+            ->receivedLikes()
+            ->whereHas('liker', $discoverableByUser);
 
-            
-        // --- آمار لایک‌ها (مهم) ---
-        // تعداد کل لایک‌های دریافتی
-        $likesCount = $user->receivedLikes()->count();
+        $likesCount = (clone $visibleLikes)->count();
 
-        // لایک‌های امروز
-        $todayLikes = $user->receivedLikes()
+        $todayLikes = (clone $visibleLikes)
             ->whereDate('created_at', now()->toDateString())
             ->count();
 
-        // آخرین 5 نفر که لایک کرده‌اند
-        $latestLikers = $user->receivedLikes()
-            ->with('liker')
-            ->orderBy('created_at', 'desc')
+        $latestLikers = (clone $visibleLikes)
+            ->with(['liker' => $discoverableByUser])
+            ->latest()
             ->take(5)
             ->get();
-        // Pass the user data to the view
-        return view('dashboard', compact('user', 'recentUsers', 'recentProfileViews', 'totalViews',
-        'todayViews',
-        'latestViewers','likesCount',
+
+        return view('dashboard', compact(
+            'user',
+            'recentUsers',
+            'recentProfileViews',
+            'totalViews',
+            'todayViews',
+            'latestViewers',
+            'likesCount',
             'todayLikes',
-            'latestLikers'));
+            'latestLikers'
+        ));
     }
 }
