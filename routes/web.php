@@ -96,6 +96,46 @@ Route::middleware('guest')->group(
                 'register',
             ]
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password Reset
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/password/reset',
+            [
+                ForgotPasswordController::class,
+                'showLinkRequestForm',
+            ]
+        )->name('password.request');
+
+        Route::post(
+            '/password/email',
+            [
+                ForgotPasswordController::class,
+                'sendResetLinkEmail',
+            ]
+        )
+            ->middleware('throttle:5,1')
+            ->name('password.email');
+
+        Route::get(
+            '/password/reset/{token}',
+            [
+                ResetPasswordController::class,
+                'showResetForm',
+            ]
+        )->name('password.reset');
+
+        Route::post(
+            '/password/reset',
+            [
+                ResetPasswordController::class,
+                'reset',
+            ]
+        )->name('password.update');
     }
 );
 
@@ -248,44 +288,6 @@ Route::middleware([
                 ->whereNumber('id')
                 ->name('show');
         });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Password Reset
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get(
-        '/password/reset',
-        [
-            ForgotPasswordController::class,
-            'showLinkRequestForm',
-        ]
-    )->name('password.request');
-
-    Route::post(
-        '/password/email',
-        [
-            ForgotPasswordController::class,
-            'sendResetLinkEmail',
-        ]
-    )->name('password.email');
-
-    Route::get(
-        '/password/reset/{token}',
-        [
-            ResetPasswordController::class,
-            'showResetForm',
-        ]
-    )->name('password.reset');
-
-    Route::post(
-        '/password/reset',
-        [
-            ResetPasswordController::class,
-            'reset',
-        ]
-    )->name('password.update');
 
     /*
     |--------------------------------------------------------------------------
