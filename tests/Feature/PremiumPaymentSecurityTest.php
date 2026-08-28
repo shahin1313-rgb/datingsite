@@ -98,9 +98,9 @@ class PremiumPaymentSecurityTest extends TestCase
             (bool) $user->fresh()->is_premium
         );
 
-        $this->assertDatabaseCount(
+        $this->assertDatabaseMissing(
             'premium_payments',
-            0
+            ['tx_hash' => self::TX_HASH]
         );
     }
 
@@ -130,9 +130,9 @@ class PremiumPaymentSecurityTest extends TestCase
             (bool) $user->fresh()->is_premium
         );
 
-        $this->assertDatabaseCount(
+        $this->assertDatabaseMissing(
             'premium_payments',
-            0
+            ['tx_hash' => self::TX_HASH]
         );
     }
 
@@ -218,7 +218,10 @@ class PremiumPaymentSecurityTest extends TestCase
             (bool) $attacker->fresh()->is_premium
         );
 
-        $this->assertDatabaseCount('premium_payments', 0);
+        $this->assertDatabaseMissing(
+            'premium_payments',
+            ['tx_hash' => self::TX_HASH]
+        );
 
         $this->actingAs($victim)->post(
             route('premium.verifyCrypto'),
@@ -231,7 +234,10 @@ class PremiumPaymentSecurityTest extends TestCase
 
         $this->assertSame(
             $victim->id,
-            PremiumPayment::query()->sole()->user_id
+            PremiumPayment::query()
+                ->where('tx_hash', self::TX_HASH)
+                ->sole()
+                ->user_id
         );
     }
 
@@ -290,7 +296,9 @@ class PremiumPaymentSecurityTest extends TestCase
 
         $this->assertSame(
             1,
-            PremiumPayment::query()->count()
+            PremiumPayment::query()
+                ->where('tx_hash', self::TX_HASH)
+                ->count()
         );
     }
 

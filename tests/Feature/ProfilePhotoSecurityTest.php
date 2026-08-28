@@ -5,14 +5,14 @@ namespace Tests\Feature;
 use App\Models\Block;
 use App\Models\User;
 use App\Services\ProfilePhotoService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfilePhotoSecurityTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private const METADATA_MARKER =
         'PROFILE-PHOTO-METADATA-SECRET';

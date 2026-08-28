@@ -19,6 +19,13 @@ return [
     'default' => env('DB_CONNECTION', 'sqlite'),
 
     /*
+    | Exact opt-in used only by the automated test guard. Persistent
+    | databases are rejected unless this value exactly matches the selected
+    | database name/path. Keep it empty outside .env.testing.
+    */
+    'testing_confirmation' => env('TEST_DATABASE_CONFIRMATION'),
+
+    /*
     |--------------------------------------------------------------------------
     | Database Connections
     |--------------------------------------------------------------------------

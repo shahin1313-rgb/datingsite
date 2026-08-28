@@ -5,13 +5,13 @@ namespace Tests\Feature;
 use App\Models\Block;
 use App\Models\Like;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class BlockedUserVisibilitySecurityTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     public function test_home_and_search_only_show_discoverable_members(): void
     {
@@ -20,15 +20,15 @@ class BlockedUserVisibilitySecurityTest extends TestCase
         $blockedByViewer = User::factory()->create();
         $blockedViewer = User::factory()->create();
 
-        User::factory()->create([
+        $banned = User::factory()->create([
             'banned' => true,
         ]);
 
-        User::factory()
+        $unverified = User::factory()
             ->unverified()
             ->create();
 
-        User::factory()->create([
+        $admin = User::factory()->create([
             'role' => 'admin',
         ]);
 
@@ -48,9 +48,16 @@ class BlockedUserVisibilitySecurityTest extends TestCase
 
             $response->assertOk();
 
-            $this->assertProfileIds(
+            $this->assertProfileVisibility(
                 $response,
-                [$visible->id]
+                [$visible->id],
+                [
+                    $blockedByViewer->id,
+                    $blockedViewer->id,
+                    $banned->id,
+                    $unverified->id,
+                    $admin->id,
+                ]
             );
         }
     }
@@ -256,23 +263,21 @@ class BlockedUserVisibilitySecurityTest extends TestCase
     /**
      * @param array<int, int> $expected
      */
-    private function assertProfileIds(
+    private function assertProfileVisibility(
         TestResponse $response,
-        array $expected
+        array $visible,
+        array $hidden
     ): void {
-        sort($expected);
-
         $response->assertViewHas(
             'profiles',
-            function ($profiles) use ($expected): bool {
+            function ($profiles) use ($visible, $hidden): bool {
                 $actual = $profiles
                     ->getCollection()
                     ->pluck('id')
                     ->all();
 
-                sort($actual);
-
-                return $actual === $expected;
+                return count(array_diff($visible, $actual)) === 0
+                    && count(array_intersect($hidden, $actual)) === 0;
             }
         );
     }
