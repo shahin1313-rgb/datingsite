@@ -136,6 +136,35 @@
             id="messagesContainer"
             class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[#fdf2f4]/30"
         >
+            @if ($messages->hasPages())
+                <nav
+                    class="flex items-center justify-between gap-3 pb-2"
+                    aria-label="صفحه‌بندی پیام‌ها"
+                >
+                    @if ($messages->hasMorePages())
+                        <a
+                            href="{{ $messages->nextPageUrl() }}"
+                            class="text-xs font-bold text-pink-600 hover:text-pink-700"
+                        >
+                            پیام‌های قدیمی‌تر
+                        </a>
+                    @else
+                        <span class="text-xs text-gray-400">
+                            ابتدای گفتگو
+                        </span>
+                    @endif
+
+                    @if ($messages->currentPage() > 1)
+                        <a
+                            href="{{ $messages->previousPageUrl() }}"
+                            class="text-xs font-bold text-pink-600 hover:text-pink-700"
+                        >
+                            پیام‌های جدیدتر
+                        </a>
+                    @endif
+                </nav>
+            @endif
+
             @foreach($messages as $message)
                 @php
                     $isOwn =

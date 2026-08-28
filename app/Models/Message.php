@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    protected $fillable = ['sender_id', 'receiver_id', 'message', 'read_at','status'];
-    protected $casts = [
-        'is_seen' => 'boolean',
-        'seen_at' => 'datetime',
+    protected $fillable = [
+        'sender_id',
+        'receiver_id',
+        'message',
+        'read_at',
+        'status',
     ];
-
 
     // Relationship to sender
     public function sender()
@@ -23,5 +24,12 @@ class Message extends Model
     public function receiver()
     {
         return $this->belongsTo(User::class, 'receiver_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'read_at' => 'datetime',
+        ];
     }
 }

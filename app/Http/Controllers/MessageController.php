@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
+    private const MESSAGES_PER_PAGE = 50;
+
     public function __construct()
     {
         $this->middleware('auth');
@@ -79,7 +81,7 @@ class MessageController extends Controller
         foreach ($contacts as $contactUserId => $messages) {
             $unreadCounts[$contactUserId] = $messages
                 ->where('receiver_id', $userId)
-                ->where('is_read', false)
+                ->whereNull('read_at')
                 ->count();
         }
 
@@ -128,8 +130,17 @@ class MessageController extends Controller
                         ->where('receiver_id', $authUser->id);
                 }
             )
-            ->oldest()
-            ->get();
+            ->orderByDesc('id')
+            ->simplePaginate(self::MESSAGES_PER_PAGE)
+            ->withQueryString();
+
+        /*
+         * The query fetches the newest page efficiently. Reverse only the
+         * current page so chat bubbles are still rendered chronologically.
+         */
+        $messages->setCollection(
+            $messages->getCollection()->reverse()->values()
+        );
 
         return view('messages.show', [
             'user' => $recipient,
