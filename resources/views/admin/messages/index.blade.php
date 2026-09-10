@@ -8,6 +8,17 @@
 @section('content')
     <div class="container mt-4">
         <h2 class="mb-4">لیست پیام‌ها</h2>
+
+        @if ($errors->any())
+            <div class="alert alert-danger" role="alert">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form method="GET" class="row g-3 mb-4">
             <div class="col-md-3">
                 <input type="text" name="sender" value="{{ request('sender') }}" class="form-control"
@@ -61,14 +72,14 @@
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="modalLabel{{ $msg->id }}">پیام از
-                                                    {{ $msg->sender->name }}</h5>
+                                                    {{ $msg->sender->name ?? 'کاربر حذف‌شده' }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="بستن"></button>
                                             </div>
                                             <div class="modal-body text-start">
-                                                <p><strong>گیرنده:</strong> {{ $msg->receiver->name }}</p>
+                                                <p><strong>گیرنده:</strong> {{ $msg->receiver->name ?? 'کاربر حذف‌شده' }}</p>
                                                 <hr>
-                                                <p>{{ $msg->body }}</p>
+                                                <p class="mb-0" style="white-space: pre-wrap">{{ $msg->message }}</p>
                                             </div>
                                             <div class="modal-footer">
                                                 <button class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
@@ -80,7 +91,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">هیچ پیامی یافت نشد</td>
+                            <td colspan="6" class="text-center">هیچ پیامی یافت نشد</td>
                         </tr>
                     @endforelse
                 </tbody>

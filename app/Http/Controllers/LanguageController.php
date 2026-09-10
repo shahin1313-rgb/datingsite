@@ -2,21 +2,26 @@
 
 namespace App\Http\Controllers;
 
-
-
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 
 class LanguageController extends Controller
 {
-      public function switch($lang)
+    public function switch(string $lang)
     {
-        if (in_array($lang, ['fa', 'fr'])) {
-            Session::put('locale', $lang);
-            App::setLocale($lang);
-        }
+        abort_unless(
+            in_array(
+                $lang,
+                config('app.supported_locales', ['fa']),
+                true
+            ),
+            404
+        );
+
+        Session::put('locale', $lang);
+        App::setLocale($lang);
+
         return Redirect::back();
     }
 }

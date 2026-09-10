@@ -155,6 +155,27 @@ class User extends Authenticatable implements MustVerifyEmail
             );
     }
 
+    /**
+     * سن نمایشی را از سال تولد محاسبه می‌کند تا با گذشت زمان
+     * و با همان مبنایی که جست‌وجو استفاده می‌کند به‌روز بماند.
+     * ستون قدیمی age فقط برای رکوردهای فاقد birth_year نگه داشته می‌شود.
+     */
+    public function getAgeAttribute(mixed $value): ?int
+    {
+        $birthYear = $this->attributes['birth_year'] ?? null;
+        $currentYear = Carbon::now()->year;
+
+        if (
+            is_numeric($birthYear) &&
+            (int) $birthYear >= 1900 &&
+            (int) $birthYear <= $currentYear
+        ) {
+            return $currentYear - (int) $birthYear;
+        }
+
+        return is_numeric($value) ? (int) $value : null;
+    }
+
     public function tickets()
     {
         return $this->hasMany(
@@ -337,6 +358,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
             'premium_until' =>
                 'datetime',
+
+            'birth_year' =>
+                'integer',
 
             'last_seen_at' =>
                 'datetime',

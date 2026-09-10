@@ -90,7 +90,7 @@ class SearchProfilesRequest extends FormRequest
                 ) {
                     $validator->errors()->add(
                         'max_age',
-                        'حداکثر سن باید بزرگ‌تر یا مساوی حداقل سن باشد.'
+                        __('ui.age_range_error')
                     );
                 }
             },

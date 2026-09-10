@@ -66,7 +66,7 @@
         </div>
 
         <span class="mt-4 text-sm font-medium text-gray-500">
-            در حال بارگذاری...
+            {{ __('ui.loading') }}
         </span>
     </div>
 
@@ -106,7 +106,7 @@
                             type="button"
                             @click="sidebarOpen = false"
                             class="absolute top-0 left-0 text-gray-400 hover:text-gray-600 transition-colors"
-                            aria-label="بستن منو"
+                            aria-label="{{ __('ui.close_menu') }}"
                         >
                             <i class="fa fa-times text-xl"></i>
                         </button>
@@ -136,7 +136,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700"
                         >
                             <i class="fa fa-th-large text-pink-500"></i>
-                            <span>داشبورد</span>
+                            <span>{{ __('ui.dashboard') }}</span>
                         </a>
 
                         <a
@@ -144,7 +144,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-gray-700"
                         >
                             <i class="fa fa-envelope text-pink-500"></i>
-                            <span>پیام‌های من</span>
+                            <span>{{ __('ui.my_messages') }}</span>
                         </a>
 
                         <a
@@ -152,7 +152,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-gray-700"
                         >
                             <i class="fa fa-heart text-pink-500"></i>
-                            <span>لیست لایک‌ها</span>
+                            <span>{{ __('ui.likes') }}</span>
                         </a>
 
                         <a
@@ -160,7 +160,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700"
                         >
                             <i class="fa fa-user-edit text-pink-500"></i>
-                            <span>ویرایش پروفایل</span>
+                            <span>{{ __('ui.edit_profile') }}</span>
                         </a>
 
                         <a
@@ -168,7 +168,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700"
                         >
                             <i class="fa fa-ticket-alt text-pink-500"></i>
-                            <span>تیکت‌های پشتیبانی</span>
+                            <span>{{ __('ui.support_tickets') }}</span>
                         </a>
 
                         <a
@@ -176,7 +176,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700 {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : '' }}"
                         >
                             <i class="fa fa-search w-5 text-pink-500"></i>
-                            <span>جستجوی پیشرفته</span>
+                            <span>{{ __('ui.advanced_search') }}</span>
                         </a>
 
                         <a
@@ -184,7 +184,7 @@
                             class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition text-amber-600"
                         >
                             <i class="fa fa-crown text-amber-500"></i>
-                            <span class="font-bold">ارتقا به ویژه</span>
+                            <span class="font-bold">{{ __('ui.upgrade') }}</span>
                         </a>
 
                         <hr class="my-4 border-gray-100">
@@ -197,7 +197,7 @@
                                 class="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-xl transition"
                             >
                                 <i class="fa fa-sign-out-alt"></i>
-                                <span>خروج از حساب</span>
+                                <span>{{ __('ui.logout') }}</span>
                             </button>
                         </form>
                     </nav>
@@ -219,14 +219,14 @@
                             type="button"
                             @click="sidebarOpen = true"
                             class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg lg:hidden"
-                            aria-label="باز کردن منو"
+                            aria-label="{{ __('ui.open_menu') }}"
                         >
                             <i class="fa fa-bars text-xl"></i>
                         </button>
                     @endauth
 
                     <a
-                        href="{{ url('/') }}"
+                        href="{{ auth()->check() ? route('home') : url('/') }}"
                         class="flex items-center gap-2"
                     >
                         <img
@@ -250,8 +250,8 @@
                             type="button"
                             data-history-back
                             class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
-                            title="بازگشت"
-                            aria-label="بازگشت"
+                            title="{{ __('ui.back') }}"
+                            aria-label="{{ __('ui.back') }}"
                         >
                             <i class="fa fa-arrow-left text-lg"></i>
                         </button>
@@ -265,7 +265,7 @@
                             type="button"
                             @click="langMenu = !langMenu"
                             class="text-gray-500 text-sm focus:outline-none p-2 flex items-center justify-center"
-                            aria-label="انتخاب زبان"
+                            aria-label="{{ __('ui.language') }}"
                         >
                             <i class="fa-solid fa-globe text-lg"></i>
                         </button>
@@ -294,6 +294,14 @@
                                 <span class="text-base">🇬🇧</span>
                                 <span>English</span>
                             </a>
+
+                            <a
+                                href="{{ url('lang/fr') }}"
+                                class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors"
+                            >
+                                <span class="text-base">🇫🇷</span>
+                                <span>Français</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -317,11 +325,11 @@
             >
                 <div class="flex justify-around items-center h-14">
                     <a
-                        href="{{ url('/') }}"
-                        class="flex flex-col items-center justify-center w-full {{ request()->is('/') ? 'text-pink-600' : 'text-gray-400' }}"
+                        href="{{ route('home') }}"
+                        class="flex flex-col items-center justify-center w-full {{ request()->routeIs('home') ? 'text-pink-600' : 'text-gray-400' }}"
                     >
                         <i class="fas fa-heart text-xl"></i>
-                        <span class="text-[10px] mt-1">اکتشاف</span>
+                        <span class="text-[10px] mt-1">{{ __('ui.explore') }}</span>
                     </a>
 
                     <a
@@ -329,7 +337,7 @@
                         class="flex flex-col items-center justify-center w-full {{ request()->routeIs('search') ? 'text-pink-600' : 'text-gray-400' }}"
                     >
                         <i class="fas fa-search text-xl"></i>
-                        <span class="text-[10px] mt-1">جستجو</span>
+                        <span class="text-[10px] mt-1">{{ __('ui.search') }}</span>
                     </a>
 
                     <a
@@ -337,7 +345,7 @@
                         class="flex flex-col items-center justify-center w-full relative {{ request()->routeIs('messages.*') ? 'text-pink-600' : 'text-gray-400' }}"
                     >
                         <i class="fas fa-comment-dots text-xl"></i>
-                        <span class="text-[10px] mt-1">پیام‌ها</span>
+                        <span class="text-[10px] mt-1">{{ __('ui.messages') }}</span>
                     </a>
 
                     <a
@@ -345,7 +353,7 @@
                         class="flex flex-col items-center justify-center w-full {{ request()->routeIs('dashboard') ? 'text-pink-600' : 'text-gray-400' }}"
                     >
                         <i class="fas fa-user-circle text-xl"></i>
-                        <span class="text-[10px] mt-1">پروفایل</span>
+                        <span class="text-[10px] mt-1">{{ __('ui.profile') }}</span>
                     </a>
                 </div>
             </nav>

@@ -51,7 +51,9 @@ Route::get(
 Route::get(
     '/lang/{lang}',
     [LanguageController::class, 'switch']
-);
+)
+    ->whereIn('lang', config('app.supported_locales'))
+    ->name('language.switch');
 
 Route::get('/test-modal', function () {
     return view('test-modal');

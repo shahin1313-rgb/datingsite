@@ -7,38 +7,52 @@
         {{-- Header Section --}}
         <div class="text-center mb-10">
             <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-400 mb-2">
-                نیمه گمشده‌ات را پیدا کن
+                {{ __('ui.find_match') }}
             </h1>
-            <p class="text-gray-500 font-medium">جستجو در میان هزاران پروفایل فعال و واقعی</p>
+            <p class="text-gray-500 font-medium">{{ __('ui.search_subtitle') }}</p>
         </div>
+
+        @if ($errors->any())
+            <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700" role="alert">
+                <p class="font-bold mb-2">{{ __('ui.search_errors') }}</p>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         {{-- Search Form - Soft White Card --}}
         <div class="bg-white border border-pink-100 p-8 rounded-[2rem] shadow-xl shadow-pink-100/50 mb-12">
-            <form action="{{ route('search') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-6 text-right" dir="rtl">
+            <form action="{{ route('search') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-6 {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }}" dir="{{ app()->isLocale('fa') ? 'rtl' : 'ltr' }}">
                 
                 {{-- City --}}
                 <div class="flex flex-col">
-                    <label class="text-gray-600 mb-2 mr-1 font-semibold">📍 انتخاب شهر</label>
-                    <input type="text" name="city" value="{{ request('city') }}" placeholder="مثلا: تهران"
+                    <label for="city" class="text-gray-600 mb-2 mr-1 font-semibold">📍 {{ __('ui.city') }}</label>
+                    <input id="city" type="text" name="city" value="{{ request('city') }}" placeholder="{{ __('ui.city_placeholder') }}"
+                        aria-invalid="{{ $errors->has('city') ? 'true' : 'false' }}"
                         class="bg-gray-50 border-gray-200 text-gray-700 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400 focus:bg-white transition outline-none">
                 </div>
 
                 {{-- Age Range --}}
                 <div class="flex flex-col">
-                    <label class="text-gray-600 mb-2 mr-1 font-semibold">🎂 محدوده سنی</label>
+                    <label class="text-gray-600 mb-2 mr-1 font-semibold">🎂 {{ __('ui.age_range') }}</label>
                     <div class="flex gap-2">
-                        <input type="number" name="min_age" value="{{ request('min_age') }}" placeholder="از"
+                        <input type="number" name="min_age" min="18" max="100" value="{{ request('min_age') }}" placeholder="{{ __('ui.from') }}"
+                            aria-label="{{ __('ui.minimum_age') }}" aria-invalid="{{ $errors->has('min_age') ? 'true' : 'false' }}"
                             class="w-1/2 bg-gray-50 border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400 outline-none">
-                        <input type="number" name="max_age" value="{{ request('max_age') }}" placeholder="تا"
+                        <input type="number" name="max_age" min="18" max="100" value="{{ request('max_age') }}" placeholder="{{ __('ui.to') }}"
+                            aria-label="{{ __('ui.maximum_age') }}" aria-invalid="{{ $errors->has('max_age') ? 'true' : 'false' }}"
                             class="w-1/2 bg-gray-50 border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400 outline-none">
                     </div>
                 </div>
 
                 {{-- Marital Status --}}
-               <div class="flex flex-col w-full max-w-xs font-sans" dir="rtl">
+               <div class="flex flex-col w-full max-w-xs font-sans">
     <label for="marital_status" class="flex items-center text-gray-700 mb-2 ms-1 text-sm font-bold">
         <span class="ml-2 text-base">💍</span>
-        وضعیت تأهل
+        {{ __('ui.marital_status') }}
     </label>
 
     <div class="relative group">
@@ -48,9 +62,11 @@
                    focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 focus:outline-none
                    cursor-pointer shadow-sm hover:border-gray-300">
             
-            <option value="" class="py-2">همه موارد</option>
-            <option value="single" {{ request('marital_status') == 'single' ? 'selected' : '' }}>مجرد</option>
-            <option value="divorced" {{ request('marital_status') == 'divorced' ? 'selected' : '' }}>جدا شده</option>
+            <option value="" class="py-2">{{ __('ui.all') }}</option>
+            <option value="single" @selected(request('marital_status') === 'single')>{{ __('ui.single') }}</option>
+            <option value="married" @selected(request('marital_status') === 'married')>{{ __('ui.married') }}</option>
+            <option value="divorced" @selected(request('marital_status') === 'divorced')>{{ __('ui.divorced') }}</option>
+            <option value="widowed" @selected(request('marital_status') === 'widowed')>{{ __('ui.widowed') }}</option>
         </select>
 
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-400 group-focus-within:text-pink-500 transition-colors">
@@ -61,9 +77,24 @@
     </div>
 </div>
 
+                {{-- Interests --}}
+                <div class="flex flex-col w-full max-w-xs">
+                    <label for="interested_in" class="text-gray-700 mb-2 ms-1 text-sm font-bold">
+                        ✨ {{ __('ui.interests') }}
+                    </label>
+                    <select id="interested_in" name="interested_in"
+                        class="w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-2xl focus:border-pink-400 focus:ring-4 focus:ring-pink-100 focus:outline-none">
+                        <option value="">{{ __('ui.any_interest') }}</option>
+                        <option value="sport" @selected(request('interested_in') === 'sport')>{{ __('ui.sport') }}</option>
+                        <option value="travel" @selected(request('interested_in') === 'travel')>{{ __('ui.travel') }}</option>
+                        <option value="books" @selected(request('interested_in') === 'books')>{{ __('ui.books') }}</option>
+                        <option value="party" @selected(request('interested_in') === 'party')>{{ __('ui.party') }}</option>
+                    </select>
+                </div>
+
                 {{-- Checkboxes --}}
                 <div class="md:col-span-2 flex flex-wrap gap-6 items-center">
-                   <div class="flex flex-wrap gap-6 items-center font-sans" dir="rtl">
+                   <div class="flex flex-wrap gap-6 items-center font-sans">
     
     <label class="group relative flex items-center cursor-pointer select-none">
         <input type="checkbox" name="has_photo" value="1" {{ request('has_photo') ? 'checked' : '' }} class="sr-only peer">
@@ -77,7 +108,7 @@
         </div>
         
         <span class="ms-3 text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
-            فقط عکس‌دارها
+            {{ __('ui.photo_only') }}
         </span>
     </label>
 
@@ -93,7 +124,7 @@
         </div>
         
         <span class="ms-3 text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
-            آنلاین‌ها
+            {{ __('ui.online_only') }}
         </span>
     </label>
 
@@ -103,7 +134,7 @@
                 {{-- Submit Button --}}
                 <div class="flex items-end">
                     <button type="submit" class="w-full bg-gradient-to-r from-pink-600 to-rose-500 text-white font-bold py-3 rounded-2xl hover:shadow-lg hover:shadow-pink-300 transition transform hover:-translate-y-1 active:scale-95">
-                        <i class="fas fa-search ml-2"></i> جستجوی پیشرفته
+                        <i class="fas fa-search ml-2"></i> {{ __('ui.advanced_search') }}
                     </button>
                 </div>
             </form>
@@ -114,7 +145,7 @@
             @if ($profiles->isEmpty())
                 <div class="text-center py-20 bg-white rounded-[2rem] border border-dashed border-pink-200">
                     <div class="text-6xl mb-4">🔎</div>
-                    <p class="text-gray-400 text-xl font-medium">متأسفانه کسی با این مشخصات پیدا نشد</p>
+                    <p class="text-gray-400 text-xl font-medium">{{ __('ui.no_results') }}</p>
                 </div>
             @else
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -129,7 +160,7 @@
                                 @if($profile->isOnline())
                                     <div class="absolute top-4 left-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
                                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                        <span class="text-[10px] font-bold text-gray-700">آنلاین</span>
+                                        <span class="text-[10px] font-bold text-gray-700">{{ __('ui.online') }}</span>
                                     </div>
                                 @endif
                                 
@@ -141,19 +172,19 @@
                                 <h3 class="text-xl font-extrabold text-gray-800 mb-1">{{ $profile->name }}</h3>
                                 <div class="flex justify-center items-center gap-2 text-pink-500 text-sm mb-3">
                                     <span class="bg-pink-50 px-3 py-1 rounded-full font-bold">{{ $profile->city }}</span>
-                                    <span class="bg-pink-50 px-3 py-1 rounded-full font-bold">{{ $profile->age }} ساله</span>
+                                    <span class="bg-pink-50 px-3 py-1 rounded-full font-bold">{{ __('ui.age_years', ['age' => $profile->age]) }}</span>
                                 </div>
-                                <p class="text-gray-500 text-sm line-clamp-2 mb-6 h-10 leading-relaxed">{{ $profile->bio ?? 'بیوگرافی ثبت نشده است.' }}</p>
+                                <p class="text-gray-500 text-sm line-clamp-2 mb-6 h-10 leading-relaxed">{{ $profile->bio ?? __('ui.no_bio') }}</p>
 
                                 {{-- Actions --}}
                                 <div class="flex gap-3 justify-center">
                                     <a href="{{ route('profile.show', $profile->id) }}" 
                                        class="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition text-sm">
-                                         مشاهده پروفایل
+                                         {{ __('ui.view_profile') }}
                                     </a>
                                     <a href="{{ route('messages.show', $profile) }}" 
                                        class="flex-1 bg-gradient-to-r from-pink-500 to-rose-400 text-white font-bold py-2.5 rounded-xl hover:opacity-90 transition text-sm flex items-center justify-center gap-2 shadow-md shadow-pink-200">
-                                        <i class="fas fa-heart"></i> ارسال پیام
+                                        <i class="fas fa-heart"></i> {{ __('ui.send_message') }}
                                     </a>
                                 </div>
                             </div>

@@ -11,25 +11,31 @@ class AdminMessageController extends Controller
 {
     public function index(Request $request)
     {
+        $filters = $request->validate([
+            'sender' => ['nullable', 'string', 'max:100'],
+            'receiver' => ['nullable', 'string', 'max:100'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
         $query = Message::with(['sender', 'receiver'])->latest();
 
-        if ($request->filled('sender')) {
-            $query->whereHas('sender', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->sender . '%');
+        if (! empty($filters['sender'])) {
+            $query->whereHas('sender', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['sender'] . '%');
             });
         }
 
-        if ($request->filled('receiver')) {
-            $query->whereHas('receiver', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->receiver . '%');
+        if (! empty($filters['receiver'])) {
+            $query->whereHas('receiver', function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['receiver'] . '%');
             });
         }
 
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
+        if (! empty($filters['date'])) {
+            $query->whereDate('created_at', $filters['date']);
         }
 
-        $messages = $query->paginate(20);
+        $messages = $query->paginate(20)->withQueryString();
 
         return view('admin.messages.index', compact('messages'));
     }

@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'register' => 'Create account',
+    'name' => 'Name',
+    'email' => 'Email',
+    'gender' => 'Gender',
+    'male' => 'Man',
+    'female' => 'Woman',
+    'age' => 'Age',
+    'city' => 'City',
+    'marital_status' => 'Marital status',
+    'select' => 'Choose an option',
+    'single' => 'Single',
+    'married' => 'Married',
+    'divorced' => 'Divorced',
+    'widowed' => 'Widowed',
+    'bio' => 'Biography',
+    'interested_in' => 'Interests',
+    'salary' => 'Monthly income',
+    'profile_picture' => 'Choose a profile photo',
+    'password' => 'Password',
+    'password_confirm' => 'Confirm password',
+    'submit' => 'Create account',
+];
