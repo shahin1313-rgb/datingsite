@@ -76,24 +76,7 @@ class AdminTwoFactorController extends Controller
             );
         }
 
-        $throttleKey =
-            'admin-2fa:'.$userId.'|'.$request->ip();
-
-        if (
-            RateLimiter::tooManyAttempts(
-                $throttleKey,
-                5
-            )
-        ) {
-            $seconds = RateLimiter::availableIn(
-                $throttleKey
-            );
-
-            throw ValidationException::withMessages([
-                'code' =>
-                    "تعداد تلاش‌ها بیش از حد مجاز است. {$seconds} ثانیه دیگر دوباره امتحان کنید.",
-            ]);
-        }
+        $throttleKey = 'admin-2fa-account:'.$userId;
 
         $remember = (bool) $request
             ->session()
@@ -110,8 +93,7 @@ class AdminTwoFactorController extends Controller
             function () use (
                 $request,
                 $userId,
-                $validated,
-                $throttleKey
+                $validated
             ): User {
                 $admin = User::query()
                     ->lockForUpdate()
@@ -123,11 +105,6 @@ class AdminTwoFactorController extends Controller
                         $validated['code']
                     )
                 ) {
-                    RateLimiter::hit(
-                        $throttleKey,
-                        300
-                    );
-
                     throw ValidationException::withMessages([
                         'code' =>
                             'کد تأیید اشتباه یا منقضی شده است.',

@@ -149,6 +149,7 @@ Route::middleware('guest')->group(
 
 Route::middleware([
     'auth',
+    'auth.session',
     'not_banned',
 ])->group(function (): void {
     Route::post(
@@ -192,6 +193,7 @@ Route::middleware([
 
 Route::middleware([
     'auth',
+    'auth.session',
     'not_banned',
     'verified',
 ])->group(function (): void {
@@ -479,7 +481,7 @@ Route::post(
         'verify',
     ]
 )
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:admin-two-factor')
     ->name('admin.two-factor.verify');
 
 Route::post(
@@ -499,6 +501,7 @@ Route::post(
 Route::prefix('admin')
     ->middleware([
         'auth',
+        'auth.session',
         'not_banned',
         'admin',
         'admin.2fa',
@@ -599,6 +602,16 @@ Route::prefix('admin')
             ]
         )->name('messages');
 
+        Route::post(
+            '/messages/access',
+            [AdminMessageController::class, 'grantAccess']
+        )->name('messages.access');
+
+        Route::delete(
+            '/messages/access',
+            [AdminMessageController::class, 'revokeAccess']
+        )->name('messages.access.revoke');
+
         Route::get(
             '/photos',
             [
@@ -665,7 +678,7 @@ Route::prefix('admin')
                 )->name('index');
 
                 Route::get(
-                    '/{id}',
+                    '/{ticket}',
                     [
                         AdminTicketController::class,
                         'show',
@@ -675,7 +688,7 @@ Route::prefix('admin')
                     ->name('show');
 
                 Route::post(
-                    '/{id}/reply',
+                    '/{ticket}/reply',
                     [
                         AdminTicketController::class,
                         'reply',
@@ -685,7 +698,7 @@ Route::prefix('admin')
                     ->name('reply');
 
                 Route::post(
-                    '/{id}/close',
+                    '/{ticket}/close',
                     [
                         AdminTicketController::class,
                         'close',

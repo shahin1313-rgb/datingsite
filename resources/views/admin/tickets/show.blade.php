@@ -1,117 +1,17 @@
 @extends('adminlte::page')
-
-@section('title', 'داشبورد مدیریت')
-
-@section('content_header')
-    <h1>داشبورد مدیریت</h1>
-@endsection
-
+@section('title', 'تیکت #'.$ticket->id)
+@section('content_header')<h1>تیکت #{{ $ticket->id }}</h1>@stop
 @section('content')
-    <div class="row">
-        <div class="col-md-3">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ $userCount }}</h3>
-                    <p>تعداد کاربران</p>
-                </div>
-
-                <div class="icon">
-                    <i class="fas fa-users"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ $messageCount }}</h3>
-                    <p>تعداد پیام‌ها</p>
-                </div>
-
-                <div class="icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ $reportCount }}</h3>
-                    <p>تعداد ریپورت‌ها</p>
-                </div>
-
-                <div class="icon">
-                    <i class="fas fa-flag"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>{{ $visitCount }}</h3>
-                    <p>بازدیدهای سایت</p>
-                </div>
-
-                <div class="icon">
-                    <i class="fas fa-eye"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @php
-        $maxChartValue = max(
-            1,
-            (int) collect($chartData)->max()
-        );
-    @endphp
-
-    <div class="card mt-4">
-        <div class="card-header">
-            <h3 class="card-title">
-                آمار ثبت‌نام هفتگی
-            </h3>
-        </div>
-
-        <div class="card-body">
-            @forelse ($chartLabels as $index => $label)
-                @php
-                    $value =
-                        (int) ($chartData[$index] ?? 0);
-
-                    $width =
-                        ($value / $maxChartValue) * 100;
-                @endphp
-
-                <div class="mb-3">
-                    <div
-                        class="d-flex justify-content-between mb-1"
-                    >
-                        <span>{{ $label }}</span>
-                        <strong>{{ $value }}</strong>
-                    </div>
-
-                    <div
-                        class="progress"
-                        style="height: 18px;"
-                    >
-                        <div
-                            class="progress-bar bg-primary"
-                            role="progressbar"
-                            style="width: {{ $width }}%;"
-                            aria-valuenow="{{ $value }}"
-                            aria-valuemin="0"
-                            aria-valuemax="{{ $maxChartValue }}"
-                        ></div>
-                    </div>
-                </div>
-            @empty
-                <p class="text-muted mb-0">
-                    داده‌ای برای نمایش وجود ندارد.
-                </p>
-            @endforelse
-        </div>
-    </div>
-@endsection
+    @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+    @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+    <div class="card"><div class="card-header"><strong>{{ $ticket->subject }}</strong><span class="float-left badge badge-secondary">{{ $ticket->status }}</span></div><div class="card-body"><p>{{ $ticket->message }}</p><small>{{ $ticket->user?->name ?? 'کاربر حذف‌شده' }} — {{ $ticket->created_at }}</small></div></div>
+    @foreach($ticket->replies as $reply)
+        <div class="card border-right border-primary"><div class="card-body"><p>{{ $reply->message }}</p><small>{{ $reply->user?->name ?? 'کاربر حذف‌شده' }} — {{ $reply->created_at }}</small></div></div>
+    @endforeach
+    @if($ticket->status !== 'closed')
+        <div class="card"><form method="POST" action="{{ route('admin.tickets.reply', $ticket) }}">@csrf<div class="card-body"><label for="message">پاسخ</label><textarea id="message" name="message" class="form-control" maxlength="5000" required>{{ old('message') }}</textarea></div><div class="card-footer"><button class="btn btn-primary" type="submit">ارسال پاسخ</button></div></form></div>
+        <form method="POST" action="{{ route('admin.tickets.close', $ticket) }}">@csrf<button class="btn btn-danger" type="submit">بستن تیکت</button></form>
+    @else
+        <div class="alert alert-secondary">این تیکت بسته شده و پاسخ جدید نمی‌پذیرد.</div>
+    @endif
+@stop

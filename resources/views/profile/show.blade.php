@@ -81,6 +81,15 @@
                         <div
                             class="flex items-center justify-center gap-3 max-w-sm mx-auto"
                         >
+                            @if(auth()->id() === $user->id)
+                            <a
+                                href="{{ route('profile.edit') }}"
+                                class="flex-1 text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm"
+                            >
+                                <i class="fas fa-user-edit" aria-hidden="true"></i>
+                                ویرایش پروفایل
+                            </a>
+                            @else
                             <a
                                 href="{{ route('messages.show', $user->id) }}"
                                 class="flex-1 text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm"
@@ -102,6 +111,7 @@
 
                                 ارسال پیام
                             </a>
+                            @endif
 
                             @if (
                                 auth()->check() &&
@@ -200,8 +210,11 @@
                     @endif
 
                     <div
+                        id="profile-details"
                         class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-sm text-gray-600 dark:text-slate-300 bg-pink-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-transparent dark:border-slate-800"
                     >
+                        @if($user->age)<div><strong class="text-pink-600">🎂 سن:</strong> {{ $user->age }}</div>@endif
+                        @if($user->gender)<div><strong class="text-pink-600">👤 جنسیت:</strong> {{ ['male'=>'مرد','female'=>'زن','other'=>'سایر'][$user->gender] ?? $user->gender }}</div>@endif
                         <div class="flex items-center gap-2">
                             <span
                                 class="font-bold text-pink-600 dark:text-pink-400 text-base"
@@ -212,6 +225,7 @@
                             <span>{{ $user->interested_in }}</span>
                         </div>
 
+                        @if($user->salary !== null && (auth()->id() === $user->id || $user->salary_visible))
                         <div class="flex items-center gap-2">
                             <span
                                 class="font-bold text-pink-600 dark:text-pink-400 text-base"
@@ -223,6 +237,7 @@
                                 {{ $user->salary }} میلیون تومان
                             </span>
                         </div>
+                        @endif
 
                         <div
                             class="col-span-1 md:col-span-2 mt-2 border-t border-pink-100 dark:border-slate-700 pt-2"
@@ -253,7 +268,7 @@
                         </button>
 
                         <a
-                            href="#"
+                            href="#profile-details"
                             class="flex-1 min-w-[120px] text-center bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-pink-200 dark:shadow-none transition duration-300 transform hover:-translate-y-1"
                         >
                             مشاهده کامل

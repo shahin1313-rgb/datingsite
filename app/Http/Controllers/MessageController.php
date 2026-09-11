@@ -31,7 +31,8 @@ class MessageController extends Controller
                 ->discoverableBy($authUser)
                 ->select('users.id');
 
-        $contacts = Message::query()
+        $latestMessageIds = Message::query()
+            ->selectRaw('MAX(id)')
             ->where(
                 function (Builder $query) use (
                     $userId,
@@ -66,23 +67,57 @@ class MessageController extends Controller
                         );
                 }
             )
-            ->with(['sender', 'receiver'])
-            ->latest()
-            ->get()
-            ->groupBy(
-                fn (Message $message): int =>
-                    (int) ((int) $message->sender_id === (int) $userId
-                        ? $message->receiver_id
-                        : $message->sender_id)
+            ->groupByRaw(
+                'CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END',
+                [$userId]
             );
 
-        $unreadCounts = [];
+        $contacts = Message::query()
+            ->whereIn('id', $latestMessageIds)
+            ->with(['sender', 'receiver'])
+            ->latest('id')
+            ->paginate(20)
+            ->withQueryString();
 
-        foreach ($contacts as $contactUserId => $messages) {
-            $unreadCounts[$contactUserId] = $messages
-                ->where('receiver_id', $userId)
-                ->whereNull('read_at')
-                ->count();
+        $contactId = static fn (Message $message): int =>
+                (int) ((int) $message->sender_id === (int) $userId
+                    ? $message->receiver_id
+                    : $message->sender_id);
+
+        /*
+         * Keep the historical view contract: conversation keys are the
+         * other user's id, while the paginator still limits the query.
+         */
+        $contacts->setCollection(
+            $contacts->getCollection()->keyBy($contactId)
+        );
+
+        $contactUserIds = $contacts->getCollection()
+            ->keys()
+            ->map(fn ($id): int => (int) $id)
+            ->values();
+
+        $queriedUnreadCounts = Message::query()
+            ->where('receiver_id', $userId)
+            ->whereIn('sender_id', $contactUserIds)
+            ->whereNull('read_at')
+            ->selectRaw('sender_id, COUNT(*) AS aggregate')
+            ->groupBy('sender_id')
+            ->pluck('aggregate', 'sender_id')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
+
+        /*
+         * A visible conversation must also have an explicit zero after
+         * all of its messages are read.
+         */
+        $unreadCounts = array_fill_keys(
+            $contactUserIds->all(),
+            0
+        );
+
+        foreach ($queriedUnreadCounts as $contactUserId => $count) {
+            $unreadCounts[(int) $contactUserId] = $count;
         }
 
         return view(

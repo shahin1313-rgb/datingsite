@@ -10,6 +10,10 @@ use App\Services\ProfilePhotoService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -48,14 +52,13 @@ class ProfileController extends Controller
             ],
 
             /*
-             * رمز فعلی فقط زمانی اجباری است که آدرس ایمیل
-             * واقعاً تغییر کرده باشد.
+             * برای تغییر ایمیل یا رمز، هویت دوباره بررسی می‌شود.
              */
             'current_password' => [
                 Rule::requiredIf(
                     fn (): bool =>
-                        $request->input('email') !==
-                        $user->email
+                        $request->input('email') !== $user->email ||
+                        $request->filled('new_password')
                 ),
                 'nullable',
                 'string',
@@ -84,6 +87,13 @@ class ProfileController extends Controller
                 ]),
             ],
 
+            'age' => ['sometimes', 'required', 'integer', 'min:18', 'max:100'],
+            'gender' => ['sometimes', 'required', Rule::in(['male', 'female', 'other'])],
+            'interested_in' => ['sometimes', 'required', 'string', 'max:100'],
+            'salary' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'salary_visible' => ['sometimes', 'boolean'],
+            'new_password' => ['nullable', 'string', 'min:8', 'confirmed'],
+
             'profile_picture' => [
                 'nullable',
                 'bail',
@@ -95,7 +105,7 @@ class ProfileController extends Controller
             ],
         ], [
             'current_password.required' =>
-                'برای تغییر ایمیل، رمز عبور فعلی خود را وارد کنید.',
+                'برای تغییر ایمیل یا رمز عبور، رمز فعلی خود را وارد کنید.',
 
             'current_password.current_password' =>
                 'رمز عبور فعلی صحیح نیست.',
@@ -106,6 +116,22 @@ class ProfileController extends Controller
          * در مدل User ذخیره شود.
          */
         unset($validated['current_password']);
+
+        if (array_key_exists('age', $validated)) {
+            $validated['birth_year'] =
+                now()->year - (int) $validated['age'];
+        }
+
+        if ($request->has('salary_visible')) {
+            $validated['salary_visible'] =
+                $request->boolean('salary_visible');
+        }
+
+        $passwordChanged = ! empty($validated['new_password']);
+        if ($passwordChanged) {
+            $validated['password'] = Hash::make($validated['new_password']);
+        }
+        unset($validated['new_password']);
 
         $oldPicturePath = $user->profile_picture;
         $newPicturePath = null;
@@ -123,6 +149,10 @@ class ProfileController extends Controller
             $validated['email'] !== $user->email;
 
         $user->fill($validated);
+
+        if ($passwordChanged) {
+            $user->setRememberToken(Str::random(60));
+        }
 
         /*
          * اگر ایمیل تغییر کرده باشد، تأیید قبلی
@@ -148,6 +178,17 @@ class ProfileController extends Controller
          */
         if ($newPicturePath !== null) {
             $photos->delete($oldPicturePath);
+        }
+
+        if ($passwordChanged) {
+            if (config('session.driver') === 'database' && Schema::hasTable('sessions')) {
+                DB::table('sessions')
+                    ->where('user_id', $user->getAuthIdentifier())
+                    ->where('id', '!=', $request->session()->getId())
+                    ->delete();
+            }
+
+            $request->session()->regenerate();
         }
 
         /*
@@ -191,6 +232,11 @@ class ProfileController extends Controller
                 'profile_picture',
                 'interested_in',
                 'salary',
+                'salary_visible',
+                'age',
+                'birth_year',
+                'gender',
+                'marital_status',
             ]);
 
         /*

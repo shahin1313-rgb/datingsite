@@ -67,6 +67,10 @@
                 >
                     @csrf
 
+                    @if ($errors->any())
+                        <div class="rounded-2xl bg-red-50 p-4 text-sm text-red-700" role="alert"><ul class="list-disc px-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+                    @endif
+
                     <div
                         class="grid grid-cols-1 md:grid-cols-2 gap-6"
                     >
@@ -114,6 +118,20 @@
                                 </p>
                             @enderror
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label for="age" class="block text-sm font-semibold text-gray-600 mb-2 px-1">سن</label><input id="age" name="age" type="number" min="18" max="100" required value="{{ old('age', $user->age) }}" class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400"></div>
+                        <div><label for="gender" class="block text-sm font-semibold text-gray-600 mb-2 px-1">جنسیت</label><select id="gender" name="gender" required class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400"><option value="male" @selected(old('gender', $user->gender)==='male')>مرد</option><option value="female" @selected(old('gender', $user->gender)==='female')>زن</option><option value="other" @selected(old('gender', $user->gender)==='other')>سایر</option></select></div>
+                        <div><label for="interested_in" class="block text-sm font-semibold text-gray-600 mb-2 px-1">علاقه‌مند به</label><input id="interested_in" name="interested_in" required maxlength="100" value="{{ old('interested_in', $user->interested_in) }}" class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400"></div>
+                        <div><label for="salary" class="block text-sm font-semibold text-gray-600 mb-2 px-1">درآمد (اختیاری)</label><input id="salary" name="salary" type="number" min="0" value="{{ old('salary', $user->salary) }}" class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400"></div>
+                    </div>
+
+                    <label class="flex items-start gap-3 rounded-2xl bg-pink-50 p-4"><input type="hidden" name="salary_visible" value="0"><input type="checkbox" name="salary_visible" value="1" @checked(old('salary_visible', $user->salary_visible)) class="mt-1 rounded text-pink-600"><span><strong class="block text-gray-700">نمایش عمومی درآمد</strong><span class="text-xs text-gray-500">فقط با انتخاب صریح شما، درآمد در پروفایل عمومی نمایش داده می‌شود.</span></span></label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label for="new_password" class="block text-sm font-semibold text-gray-600 mb-2 px-1">رمز عبور جدید (اختیاری)</label><input id="new_password" name="new_password" type="password" autocomplete="new-password" class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400"></div>
+                        <div><label for="new_password_confirmation" class="block text-sm font-semibold text-gray-600 mb-2 px-1">تکرار رمز عبور جدید</label><input id="new_password_confirmation" name="new_password_confirmation" type="password" autocomplete="new-password" class="w-full bg-pink-50/50 border-0 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-pink-400"></div>
                     </div>
 
                     <div>

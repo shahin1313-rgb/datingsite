@@ -79,13 +79,15 @@ class LikeController extends Controller
             ->likedUsers()
             ->discoverableBy($user)
             ->latest('likes.created_at')
-            ->get();
+            ->paginate(12, ['users.*'], 'sent_page')
+            ->withQueryString();
 
         $likedByUsers = $user
             ->likedByUsers()
             ->discoverableBy($user)
             ->latest('likes.created_at')
-            ->get();
+            ->paginate(12, ['users.*'], 'received_page')
+            ->withQueryString();
 
         return view('likes.index', compact('likedUsers', 'likedByUsers'));
     }

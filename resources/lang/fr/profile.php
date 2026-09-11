@@ -5,7 +5,7 @@ return [
     'name' => 'Nom',
     'email' => 'Email',
     'current_password' => 'Mot de passe actuel',
-    'password_required_for_email_change' => 'Le mot de passe actuel est requis uniquement pour modifier l’adresse e-mail.',
+    'password_required_for_email_change' => 'Le mot de passe actuel est requis pour modifier l’adresse e-mail ou le mot de passe.',
     'city' => 'Ville',
     'marital_status' => 'État civil',
     'select' => 'Sélectionner',

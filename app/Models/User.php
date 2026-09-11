@@ -34,6 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'interested_in',
         'salary',
+        'salary_visible',
         'premium_until',
         'created_at',
         'updated_at',
@@ -361,6 +362,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
             'birth_year' =>
                 'integer',
+
+            'salary_visible' =>
+                'boolean',
 
             'last_seen_at' =>
                 'datetime',

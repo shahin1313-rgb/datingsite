@@ -96,10 +96,12 @@ class RegisterController extends Controller
             ],
 
             'salary' => [
-                'required',
+                'nullable',
                 'integer',
                 'min:0',
             ],
+
+            'salary_visible' => ['nullable', 'boolean'],
 
             'marital_status' => [
                 'nullable',
@@ -157,7 +159,8 @@ class RegisterController extends Controller
                 'city' => $validatedData['city'],
                 'interested_in' =>
                     $validatedData['interested_in'],
-                'salary' => $validatedData['salary'],
+                'salary' => $validatedData['salary'] ?? null,
+                'salary_visible' => $request->boolean('salary_visible'),
                 'marital_status' =>
                     $validatedData['marital_status'] ?? null,
                 'bio' => $validatedData['bio'] ?? null,

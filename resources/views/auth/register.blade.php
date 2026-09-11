@@ -516,7 +516,7 @@
                             class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1.5"
                         >
                             {{ __('Registerpage.salary') }}
-                            (میلیون تومان)
+                            (میلیون تومان، اختیاری)
                         </label>
 
                         <input
@@ -525,7 +525,6 @@
                             name="salary"
                             min="0"
                             value="{{ old('salary') }}"
-                            required
                             placeholder="میزان درآمد تقریبی ماهانه"
                             class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
                         >
@@ -537,6 +536,11 @@
                                 {{ $message }}
                             </p>
                         @enderror
+
+                        <label class="mt-3 flex items-start gap-2 text-xs text-gray-600 dark:text-slate-300">
+                            <input type="checkbox" name="salary_visible" value="1" @checked(old('salary_visible')) class="mt-0.5 rounded text-pink-600">
+                            <span>با نمایش عمومی درآمد واردشده در پروفایل موافقم. این گزینه اختیاری است.</span>
+                        </label>
                     </div>
 
                     <div>

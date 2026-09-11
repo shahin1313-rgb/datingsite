@@ -1,5 +1,11 @@
 * text=auto eol=lf
 
+# Never include local credentials, databases, logs, or uploaded profiles in archives.
+/.env.testing -diff export-ignore
+/database/*.sqlite -diff export-ignore
+/storage/logs/*.log -diff export-ignore
+/public/storage/profile_pictures/** -diff export-ignore
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html

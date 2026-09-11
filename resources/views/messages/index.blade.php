@@ -36,15 +36,13 @@
 
     <div class="p-2">
         <ul class="space-y-1">
-            @forelse ($contacts as $userId => $messages)
+            @forelse ($contacts as $latestMessage)
                 @php
-                    $latestMessage = $messages->first();
-
                     $contact = $latestMessage->sender_id == auth()->id()
                         ? $latestMessage->receiver
                         : $latestMessage->sender;
 
-                    $unreadCount = $unreadCounts[$userId] ?? 0;
+                    $unreadCount = $unreadCounts[$contact->id] ?? 0;
 
                     /*
                      * پیام private برای فرستنده قابل مشاهده است،
@@ -177,6 +175,10 @@
                 </div>
             @endforelse
         </ul>
+
+        <div class="mt-6 px-3">
+            {{ $contacts->links() }}
+        </div>
     </div>
 </div>
 @endsection

@@ -1,0 +1,94 @@
+diff --git a/app/Http/Controllers/MessageController.php b/app/Http/Controllers/MessageController.php
+index 6814d91ca198ab309413e8d73b44eaf3933c6cc1..0ae28fa2b60fe254e80d6e8d208456034840dd68 100644
+--- a/app/Http/Controllers/MessageController.php
++++ b/app/Http/Controllers/MessageController.php
+@@ -79,14 +79,25 @@ function (Builder $received) use (
+             ->paginate(20)
+             ->withQueryString();
+ 
+-        $contactUserIds = $contacts->getCollection()
+-            ->map(fn (Message $message): int =>
+-                (int) ($message->sender_id === $userId
++        $contactId = static fn (Message $message): int =>
++                (int) ((int) $message->sender_id === (int) $userId
+                     ? $message->receiver_id
+-                    : $message->sender_id))
++                    : $message->sender_id);
++
++        /*
++         * Keep the historical view contract: conversation keys are the
++         * other user's id, while the paginator still limits the query.
++         */
++        $contacts->setCollection(
++            $contacts->getCollection()->keyBy($contactId)
++        );
++
++        $contactUserIds = $contacts->getCollection()
++            ->keys()
++            ->map(fn ($id): int => (int) $id)
+             ->values();
+ 
+-        $unreadCounts = Message::query()
++        $queriedUnreadCounts = Message::query()
+             ->where('receiver_id', $userId)
+             ->whereIn('sender_id', $contactUserIds)
+             ->whereNull('read_at')
+@@ -96,6 +107,19 @@ function (Builder $received) use (
+             ->map(fn ($count): int => (int) $count)
+             ->all();
+ 
++        /*
++         * A visible conversation must also have an explicit zero after
++         * all of its messages are read.
++         */
++        $unreadCounts = array_fill_keys(
++            $contactUserIds->all(),
++            0
++        );
++
++        foreach ($queriedUnreadCounts as $contactUserId => $count) {
++            $unreadCounts[(int) $contactUserId] = $count;
++        }
++
+         return view(
+             'messages.index',
+             compact('contacts', 'unreadCounts', 'authUser')
+diff --git a/app/Http/Controllers/ProfileController.php b/app/Http/Controllers/ProfileController.php
+index 37244510ec417adc0bd6ae2735ff3663ddf918ab..53ed4ab89ee2050f6a3c128f24af971987037f18 100644
+--- a/app/Http/Controllers/ProfileController.php
++++ b/app/Http/Controllers/ProfileController.php
+@@ -87,11 +87,11 @@ public function update(
+                 ]),
+             ],
+ 
+-            'age' => ['required', 'integer', 'min:18', 'max:100'],
+-            'gender' => ['required', Rule::in(['male', 'female', 'other'])],
+-            'interested_in' => ['required', 'string', 'max:100'],
+-            'salary' => ['nullable', 'integer', 'min:0'],
+-            'salary_visible' => ['nullable', 'boolean'],
++            'age' => ['sometimes', 'required', 'integer', 'min:18', 'max:100'],
++            'gender' => ['sometimes', 'required', Rule::in(['male', 'female', 'other'])],
++            'interested_in' => ['sometimes', 'required', 'string', 'max:100'],
++            'salary' => ['sometimes', 'nullable', 'integer', 'min:0'],
++            'salary_visible' => ['sometimes', 'boolean'],
+             'new_password' => ['nullable', 'string', 'min:8', 'confirmed'],
+ 
+             'profile_picture' => [
+@@ -117,8 +117,15 @@ public function update(
+          */
+         unset($validated['current_password']);
+ 
+-        $validated['birth_year'] = now()->year - (int) $validated['age'];
+-        $validated['salary_visible'] = $request->boolean('salary_visible');
++        if (array_key_exists('age', $validated)) {
++            $validated['birth_year'] =
++                now()->year - (int) $validated['age'];
++        }
++
++        if ($request->has('salary_visible')) {
++            $validated['salary_visible'] =
++                $request->boolean('salary_visible');
++        }
+ 
+         $passwordChanged = ! empty($validated['new_password']);
+         if ($passwordChanged) {

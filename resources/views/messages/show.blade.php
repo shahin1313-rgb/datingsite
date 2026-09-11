@@ -305,6 +305,7 @@
             <div
                 class="bg-white border-t p-3 pb-safe shrink-0"
             >
+                <div id="messageFeedback" class="hidden mb-2 rounded-xl px-3 py-2 text-sm" role="status" aria-live="polite"></div>
                 <form
                     id="sendMessageForm"
                     class="flex items-center gap-2"
@@ -321,6 +322,7 @@
                         class="flex-1 bg-gray-100 rounded-full px-4 py-1 flex items-center border border-transparent focus-within:border-pink-200 focus-within:bg-white transition-all"
                     >
                         <textarea
+                            id="messageInput"
                             name="message"
                             rows="1"
                             class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 resize-none max-h-32"
@@ -328,23 +330,31 @@
                             required
                         ></textarea>
 
+                        <div class="relative">
                         <button
                             type="button"
+                            id="emojiButton"
                             class="text-gray-400 hover:text-pink-500 px-2 transition"
                             aria-label="شکلک"
                         >
                             <i class="far fa-smile text-lg"></i>
                         </button>
+                        <div id="emojiPicker" class="hidden absolute bottom-10 left-0 z-20 w-48 rounded-2xl bg-white border border-gray-200 shadow-xl p-2 grid grid-cols-6 gap-1">
+                            @foreach(['😀','😂','😍','🥰','😘','😊','😉','🤗','😎','❤️','👍','🎉'] as $emoji)<button type="button" data-emoji="{{ $emoji }}" class="p-1 rounded hover:bg-pink-50" aria-label="{{ $emoji }}">{{ $emoji }}</button>@endforeach
+                        </div>
+                        </div>
                     </div>
 
                     <button
                         type="submit"
+                        id="sendMessageButton"
                         class="bg-pink-600 hover:bg-pink-700 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-lg shadow-pink-200 transition-transform active:scale-90"
                         aria-label="ارسال پیام"
                     >
-                        <i
+                        <i data-send-icon
                             class="fas fa-paper-plane text-sm -mr-0.5"
                         ></i>
+                        <i data-send-spinner class="fas fa-spinner fa-spin hidden" aria-hidden="true"></i>
                     </button>
                 </form>
             </div>
@@ -521,6 +531,32 @@
         const container =
             document.getElementById('messagesContainer');
 
+        const messageInput = document.getElementById('messageInput');
+        const submitButton = document.getElementById('sendMessageButton');
+        const feedback = document.getElementById('messageFeedback');
+        const emojiButton = document.getElementById('emojiButton');
+        const emojiPicker = document.getElementById('emojiPicker');
+        let isSubmitting = false;
+
+        const showFeedback = (message, type = 'error') => {
+            if (!feedback) return;
+            feedback.textContent = message;
+            feedback.className = 'mb-2 rounded-xl px-3 py-2 text-sm ' +
+                (type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700');
+        };
+
+        emojiButton?.addEventListener('click', () => emojiPicker?.classList.toggle('hidden'));
+        emojiPicker?.querySelectorAll('[data-emoji]').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (!messageInput) return;
+                const start = messageInput.selectionStart ?? messageInput.value.length;
+                const end = messageInput.selectionEnd ?? start;
+                messageInput.setRangeText(button.dataset.emoji, start, end, 'end');
+                messageInput.focus();
+                emojiPicker.classList.add('hidden');
+            });
+        });
+
         const startPaymentButton =
             document.getElementById('startPaymentButton');
 
@@ -625,11 +661,21 @@
         form?.addEventListener('submit', async (event) => {
             event.preventDefault();
 
+            if (isSubmitting) return;
+
             const formData = new FormData(form);
 
-            const messageText = form
-                .querySelector('textarea[name="message"]')
-                .value;
+            const messageText = messageInput?.value.trim() ?? '';
+            if (!messageText) {
+                showFeedback('متن پیام را وارد کنید.');
+                return;
+            }
+
+            isSubmitting = true;
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-60', 'cursor-not-allowed');
+            submitButton.querySelector('[data-send-icon]')?.classList.add('hidden');
+            submitButton.querySelector('[data-send-spinner]')?.classList.remove('hidden');
 
             try {
                 const response = await fetch(
@@ -648,13 +694,12 @@
                     }
                 );
 
-                const data = await response.json();
+                let data = {};
+                try { data = await response.json(); } catch (_) {}
 
                 if (response.status === 422) {
                     if (data.errors) {
-                        window.alert(
-                            Object.values(data.errors)[0][0]
-                        );
+                        showFeedback(Object.values(data.errors)[0][0]);
                     }
 
                     return;
@@ -672,7 +717,14 @@
                 }
 
                 if (!response.ok) {
-                    throw new Error('Server Error');
+                    const messages = {
+                        401: 'نشست شما منقضی شده است؛ دوباره وارد شوید.',
+                        403: 'اجازه ارسال پیام به این کاربر را ندارید.',
+                        419: 'نشست امنیتی منقضی شده است؛ صفحه را تازه‌سازی کنید.',
+                        429: 'تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کنید.',
+                        500: 'خطای داخلی رخ داد؛ لطفاً دوباره تلاش کنید.',
+                    };
+                    throw new Error(messages[response.status] || data.message || 'ارسال پیام ناموفق بود.');
                 }
 
                 if (container) {
@@ -732,8 +784,15 @@
                 }
 
                 form.reset();
+                showFeedback('پیام ارسال شد.', 'success');
             } catch (error) {
-                console.error(error);
+                showFeedback(error.message || 'ارتباط با سرور برقرار نشد.');
+            } finally {
+                isSubmitting = false;
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-60', 'cursor-not-allowed');
+                submitButton.querySelector('[data-send-icon]')?.classList.remove('hidden');
+                submitButton.querySelector('[data-send-spinner]')?.classList.add('hidden');
             }
         });
     });

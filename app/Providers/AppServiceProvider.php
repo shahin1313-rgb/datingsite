@@ -73,9 +73,9 @@ class AppServiceProvider extends ServiceProvider
 
         /*
          * نمایش تعداد پیام‌های خوانده‌نشده
-         * در تمام Viewهای سایت.
+         * فقط در Layout اصلی سایت (نه برای هر partial و view).
          */
-        view()->composer('*', function ($view) {
+        view()->composer('layouts.app', function ($view) {
             if (Auth::check()) {
                 $globalUnreadCount = Message::query()
                     ->where(
@@ -100,6 +100,23 @@ class AppServiceProvider extends ServiceProvider
      */
     private function configureContentRateLimits(): void
     {
+        RateLimiter::for(
+            'admin-two-factor',
+            static function (Request $request): array {
+                $userId = (string) $request->session()->get(
+                    'admin_2fa_user_id',
+                    'missing'
+                );
+
+                return [
+                    Limit::perMinute(10)
+                        ->by('admin-2fa-ip:'.$request->ip()),
+                    Limit::perMinutes(5, 5)
+                        ->by('admin-2fa-account:'.$userId),
+                ];
+            }
+        );
+
         $userKey = static function (Request $request): string {
             $user = $request->user();
 

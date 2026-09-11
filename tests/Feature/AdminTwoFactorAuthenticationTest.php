@@ -209,6 +209,27 @@ class AdminTwoFactorAuthenticationTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_account_limit_cannot_be_bypassed_by_changing_ip(): void
+    {
+        $admin = $this->makeAdmin();
+        $admin->forceFill([
+            'admin_two_factor_code_hash' => Hash::make('123456'),
+            'admin_two_factor_expires_at' => now()->addMinutes(5),
+        ])->save();
+
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->withServerVariables(['REMOTE_ADDR' => "203.0.113.{$attempt}"])
+                ->withSession(['admin_2fa_user_id' => $admin->id])
+                ->post(route('admin.two-factor.verify'), ['code' => '654321'])
+                ->assertSessionHasErrors('code');
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.20'])
+            ->withSession(['admin_2fa_user_id' => $admin->id])
+            ->post(route('admin.two-factor.verify'), ['code' => '654321'])
+            ->assertStatus(429);
+    }
+
     private function makeAdmin(): User
     {
         return User::factory()->create([

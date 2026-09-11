@@ -114,6 +114,8 @@ class InterfaceConsistencyTest extends TestCase
 
         $html = view('admin.messages.index', [
             'messages' => $messages,
+            'accessGranted' => true,
+            'accessReason' => 'Investigating a reported abuse case',
             'errors' => new ViewErrorBag(),
         ])->render();
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8">
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+        content="width=device-width, initial-scale=1"
     >
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -243,8 +243,28 @@
                     </a>
                 </div>
 
+                @auth
+                    <nav class="hidden lg:flex items-center gap-1" aria-label="ناوبری اصلی">
+                        <a href="{{ route('home') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('home') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.explore') }}</a>
+                        <a href="{{ route('search') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.search') }}</a>
+                        <a href="{{ route('messages.index') }}" class="relative px-3 py-2 rounded-lg text-sm {{ request()->routeIs('messages.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">
+                            {{ __('ui.messages') }}
+                            @if(($globalUnreadCount ?? 0) > 0)<span class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-pink-600 text-white text-[10px] flex items-center justify-center">{{ min($globalUnreadCount, 99) }}</span>@endif
+                        </a>
+                        <a href="{{ route('likes.index') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('likes.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.likes') }}</a>
+                        <a href="{{ route('user.tickets.index') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('user.tickets.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.support_tickets') }}</a>
+                        <a href="{{ route('profile.edit') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('profile.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.profile') }}</a>
+                    </nav>
+                @endauth
+
                 {{-- بازگشت و انتخاب زبان --}}
                 <div class="flex items-center gap-2">
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}" class="hidden lg:block">
+                            @csrf
+                            <button type="submit" class="p-2 text-red-500 hover:bg-red-50 rounded-lg" aria-label="{{ __('ui.logout') }}"><i class="fa fa-sign-out-alt"></i></button>
+                        </form>
+                    @endauth
                     @if(!request()->is('/') && !request()->routeIs('home'))
                         <button
                             type="button"
@@ -345,6 +365,7 @@
                         class="flex flex-col items-center justify-center w-full relative {{ request()->routeIs('messages.*') ? 'text-pink-600' : 'text-gray-400' }}"
                     >
                         <i class="fas fa-comment-dots text-xl"></i>
+                        @if(($globalUnreadCount ?? 0) > 0)<span class="absolute top-0 right-1/4 min-w-4 h-4 px-1 rounded-full bg-pink-600 text-white text-[9px] flex items-center justify-center">{{ min($globalUnreadCount, 99) }}</span>@endif
                         <span class="text-[10px] mt-1">{{ __('ui.messages') }}</span>
                     </a>
 

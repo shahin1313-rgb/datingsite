@@ -1,105 +1,39 @@
 @extends('adminlte::page')
-
-
-
-
-
-
+@section('title', 'پیام‌های خصوصی')
+@section('content_header')<h1>پیام‌های خصوصی کاربران</h1>@stop
 @section('content')
-    <div class="container mt-4">
-        <h2 class="mb-4">لیست پیام‌ها</h2>
-
-        @if ($errors->any())
-            <div class="alert alert-danger" role="alert">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form method="GET" class="row g-3 mb-4">
-            <div class="col-md-3">
-                <input type="text" name="sender" value="{{ request('sender') }}" class="form-control"
-                    placeholder="نام فرستنده">
-            </div>
-            <div class="col-md-3">
-                <input type="text" name="receiver" value="{{ request('receiver') }}" class="form-control"
-                    placeholder="نام گیرنده">
-            </div>
-            <div class="col-md-3">
-                <input type="date" name="date" value="{{ request('date') }}" class="form-control">
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button class="btn btn-primary" type="submit">فیلتر</button>
-                <a href="{{ route('admin.messages') }}" class="btn btn-secondary">پاک‌کردن</a>
-            </div>
-        </form>
-
-
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-primary text-center">
-                    <tr>
-                        <th>#</th>
-                        <th>فرستنده</th>
-                        <th>گیرنده</th>
-                        <th>متن پیام</th>
-                        <th>تاریخ ارسال</th>
-                        <th>نمایش</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($messages as $msg)
-                        <tr>
-                            <td>{{ $msg->id }}</td>
-                            <td>{{ $msg->sender->name ?? 'ناشناس' }}</td>
-                            <td>{{ $msg->receiver->name ?? 'ناشناس' }}</td>
-                            <td>{{ Str::limit($msg->message, 50) }}</td>
-                            <td>{{ $msg->created_at->format('Y/m/d H:i') }}</td>
-                            <td>
-                                <!-- دکمه نمایش -->
-                                <button class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                    data-bs-target="#messageModal{{ $msg->id }}">
-                                    نمایش
-                                </button>
-
-                                <!-- Modal -->
-                                <div class="modal fade" id="messageModal{{ $msg->id }}" tabindex="-1"
-                                    aria-labelledby="modalLabel{{ $msg->id }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-scrollable">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="modalLabel{{ $msg->id }}">پیام از
-                                                    {{ $msg->sender->name ?? 'کاربر حذف‌شده' }}</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="بستن"></button>
-                                            </div>
-                                            <div class="modal-body text-start">
-                                                <p><strong>گیرنده:</strong> {{ $msg->receiver->name ?? 'کاربر حذف‌شده' }}</p>
-                                                <hr>
-                                                <p class="mb-0" style="white-space: pre-wrap">{{ $msg->message }}</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center">هیچ پیامی یافت نشد</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    @if ($errors->any())
+        <div class="alert alert-danger"><ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+    @endif
+    @if (! $accessGranted)
+        <div class="card card-warning">
+            <div class="card-header"><h3 class="card-title">دسترسی محافظت‌شده</h3></div>
+            <form method="POST" action="{{ route('admin.messages.access') }}">@csrf
+                <div class="card-body">
+                    <p>مشاهده محتوای خصوصی فقط برای رسیدگی ضروری مجاز است. دلیل و مشخصات دسترسی در Audit Log ثبت می‌شود و مجوز پس از ۱۵ دقیقه منقضی خواهد شد.</p>
+                    <div class="form-group"><label for="reason">دلیل دسترسی</label><textarea id="reason" name="reason" class="form-control" minlength="10" maxlength="500" required>{{ old('reason') }}</textarea></div>
+                    <div class="form-group"><label for="current_password">رمز عبور فعلی مدیر</label><input id="current_password" type="password" name="current_password" class="form-control" autocomplete="current-password" required></div>
+                </div>
+                <div class="card-footer"><button class="btn btn-warning" type="submit">ثبت دلیل و دریافت دسترسی</button></div>
+            </form>
         </div>
-
-        <div class="d-flex justify-content-center mt-3">
-            {{ $messages->links() }}
+    @else
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+            <span><strong>دلیل ثبت‌شده:</strong> {{ $accessReason }}</span>
+            <form method="POST" action="{{ route('admin.messages.access.revoke') }}">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-dark" type="submit">پایان دسترسی</button></form>
         </div>
-    </div>
-@endsection
+        <form method="GET" class="card card-body mb-3"><div class="form-row">
+            <div class="col-md-3"><input class="form-control" name="sender" value="{{ request('sender') }}" placeholder="فرستنده"></div>
+            <div class="col-md-3"><input class="form-control" name="receiver" value="{{ request('receiver') }}" placeholder="گیرنده"></div>
+            <div class="col-md-3"><input class="form-control" type="date" name="date" value="{{ request('date') }}"></div>
+            <div class="col-md-3"><button class="btn btn-primary" type="submit">فیلتر</button></div>
+        </div></form>
+        <div class="card"><div class="card-body table-responsive p-0"><table class="table table-striped">
+            <thead><tr><th>#</th><th>فرستنده</th><th>گیرنده</th><th>پیام</th><th>زمان</th></tr></thead><tbody>
+            @forelse ($messages as $message)
+                <tr><td>{{ $message->id }}</td><td>{{ $message->sender?->name ?? 'حذف‌شده' }}</td><td>{{ $message->receiver?->name ?? 'حذف‌شده' }}</td><td style="white-space:normal">{{ $message->message }}</td><td>{{ $message->created_at }}</td></tr>
+            @empty <tr><td colspan="5" class="text-center">پیامی یافت نشد.</td></tr>
+            @endforelse
+            </tbody></table></div><div class="card-footer">{{ $messages->links() }}</div></div>
+    @endif
+@stop
