@@ -35,28 +35,27 @@ jobs:
     name: Laravel full test suite
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           extensions: mbstring, bcmath, intl, pdo_sqlite, gd
           coverage: none
-
-      - name: Cache Composer packages
-        uses: actions/cache@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
-
+      - name: Install dependencies and build assets
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+          npm run build
       - name: Prepare isolated test database
         run: |
           cp .env.example .env
@@ -64,7 +63,6 @@ jobs:
           php artisan key:generate
           php artisan config:clear
           php artisan migrate:fresh --force
-
       - name: Run all PHPUnit tests
         run: php artisan test --colors=always
 
@@ -72,20 +70,13 @@ jobs:
     name: PHP style
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           coverage: none
-
-      - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
-
+      - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Run Laravel Pint
         run: composer lint
 
@@ -93,23 +84,15 @@ jobs:
     name: Frontend build and dependency audit
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: npm
-
-      - name: Install JavaScript dependencies
-        run: npm ci
-
+      - run: npm ci
       - name: Audit JavaScript dependencies
         run: npm audit --audit-level=high
-
       - name: Build production assets
         run: npm run build
 
@@ -117,25 +100,17 @@ jobs:
     name: Security audit and secret scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
-      - name: Checkout full history
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           coverage: none
-
-      - name: Install locked PHP dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
-
+      - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Audit PHP dependencies
         run: composer security:audit
-
       - name: Scan repository for committed secrets
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -145,21 +120,22 @@ jobs:
     name: UI and UX regression tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           extensions: mbstring, bcmath, intl, pdo_sqlite, gd
           coverage: none
-
-      - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
-
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies and build assets
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+          npm run build
       - name: Prepare isolated test database
         run: |
           cp .env.example .env
@@ -167,7 +143,6 @@ jobs:
           php artisan key:generate
           php artisan config:clear
           php artisan migrate:fresh --force
-
       - name: Run interface and UX regression coverage
         run: |
           php artisan test tests/Feature/InterfaceConsistencyTest.php
