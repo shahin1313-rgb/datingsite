@@ -1,386 +1,162 @@
 <!doctype html>
-<html
-    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    dir="{{ app()->getLocale() == 'fa' ? 'rtl' : 'ltr' }}"
->
-
+<html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->isLocale('fa') ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'DatingApp') }}</title>
-
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js',
-    ])
-
-    <link
-        href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}"
-        rel="stylesheet"
-    >
-
+    <meta name="theme-color" content="#09090b">
+    <title>@yield('title', config('app.name', 'Vlora'))</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
     @yield('head')
-
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
-        body {
-            font-family: Tahoma, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .pb-safe {
-            padding-bottom: calc(4rem + env(safe-area-inset-bottom));
-        }
-
-        .loader-hidden {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease-out;
-        }
-    </style>
 </head>
+<body>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:right-4 focus:top-4 focus:z-[10000] focus:rounded-full focus:bg-white focus:px-4 focus:py-3 focus:text-black">
+        رفتن به محتوای اصلی
+    </a>
 
-<body class="bg-gray-50 text-gray-900">
-
-    {{-- لودینگ --}}
-    <div
-        id="globalLoading"
-        class="fixed inset-0 bg-white flex flex-col items-center justify-center z-[9999]"
-    >
-        <div class="relative">
-            <div
-                class="w-16 h-16 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin"
-            ></div>
-
-            <div class="absolute inset-0 flex items-center justify-center">
-                <i class="fas fa-heart text-pink-500 animate-pulse"></i>
-            </div>
+    <div id="globalLoading" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-zinc-950">
+        <div class="relative flex h-16 w-16 items-center justify-center rounded-full border border-rose-400/25 bg-rose-500/10">
+            <i class="fas fa-heart animate-pulse text-2xl text-rose-500" aria-hidden="true"></i>
         </div>
-
-        <span class="mt-4 text-sm font-medium text-gray-500">
-            {{ __('ui.loading') }}
-        </span>
+        <span class="mt-4 text-sm font-bold text-zinc-400">{{ __('ui.loading') }}</span>
     </div>
 
-    {{-- شروع اپلیکیشن با وضعیت سایدبار --}}
-    <div
-        id="app"
-        x-data="{ sidebarOpen: false }"
-        class="flex flex-col min-h-screen"
-    >
-
-        {{-- منوی کشویی سایدبار --}}
+    <div id="app" x-data="{ sidebarOpen: false, langMenu: false }" class="flex min-h-screen flex-col">
         @auth
-            <div
-                x-show="sidebarOpen"
-                x-cloak
-                class="relative z-[1000] lg:hidden"
-            >
-                <div
-                    class="fixed inset-0 bg-black/40 backdrop-blur-sm"
-                    @click="sidebarOpen = false"
-                ></div>
-
-                <div
-                    class="fixed inset-y-0 right-0 w-72 bg-white shadow-2xl p-6 transition-transform"
+            <div x-show="sidebarOpen" x-cloak class="relative z-[1000] lg:hidden" @keydown.escape.window="sidebarOpen = false">
+                <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="sidebarOpen = false" aria-hidden="true"></div>
+                <aside
                     x-show="sidebarOpen"
-                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="translate-x-full"
                     x-transition:enter-end="translate-x-0"
-                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="translate-x-0"
                     x-transition:leave-end="translate-x-full"
+                    class="fixed inset-y-0 right-0 w-[min(86vw,20rem)] overflow-y-auto border-l border-white/10 bg-zinc-950 p-5 shadow-2xl"
+                    aria-label="منوی کاربری"
                 >
-                    <div
-                        class="flex flex-col items-center pb-4 mb-6 border-b border-gray-100 relative"
-                    >
-                        <button
-                            type="button"
-                            @click="sidebarOpen = false"
-                            class="absolute top-0 left-0 text-gray-400 hover:text-gray-600 transition-colors"
-                            aria-label="{{ __('ui.close_menu') }}"
-                        >
-                            <i class="fa fa-times text-xl"></i>
-                        </button>
-
-                        <div
-                            class="w-20 h-20 rounded-full overflow-hidden border-2 border-pink-500 shadow-md mb-3 bg-gray-100 flex items-center justify-center"
-                        >
-                            @if(auth()->user()->profile_picture)
-                                <img
-                                    src="{{ auth()->user()->profilePhotoUrl() }}"
-                                    alt="{{ auth()->user()->name }}"
-                                    class="w-full h-full object-cover"
-                                >
-                            @else
-                                <i class="fa fa-user text-3xl text-gray-400"></i>
-                            @endif
+                    <div class="mb-6 flex items-center gap-3 border-b border-white/10 pb-5">
+                        <img src="{{ auth()->user()->profilePhotoUrl() }}" alt="{{ auth()->user()->name }}" class="h-14 w-14 rounded-2xl object-cover">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-black text-white">{{ auth()->user()->name }}</p>
+                            <p class="mt-1 text-xs text-zinc-500">حساب کاربری شما</p>
                         </div>
-
-                        <span class="font-bold text-gray-800 text-base">
-                            {{ auth()->user()->name }}
-                        </span>
+                        <button type="button" @click="sidebarOpen = false" class="vlora-icon-action" aria-label="{{ __('ui.close_menu') }}">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
                     </div>
 
                     <nav class="space-y-2">
-                        <a
-                            href="{{ route('dashboard') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700"
-                        >
-                            <i class="fa fa-th-large text-pink-500"></i>
-                            <span>{{ __('ui.dashboard') }}</span>
+                        @php
+                            $drawerLinks = [
+                                ['home', 'home', 'fa-fire', __('ui.explore')],
+                                ['search', 'search', 'fa-search', __('ui.search')],
+                                ['messages.index', 'messages.*', 'fa-comment-dots', __('ui.messages')],
+                                ['likes.index', 'likes.*', 'fa-heart', __('ui.likes')],
+                                ['profile.edit', 'profile.*', 'fa-user', __('ui.edit_profile')],
+                                ['user.tickets.index', 'user.tickets.*', 'fa-question-circle', __('ui.support_tickets')],
+                            ];
+                        @endphp
+                        @foreach($drawerLinks as [$routeName, $pattern, $icon, $label])
+                            <a href="{{ route($routeName) }}" class="flex min-h-12 items-center gap-3 rounded-2xl px-4 text-sm font-bold transition {{ request()->routeIs($pattern) ? 'bg-rose-500 text-white' : 'text-zinc-300 hover:bg-white/5' }}">
+                                <i class="fas {{ $icon }} w-5" aria-hidden="true"></i><span>{{ $label }}</span>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('premium.upgrade') }}" class="flex min-h-12 items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 text-sm font-bold text-amber-300">
+                            <i class="fas fa-crown w-5" aria-hidden="true"></i><span>{{ __('ui.upgrade') }}</span>
                         </a>
-
-                        <a
-                            href="{{ route('messages.index') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-gray-700"
-                        >
-                            <i class="fa fa-envelope text-pink-500"></i>
-                            <span>{{ __('ui.my_messages') }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('likes.index') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-gray-700"
-                        >
-                            <i class="fa fa-heart text-pink-500"></i>
-                            <span>{{ __('ui.likes') }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('profile.edit') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700"
-                        >
-                            <i class="fa fa-user-edit text-pink-500"></i>
-                            <span>{{ __('ui.edit_profile') }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('user.tickets.index') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700"
-                        >
-                            <i class="fa fa-ticket-alt text-pink-500"></i>
-                            <span>{{ __('ui.support_tickets') }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('search') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50 transition text-gray-700 {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : '' }}"
-                        >
-                            <i class="fa fa-search w-5 text-pink-500"></i>
-                            <span>{{ __('ui.advanced_search') }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('premium.upgrade') }}"
-                            class="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition text-amber-600"
-                        >
-                            <i class="fa fa-crown text-amber-500"></i>
-                            <span class="font-bold">{{ __('ui.upgrade') }}</span>
-                        </a>
-
-                        <hr class="my-4 border-gray-100">
-
-                        <form action="{{ route('logout') }}" method="POST">
+                        <form method="POST" action="{{ route('logout') }}" class="pt-3">
                             @csrf
-
-                            <button
-                                type="submit"
-                                class="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-xl transition"
-                            >
-                                <i class="fa fa-sign-out-alt"></i>
-                                <span>{{ __('ui.logout') }}</span>
+                            <button type="submit" class="flex min-h-12 w-full items-center gap-3 rounded-2xl px-4 text-sm font-bold text-red-400 hover:bg-red-500/10">
+                                <i class="fas fa-sign-out-alt w-5" aria-hidden="true"></i><span>{{ __('ui.logout') }}</span>
                             </button>
                         </form>
                     </nav>
-                </div>
+                </aside>
             </div>
         @endauth
 
-        {{-- نوار بالای سایت --}}
-        <nav
-            class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 h-14 flex items-center"
-        >
-            <div
-                class="container mx-auto px-4 flex justify-between items-center"
-            >
-                {{-- لوگو و منوی همبرگری --}}
-                <div class="flex items-center gap-3">
+        <header class="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl">
+            <div class="vlora-shell flex min-h-16 items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
                     @auth
-                        <button
-                            type="button"
-                            @click="sidebarOpen = true"
-                            class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg lg:hidden"
-                            aria-label="{{ __('ui.open_menu') }}"
-                        >
-                            <i class="fa fa-bars text-xl"></i>
+                        <button type="button" @click="sidebarOpen = true" class="vlora-icon-action lg:hidden" aria-label="{{ __('ui.open_menu') }}">
+                            <i class="fas fa-bars" aria-hidden="true"></i>
                         </button>
                     @endauth
-
-                    <a
-                        href="{{ auth()->check() ? route('home') : url('/') }}"
-                        class="flex items-center gap-2"
-                    >
-                        <img
-                            src="{{ asset('images/logo.png') }}"
-                            alt="Logo"
-                            class="h-8 w-8"
-                        >
-
-                        <span
-                            class="font-bold text-lg tracking-tight text-pink-600"
-                        >
-                            vlora
-                        </span>
+                    <a href="{{ auth()->check() ? route('home') : url('/') }}" class="flex min-h-11 items-center gap-2 rounded-xl px-1" aria-label="صفحه اصلی ولورا">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 to-rose-700 text-white shadow-lg shadow-rose-950/40"><i class="fas fa-heart" aria-hidden="true"></i></span>
+                        <span class="text-xl font-black tracking-tight text-white">ولورا</span>
                     </a>
                 </div>
 
                 @auth
-                    <nav class="hidden lg:flex items-center gap-1" aria-label="ناوبری اصلی">
-                        <a href="{{ route('home') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('home') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.explore') }}</a>
-                        <a href="{{ route('search') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('search') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.search') }}</a>
-                        <a href="{{ route('messages.index') }}" class="relative px-3 py-2 rounded-lg text-sm {{ request()->routeIs('messages.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <nav class="hidden items-center gap-1 lg:flex" aria-label="ناوبری اصلی">
+                        <a href="{{ route('home') }}" class="rounded-full px-4 py-2 text-sm font-bold {{ request()->routeIs('home') ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white' }}">{{ __('ui.explore') }}</a>
+                        <a href="{{ route('search') }}" class="rounded-full px-4 py-2 text-sm font-bold {{ request()->routeIs('search') ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white' }}">{{ __('ui.search') }}</a>
+                        <a href="{{ route('messages.index') }}" class="relative rounded-full px-4 py-2 text-sm font-bold {{ request()->routeIs('messages.*') ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white' }}">
                             {{ __('ui.messages') }}
-                            @if(($globalUnreadCount ?? 0) > 0)<span class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-pink-600 text-white text-[10px] flex items-center justify-center">{{ min($globalUnreadCount, 99) }}</span>@endif
+                            @if(($globalUnreadCount ?? 0) > 0)<span class="absolute -left-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] text-white">{{ min($globalUnreadCount, 99) }}</span>@endif
                         </a>
-                        <a href="{{ route('likes.index') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('likes.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.likes') }}</a>
-                        <a href="{{ route('user.tickets.index') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('user.tickets.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.support_tickets') }}</a>
-                        <a href="{{ route('profile.edit') }}" class="px-3 py-2 rounded-lg text-sm {{ request()->routeIs('profile.*') ? 'bg-pink-50 text-pink-600 font-bold' : 'text-gray-600 hover:bg-gray-100' }}">{{ __('ui.profile') }}</a>
+                        <a href="{{ route('likes.index') }}" class="rounded-full px-4 py-2 text-sm font-bold {{ request()->routeIs('likes.*') ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white' }}">{{ __('ui.likes') }}</a>
                     </nav>
                 @endauth
 
-                {{-- بازگشت و انتخاب زبان --}}
-                <div class="flex items-center gap-2">
-                    @auth
-                        <form method="POST" action="{{ route('logout') }}" class="hidden lg:block">
-                            @csrf
-                            <button type="submit" class="p-2 text-red-500 hover:bg-red-50 rounded-lg" aria-label="{{ __('ui.logout') }}"><i class="fa fa-sign-out-alt"></i></button>
-                        </form>
-                    @endauth
+                <div class="flex items-center gap-1">
                     @if(!request()->is('/') && !request()->routeIs('home'))
-                        <button
-                            type="button"
-                            data-history-back
-                            class="text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
-                            title="{{ __('ui.back') }}"
-                            aria-label="{{ __('ui.back') }}"
-                        >
-                            <i class="fa fa-arrow-left text-lg"></i>
-                        </button>
+                        <button type="button" data-history-back class="vlora-icon-action" aria-label="{{ __('ui.back') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i></button>
                     @endif
-
-                    <div
-                        class="relative"
-                        x-data="{ langMenu: false }"
-                    >
-                        <button
-                            type="button"
-                            @click="langMenu = !langMenu"
-                            class="text-gray-500 text-sm focus:outline-none p-2 flex items-center justify-center"
-                            aria-label="{{ __('ui.language') }}"
-                        >
-                            <i class="fa-solid fa-globe text-lg"></i>
-                        </button>
-
-                        <div
-                            x-show="langMenu"
-                            @click.away="langMenu = false"
-                            x-cloak
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            class="absolute {{ app()->getLocale() == 'fa' ? 'left-0' : 'right-0' }} mt-2 w-32 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden z-[100]"
-                        >
-                            <a
-                                href="{{ url('lang/fa') }}"
-                                class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors"
-                            >
-                                <span class="text-base">🇮🇷</span>
-                                <span>فارسی</span>
-                            </a>
-
-                            <a
-                                href="{{ url('lang/en') }}"
-                                class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors"
-                            >
-                                <span class="text-base">🇬🇧</span>
-                                <span>English</span>
-                            </a>
-
-                            <a
-                                href="{{ url('lang/fr') }}"
-                                class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors"
-                            >
-                                <span class="text-base">🇫🇷</span>
-                                <span>Français</span>
-                            </a>
+                    <div class="relative">
+                        <button type="button" @click="langMenu = !langMenu" class="vlora-icon-action" aria-label="{{ __('ui.language') }}" :aria-expanded="langMenu.toString()"><i class="fas fa-globe" aria-hidden="true"></i></button>
+                        <div x-show="langMenu" x-cloak @click.away="langMenu = false" class="absolute left-0 mt-2 w-36 overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 p-1 shadow-2xl">
+                            <a href="{{ url('lang/fa') }}" class="block rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/10">فارسی</a>
+                            <a href="{{ url('lang/en') }}" class="block rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/10">English</a>
+                            <a href="{{ url('lang/fr') }}" class="block rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/10">Français</a>
                         </div>
                     </div>
+                    @auth
+                        <a href="{{ route('profile.edit') }}" class="hidden h-11 w-11 overflow-hidden rounded-full border border-white/10 lg:block" aria-label="{{ __('ui.edit_profile') }}">
+                            <img src="{{ auth()->user()->profilePhotoUrl() }}" alt="" class="h-full w-full object-cover">
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="hidden lg:block">
+                            @csrf
+                            <button type="submit" class="vlora-icon-action text-red-400" aria-label="{{ __('ui.logout') }}"><i class="fas fa-sign-out-alt" aria-hidden="true"></i></button>
+                        </form>
+                    @endauth
+                    @guest
+                        <a href="{{ route('login') }}" class="vlora-btn-secondary hidden sm:inline-flex">ورود</a>
+                    @endguest
                 </div>
             </div>
-        </nav>
+        </header>
 
-        {{-- محتوای اصلی --}}
-        <main class="main-content w-full flex-1 p-4 md:p-8">
-            <div
-                data-app-content-container
-                class="w-full max-w-7xl mx-auto"
-            >
-                @yield('content')
-            </div>
+        <main id="main-content" class="main-content flex-1 @auth pb-safe sm:pb-8 @endauth">
+            <div data-app-content-container class="w-full max-w-7xl mx-auto">@yield('content')</div>
         </main>
 
-        {{-- منوی پایین موبایل --}}
         @auth
-            <nav
-                class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 z-50 sm:hidden"
-            >
-                <div class="flex justify-around items-center h-14">
-                    <a
-                        href="{{ route('home') }}"
-                        class="flex flex-col items-center justify-center w-full {{ request()->routeIs('home') ? 'text-pink-600' : 'text-gray-400' }}"
-                    >
-                        <i class="fas fa-heart text-xl"></i>
-                        <span class="text-[10px] mt-1">{{ __('ui.explore') }}</span>
-                    </a>
-
-                    <a
-                        href="{{ route('search') }}"
-                        class="flex flex-col items-center justify-center w-full {{ request()->routeIs('search') ? 'text-pink-600' : 'text-gray-400' }}"
-                    >
-                        <i class="fas fa-search text-xl"></i>
-                        <span class="text-[10px] mt-1">{{ __('ui.search') }}</span>
-                    </a>
-
-                    <a
-                        href="{{ route('messages.index') }}"
-                        class="flex flex-col items-center justify-center w-full relative {{ request()->routeIs('messages.*') ? 'text-pink-600' : 'text-gray-400' }}"
-                    >
-                        <i class="fas fa-comment-dots text-xl"></i>
-                        @if(($globalUnreadCount ?? 0) > 0)<span class="absolute top-0 right-1/4 min-w-4 h-4 px-1 rounded-full bg-pink-600 text-white text-[9px] flex items-center justify-center">{{ min($globalUnreadCount, 99) }}</span>@endif
-                        <span class="text-[10px] mt-1">{{ __('ui.messages') }}</span>
-                    </a>
-
-                    <a
-                        href="{{ route('dashboard') }}"
-                        class="flex flex-col items-center justify-center w-full {{ request()->routeIs('dashboard') ? 'text-pink-600' : 'text-gray-400' }}"
-                    >
-                        <i class="fas fa-user-circle text-xl"></i>
-                        <span class="text-[10px] mt-1">{{ __('ui.profile') }}</span>
-                    </a>
+            <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-zinc-950/90 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden" aria-label="ناوبری موبایل">
+                <div class="mx-auto grid h-16 max-w-md grid-cols-4">
+                    @php
+                        $mobileLinks = [
+                            ['home', 'home', 'fa-fire', __('ui.explore')],
+                            ['search', 'search', 'fa-search', __('ui.search')],
+                            ['messages.index', 'messages.*', 'fa-comment-dots', __('ui.messages')],
+                            ['dashboard', 'dashboard', 'fa-user', __('ui.profile')],
+                        ];
+                    @endphp
+                    @foreach($mobileLinks as [$routeName, $pattern, $icon, $label])
+                        <a href="{{ route($routeName) }}" class="relative flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-bold {{ request()->routeIs($pattern) ? 'text-rose-400' : 'text-zinc-500' }}" @if(request()->routeIs($pattern)) aria-current="page" @endif>
+                            <i class="fas {{ $icon }} text-lg" aria-hidden="true"></i><span>{{ $label }}</span>
+                            @if($routeName === 'messages.index' && ($globalUnreadCount ?? 0) > 0)<span class="absolute left-1/4 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] text-white">{{ min($globalUnreadCount, 99) }}</span>@endif
+                        </a>
+                    @endforeach
                 </div>
             </nav>
         @endauth
     </div>
-
     @stack('scripts')
 </body>
 </html>

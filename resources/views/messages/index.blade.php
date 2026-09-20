@@ -1,203 +1,78 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="w-full max-w-4xl mx-auto bg-gray-50 min-h-screen pb-20">
-    @if (session('success'))
-        <div
-            class="m-3 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm"
-            role="status"
-        >
-            {{ session('success') }}
+<div class="vlora-shell py-6 sm:py-10">
+    <header class="mb-7 flex items-end justify-between gap-4">
+        <div>
+            <p class="mb-2 text-sm font-bold text-rose-400">ارتباط‌های شما</p>
+            <h1 class="text-3xl font-black text-white">{{ __('ui.messages') }}</h1>
         </div>
+        <a href="{{ route('search') }}" class="vlora-icon-action" aria-label="پیدا کردن فرد جدید"><i class="fas fa-search" aria-hidden="true"></i></a>
+    </header>
+
+    @if (session('success'))
+        <div class="mb-6 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-300" role="status">{{ session('success') }}</div>
     @endif
 
-    <div class="sticky top-0 bg-white/80 backdrop-blur-md z-10 p-4 border-b border-gray-100 flex justify-between items-center">
-        <h2 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400">
-            Messages
-        </h2>
-
-        <div class="text-gray-400">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                />
-            </svg>
-        </div>
-    </div>
-
-    <div class="p-2">
-        <ul class="space-y-1">
-            @forelse ($contacts as $latestMessage)
-                @php
-                    $contact = $latestMessage->sender_id == auth()->id()
-                        ? $latestMessage->receiver
-                        : $latestMessage->sender;
-
-                    $unreadCount = $unreadCounts[$contact->id] ?? 0;
-
-                    /*
-                     * پیام private برای فرستنده قابل مشاهده است،
-                     * اما متن آن نباید برای گیرنده در پیش‌نمایش
-                     * نمایش داده شود.
-                     */
-                    $latestMessageIsPrivateForCurrentUser =
-                        $latestMessage->status === 'private'
-                        && (int) $latestMessage->receiver_id
-                            === (int) auth()->id();
-                @endphp
-
-                <li
-                    data-chat-url="{{ route('messages.show', $contact->id) }}"
-                    class="relative flex items-center p-3 transition-all duration-200 active:bg-gray-200 hover:bg-white rounded-2xl cursor-pointer group"
-                >
-                    <div class="relative flex-shrink-0">
-                        <img
-                            src="{{ $contact->profilePhotoUrl() }}"
-                            alt="{{ $contact->name }}"
-                            class="w-16 h-16 rounded-full object-cover ring-2 ring-white shadow-sm"
-                        >
-
-                        @if($unreadCount > 0)
-                            <span
-                                class="absolute top-0 right-0 block h-4 w-4 rounded-full ring-2 ring-white bg-gradient-to-tr from-pink-500 to-orange-400"
-                            ></span>
-                        @endif
-                    </div>
-
-                    <div
-                        class="ml-4 min-w-0 flex-1 border-b border-gray-100 pb-3 group-last:border-0"
-                    >
-                        <div class="flex justify-between items-baseline">
-                            <h3
-                                class="font-bold text-gray-800 text-md capitalize"
-                            >
-                                {{ $contact->name }}
-                            </h3>
-
-                            <span class="text-xs text-gray-400">
-                                {{ $latestMessage->created_at->diffForHumans(null, true) }}
-                            </span>
+    @if($contacts->isEmpty())
+        <x-empty-state
+            title="هنوز پیامی ندارید"
+            description="پروفایل‌های پیشنهادی را ببینید و وقتی آماده بودید گفت‌وگو را شروع کنید."
+            icon="fa-comment-dots"
+            action-url="{{ route('home') }}"
+            action-label="مشاهده پروفایل‌ها"
+        />
+    @else
+        <section class="vlora-panel overflow-hidden" aria-label="فهرست گفت‌وگوها">
+            <ul class="divide-y divide-white/10">
+                @foreach ($contacts as $latestMessage)
+                    @php
+                        $contact = $latestMessage->sender_id == auth()->id() ? $latestMessage->receiver : $latestMessage->sender;
+                        $unreadCount = $unreadCounts[$contact->id] ?? 0;
+                        $latestMessageIsPrivateForCurrentUser = $latestMessage->status === 'private' && (int) $latestMessage->receiver_id === (int) auth()->id();
+                    @endphp
+                    <li data-chat-url="{{ route('messages.show', $contact->id) }}" class="group relative flex cursor-pointer items-center gap-3 p-4 transition hover:bg-white/[0.04] sm:gap-4 sm:p-5">
+                        <div class="relative shrink-0">
+                            <img src="{{ $contact->profilePhotoUrl() }}" alt="تصویر {{ $contact->name }}" class="h-14 w-14 rounded-2xl object-cover sm:h-16 sm:w-16" loading="lazy">
+                            @if($unreadCount > 0)<span class="absolute -left-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-zinc-900 bg-rose-500" aria-label="پیام خوانده‌نشده"></span>@endif
                         </div>
 
-                        <div class="flex justify-between items-center mt-1">
-                            <p
-                                class="min-w-0 flex-1 text-sm {{ $unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500' }} truncate"
-                            >
-                                @if ($latestMessageIsPrivateForCurrentUser)
-                                    <i
-                                        class="fas fa-lock ml-1"
-                                        aria-hidden="true"
-                                    ></i>
-
-                                    پیام ویژه قفل است
-                                @else
-                                    {{ $latestMessage->message }}
-                                @endif
-                            </p>
-
-                            <div class="flex items-center gap-2 stop-click">
-                                @if (auth()->user()->hasBlocked($contact->id))
-                                    <form
-                                        method="POST"
-                                        action="{{ route('user.unblock', $contact->id) }}"
-                                    >
-                                        @csrf
-
-                                        <button
-                                            type="submit"
-                                            data-mobile-block-action
-                                            class="min-h-10 px-2 text-xs font-bold text-blue-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
-                                        >
-                                            رفع مسدودی
-                                        </button>
-                                    </form>
-                                @else
-                                    <form
-                                        method="POST"
-                                        action="{{ route('user.block', $contact->id) }}"
-                                        data-sweet-block
-                                        data-block-name="{{ $contact->name }}"
-                                        data-confirm="آیا از بلاک کردن این کاربر مطمئن هستید؟"
-                                    >
-                                        @csrf
-
-                                        <button
-                                            type="submit"
-                                            data-mobile-block-action
-                                            class="min-h-10 px-2 text-xs font-bold text-red-600 sm:text-gray-500 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg transition-colors"
-                                            aria-label="مسدود کردن {{ $contact->name }}"
-                                        >
-                                            مسدود کردن
-                                        </button>
-                                    </form>
-                                @endif
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-3">
+                                <h2 class="truncate font-black text-white">{{ $contact->name }}</h2>
+                                <time class="shrink-0 text-[11px] text-zinc-500" datetime="{{ $latestMessage->created_at->toIso8601String() }}">{{ $latestMessage->created_at->diffForHumans(null, true) }}</time>
+                            </div>
+                            <div class="mt-1 flex items-center gap-2">
+                                <p class="min-w-0 flex-1 truncate text-sm {{ $unreadCount > 0 ? 'font-bold text-zinc-200' : 'text-zinc-500' }}">
+                                    @if($latestMessageIsPrivateForCurrentUser)<i class="fas fa-lock ml-1" aria-hidden="true"></i>پیام ویژه قفل است@else{{ $latestMessage->message }}@endif
+                                </p>
+                                @if($unreadCount > 0)<span class="flex h-6 min-w-6 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-black text-white">{{ $unreadCount }}</span>@endif
                             </div>
                         </div>
-                    </div>
 
-                    @if ($unreadCount > 0)
-                        <div
-                            class="ml-2 bg-gradient-to-tr from-pink-500 to-orange-400 text-white text-[10px] font-bold px-2 py-1 rounded-full min-w-[20px] text-center"
-                        >
-                            {{ $unreadCount }}
+                        <div class="stop-click shrink-0">
+                            @if(auth()->user()->hasBlocked($contact->id))
+                                <form method="POST" action="{{ route('user.unblock', $contact->id) }}">@csrf<button type="submit" data-mobile-block-action class="flex h-11 w-11 items-center justify-center rounded-full text-sky-400 sm:w-auto sm:px-3" aria-label="رفع مسدودی {{ $contact->name }}"><i class="fas fa-user-check sm:ml-2" aria-hidden="true"></i><span class="hidden text-xs font-bold sm:inline">رفع مسدودی</span></button></form>
+                            @else
+                                <form method="POST" action="{{ route('user.block', $contact->id) }}" data-sweet-block data-block-name="{{ $contact->name }}" data-confirm="آیا از مسدود کردن این کاربر مطمئن هستید؟">@csrf<button type="submit" data-mobile-block-action class="flex h-11 w-11 items-center justify-center rounded-full text-zinc-500 hover:text-red-400 sm:w-auto sm:px-3" aria-label="مسدود کردن {{ $contact->name }}"><i class="fas fa-user-slash sm:ml-2" aria-hidden="true"></i><span class="hidden text-xs font-bold sm:inline">مسدود کردن</span></button></form>
+                            @endif
                         </div>
-                    @endif
-                </li>
-            @empty
-                <div
-                    class="flex flex-col items-center justify-center mt-20 text-gray-400"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-16 w-16 mb-4 opacity-20"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                    </svg>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
 
-                    <p>هنوز پیامی ندارید</p>
-                </div>
-            @endforelse
-        </ul>
-
-        <div class="mt-6 px-3">
-            {{ $contacts->links() }}
-        </div>
-    </div>
+        <div class="custom-pagination mt-8">{{ $contacts->links() }}</div>
+    @endif
 </div>
 @endsection
 
 @push('scripts')
-    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
-        document.addEventListener('click', (event) => {
-            const chatItem = event.target.closest(
-                '[data-chat-url]'
-            );
-
-            if (
-                !chatItem ||
-                event.target.closest('.stop-click')
-            ) {
-                return;
-            }
-
-            window.location.href = chatItem.dataset.chatUrl;
-        });
-    </script>
+<script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
+    document.addEventListener('click', (event) => {
+        const chatItem = event.target.closest('[data-chat-url]');
+        if (!chatItem || event.target.closest('.stop-click')) return;
+        window.location.href = chatItem.dataset.chatUrl;
+    });
+</script>
 @endpush
