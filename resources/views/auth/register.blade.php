@@ -97,7 +97,10 @@
                     title,
                     firstInvalid.validationMessage || 'مقدار این فیلد ناقص یا نامعتبر است.',
                     guide
-                ).then(() => firstInvalid.focus());
+                ).then(() => {
+                    const trigger = firstInvalid.closest('[data-custom-select]')?.querySelector('[data-select-trigger]');
+                    (trigger || firstInvalid).focus();
+                });
                 return;
             }
 
@@ -396,26 +399,17 @@
                             </span>
                         </label>
 
-                        <select
+                        <x-form.select
                             id="gender"
                             name="gender"
+                            :value="old('gender', '')"
+                            :options="[
+                                'male' => __('Registerpage.male'),
+                                'female' => __('Registerpage.female'),
+                            ]"
+                            :placeholder="__('Registerpage.select')"
                             required
-                            class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
-                        >
-                            <option
-                                value="male"
-                                @selected(old('gender') === 'male')
-                            >
-                                {{ __('Registerpage.male') }}
-                            </option>
-
-                            <option
-                                value="female"
-                                @selected(old('gender') === 'female')
-                            >
-                                {{ __('Registerpage.female') }}
-                            </option>
-                        </select>
+                        />
 
                         @error('gender')
                             <p
@@ -509,44 +503,19 @@
                             </span>
                         </label>
 
-                        <select
+                        <x-form.select
                             id="marital_status"
                             name="marital_status"
+                            :value="old('marital_status', '')"
+                            :options="[
+                                'single' => __('Registerpage.single'),
+                                'married' => __('Registerpage.married'),
+                                'divorced' => __('Registerpage.divorced'),
+                                'widowed' => __('Registerpage.widowed'),
+                            ]"
+                            :placeholder="__('Registerpage.select')"
                             required
-                            class="block w-full rounded-2xl border bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all border-gray-200 dark:border-slate-700"
-                        >
-                            <option value="">
-                                {{ __('Registerpage.select') }}
-                            </option>
-
-                            <option
-                                value="single"
-                                @selected(old('marital_status') === 'single')
-                            >
-                                {{ __('Registerpage.single') }}
-                            </option>
-
-                            <option
-                                value="married"
-                                @selected(old('marital_status') === 'married')
-                            >
-                                {{ __('Registerpage.married') }}
-                            </option>
-
-                            <option
-                                value="divorced"
-                                @selected(old('marital_status') === 'divorced')
-                            >
-                                {{ __('Registerpage.divorced') }}
-                            </option>
-
-                            <option
-                                value="widowed"
-                                @selected(old('marital_status') === 'widowed')
-                            >
-                                {{ __('Registerpage.widowed') }}
-                            </option>
-                        </select>
+                        />
 
                         @error('marital_status')
                             <p
@@ -574,40 +543,19 @@
                             {{ __('Registerpage.interested_in') }}
                         </label>
 
-                        <select
+                        <x-form.select
                             id="interested_in"
                             name="interested_in"
+                            :value="old('interested_in', '')"
+                            :options="[
+                                'sport' => 'ورزش / Sport',
+                                'travel' => 'مسافرت / Voyage',
+                                'books' => 'کتاب / Livre',
+                                'party' => 'مهمانی / Fête',
+                            ]"
+                            :placeholder="__('Registerpage.select')"
                             required
-                            class="block w-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-gray-800 dark:text-slate-200 p-3 focus:border-pink-500 focus:ring focus:ring-pink-200 dark:focus:ring-pink-900/30 outline-none transition-all"
-                        >
-                            <option
-                                value="sport"
-                                @selected(old('interested_in') === 'sport')
-                            >
-                                ورزش / Sport
-                            </option>
-
-                            <option
-                                value="travel"
-                                @selected(old('interested_in') === 'travel')
-                            >
-                                مسافرت / Voyage
-                            </option>
-
-                            <option
-                                value="books"
-                                @selected(old('interested_in') === 'books')
-                            >
-                                کتاب / Livre
-                            </option>
-
-                            <option
-                                value="party"
-                                @selected(old('interested_in') === 'party')
-                            >
-                                مهمانی / Fête
-                            </option>
-                        </select>
+                        />
 
                         @error('interested_in')
                             <p
