@@ -123,6 +123,54 @@ class RegisterController extends Controller
                 'string',
                 'max:2048',
             ],
+        ], [
+            'name.required' => 'واردکردن نام الزامی است.',
+            'name.string' => 'نام باید به‌صورت متن وارد شود.',
+            'name.max' => 'نام نباید بیشتر از ۲۵۵ نویسه باشد.',
+            'email.required' => 'واردکردن نشانی ایمیل الزامی است.',
+            'email.email' => 'قالب ایمیل صحیح نیست؛ نمونه صحیح: name@example.com',
+            'email.max' => 'ایمیل نباید بیشتر از ۲۵۵ نویسه باشد.',
+            'email.unique' => 'این ایمیل قبلاً ثبت شده است؛ وارد حساب شوید یا رمز عبور را بازیابی کنید.',
+            'password.required' => 'واردکردن رمز عبور الزامی است.',
+            'password.min' => 'رمز عبور باید حداقل ۸ نویسه داشته باشد.',
+            'password.confirmed' => 'رمز عبور و تکرار آن یکسان نیستند.',
+            'age.required' => 'واردکردن سن الزامی است.',
+            'age.integer' => 'سن باید به‌صورت عدد صحیح وارد شود.',
+            'age.min' => 'برای ثبت‌نام باید حداقل ۱۸ سال داشته باشید.',
+            'age.max' => 'سن واردشده نمی‌تواند بیشتر از ۱۰۰ سال باشد.',
+            'gender.required' => 'انتخاب جنسیت الزامی است.',
+            'gender.in' => 'گزینه انتخاب‌شده برای جنسیت معتبر نیست.',
+            'bio.max' => 'متن معرفی نباید بیشتر از ۱۰۰۰ نویسه باشد.',
+            'city.required' => 'واردکردن شهر محل سکونت الزامی است.',
+            'city.max' => 'نام شهر نباید بیشتر از ۲۵۵ نویسه باشد.',
+            'interested_in.required' => 'انتخاب علاقه‌مندی الزامی است.',
+            'interested_in.max' => 'مقدار علاقه‌مندی بیش از حد طولانی است.',
+            'salary.integer' => 'درآمد ماهانه باید به‌صورت عدد صحیح وارد شود.',
+            'salary.min' => 'درآمد ماهانه نمی‌تواند منفی باشد.',
+            'salary_visible.boolean' => 'وضعیت نمایش درآمد معتبر نیست.',
+            'marital_status.in' => 'گزینه وضعیت تأهل معتبر نیست.',
+            'profile_picture.max' => 'حجم تصویر پروفایل نباید بیشتر از ۲ مگابایت باشد.',
+            'profile_picture.image' => 'فایل انتخاب‌شده تصویر معتبر نیست.',
+            'profile_picture.mimes' => 'فرمت تصویر باید JPG، JPEG، PNG یا GIF باشد.',
+            'profile_picture.dimensions' => 'طول یا عرض تصویر نباید بیشتر از ۴۰۹۶ پیکسل باشد.',
+            'profile_picture.uploaded' => 'بارگذاری تصویر کامل نشد؛ حجم فایل و اتصال را بررسی کنید.',
+            'cf-turnstile-response.required' => 'تأیید امنیتی انجام نشده است؛ کپچا را کامل کنید.',
+            'cf-turnstile-response.string' => 'پاسخ امنیتی معتبر نیست؛ صفحه را تازه‌سازی کنید.',
+            'cf-turnstile-response.max' => 'پاسخ امنیتی نامعتبر است؛ دوباره تلاش کنید.',
+        ], [
+            'name' => 'نام',
+            'email' => 'ایمیل',
+            'password' => 'رمز عبور',
+            'age' => 'سن',
+            'gender' => 'جنسیت',
+            'bio' => 'معرفی کوتاه',
+            'city' => 'شهر',
+            'interested_in' => 'علاقه‌مندی',
+            'salary' => 'درآمد ماهانه',
+            'salary_visible' => 'نمایش درآمد',
+            'marital_status' => 'وضعیت تأهل',
+            'profile_picture' => 'تصویر پروفایل',
+            'cf-turnstile-response' => 'تأیید امنیتی',
         ]);
 
         /*
@@ -236,10 +284,22 @@ class RegisterController extends Controller
             ]);
         }
 
+        /*
+         * Official Turnstile test keys return a successful response marked
+         * with result_with_testing_key, but may omit the widget action.
+         * Accept that response only outside production. Real production
+         * responses must still contain the expected register action.
+         */
+        $isOfficialTestResponse =
+            app()->environment(['local', 'testing']) &&
+            $response->json('metadata.result_with_testing_key') === true;
+
+        $hasExpectedAction = $response->json('action') === 'register';
+
         if (
             ! $response->successful() ||
             $response->json('success') !== true ||
-            $response->json('action') !== 'register'
+            (! $hasExpectedAction && ! $isOfficialTestResponse)
         ) {
             throw ValidationException::withMessages([
                 'cf-turnstile-response' =>
