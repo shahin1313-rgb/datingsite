@@ -1,0 +1,151 @@
+name: Full CI, Security and UI/UX
+
+on:
+  push:
+    branches:
+      - main
+      - ci/full-security-uiux
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_ENV: testing
+  APP_DEBUG: "false"
+  APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+  DB_CONNECTION: sqlite
+  DB_DATABASE: database/database.sqlite
+  TEST_DATABASE_CONFIRMATION: database/database.sqlite
+  CACHE_STORE: array
+  SESSION_DRIVER: array
+  QUEUE_CONNECTION: sync
+  MAIL_MAILER: array
+  TELESCOPE_ENABLED: "false"
+
+jobs:
+  php-tests:
+    name: Laravel full test suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, bcmath, intl, pdo_sqlite, gd
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install dependencies and build assets
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+          npm run build
+      - name: Prepare isolated test database
+        run: |
+          cp .env.example .env
+          touch database/database.sqlite
+          php artisan key:generate
+          php artisan config:clear
+          php artisan migrate:fresh --force
+      - name: Run all PHPUnit tests
+        run: php artisan test --colors=always
+
+  php-style:
+    name: PHP style
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Run Laravel Pint
+        run: composer lint
+
+  frontend:
+    name: Frontend build and dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Audit JavaScript dependencies
+        run: npm audit --audit-level=high
+      - name: Build production assets
+        run: npm run build
+
+  security:
+    name: Security audit and secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Audit PHP dependencies
+        run: composer security:audit
+      - name: Scan repository for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ui-ux-regression:
+    name: UI and UX regression tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, bcmath, intl, pdo_sqlite, gd
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies and build assets
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+          npm run build
+      - name: Prepare isolated test database
+        run: |
+          cp .env.example .env
+          touch database/database.sqlite
+          php artisan key:generate
+          php artisan config:clear
+          php artisan migrate:fresh --force
+      - name: Run interface and UX regression coverage
+        run: |
+          php artisan test tests/Feature/InterfaceConsistencyTest.php
+          php artisan test tests/Feature/UserExperienceRegressionTest.php
+          php artisan test tests/Feature/ResponsiveSafetyActionsTest.php
+          php artisan test tests/Feature/V15SecurityAndUxHardeningTest.php
