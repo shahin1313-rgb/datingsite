@@ -25,11 +25,11 @@
 
         alertError(title, reason, guide) {
             const html = `
-                <div dir="rtl" class="text-right leading-7">
-                    <p class="mb-3">
+                <div dir='rtl' class='text-right leading-7'>
+                    <p class='mb-3'>
                         <strong>دلیل:</strong> ${this.escapeHtml(reason)}
                     </p>
-                    <div class="rounded-xl bg-blue-50 p-3 text-blue-900">
+                    <div class='rounded-xl bg-blue-50 p-3 text-blue-900'>
                         <strong>راهنمای رفع مشکل:</strong><br>
                         ${this.escapeHtml(guide)}
                     </div>
@@ -148,7 +148,7 @@
 
         validateSubmission(event) {
             const file = document.getElementById('profile_picture')?.files?.[0];
-            const token = document.querySelector('[name="cf-turnstile-response"]')?.value;
+            const token = document.querySelector('[name=cf-turnstile-response]')?.value;
 
             if (file && file.size > 2 * 1024 * 1024) {
                 event.preventDefault();
