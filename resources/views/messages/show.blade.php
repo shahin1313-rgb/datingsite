@@ -308,6 +308,8 @@
                 <div id="messageFeedback" class="hidden mb-2 rounded-xl px-3 py-2 text-sm" role="status" aria-live="polite"></div>
                 <form
                     id="sendMessageForm"
+                    method="POST"
+                    action="{{ route('messages.store') }}"
                     class="flex items-center gap-2"
                 >
                     @csrf
@@ -325,8 +327,9 @@
                             id="messageInput"
                             name="message"
                             rows="1"
-                            class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 resize-none max-h-32"
+                            class="flex-1 bg-transparent border-none text-gray-900 caret-pink-600 placeholder:text-gray-400 focus:text-gray-900 focus:ring-0 text-sm py-2 resize-none max-h-32"
                             placeholder="چیزی بنویسید..."
+                            maxlength="1000"
                             required
                         ></textarea>
 
@@ -351,10 +354,34 @@
                         class="bg-pink-600 hover:bg-pink-700 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-lg shadow-pink-200 transition-transform active:scale-90"
                         aria-label="ارسال پیام"
                     >
-                        <i data-send-icon
-                            class="fas fa-paper-plane text-sm -mr-0.5"
-                        ></i>
-                        <i data-send-spinner class="fas fa-spinner fa-spin hidden" aria-hidden="true"></i>
+                        <svg
+                            data-send-icon
+                            class="h-5 w-5 -rotate-12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M21.5 3.5 9.8 15.2M21.5 3.5l-7.45 17-4.25-5.3-6.3-2.25 18-9.45Z"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+
+                        <svg
+                            data-send-spinner
+                            class="hidden h-6 w-6"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                        >
+                            <circle cx="12" cy="4" r="2" fill="currentColor" />
+                            <circle cx="19" cy="16" r="2" fill="currentColor" opacity=".65" />
+                            <circle cx="5" cy="16" r="2" fill="currentColor" opacity=".35" />
+                        </svg>
                     </button>
                 </form>
             </div>
@@ -498,6 +525,23 @@
     .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #fecdd3;
         border-radius: 10px;
+    }
+
+    [data-send-spinner]:not(.hidden) {
+        animation: sendSpinnerRotate 0.8s linear infinite;
+        transform-origin: center;
+    }
+
+    @keyframes sendSpinnerRotate {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        [data-send-spinner]:not(.hidden) {
+            animation-duration: 1.6s;
+        }
     }
 
     @keyframes fadeInUp {
@@ -673,13 +717,20 @@
 
             isSubmitting = true;
             submitButton.disabled = true;
+            submitButton.setAttribute('aria-busy', 'true');
             submitButton.classList.add('opacity-60', 'cursor-not-allowed');
             submitButton.querySelector('[data-send-icon]')?.classList.add('hidden');
             submitButton.querySelector('[data-send-spinner]')?.classList.remove('hidden');
 
+            const controller = new AbortController();
+            const requestTimeout = window.setTimeout(
+                () => controller.abort(),
+                15000
+            );
+
             try {
                 const response = await fetch(
-                    "{{ route('messages.store') }}",
+                    form.action,
                     {
                         method: 'POST',
                         headers: {
@@ -691,6 +742,7 @@
                             'Accept': 'application/json',
                         },
                         body: formData,
+                        signal: controller.signal,
                     }
                 );
 
@@ -784,12 +836,19 @@
                 }
 
                 form.reset();
+                messageInput?.focus();
                 showFeedback('پیام ارسال شد.', 'success');
             } catch (error) {
-                showFeedback(error.message || 'ارتباط با سرور برقرار نشد.');
+                showFeedback(
+                    error?.name === 'AbortError'
+                        ? 'پاسخ سرور بیش از حد طول کشید. لطفاً دوباره تلاش کنید.'
+                        : (error?.message || 'ارتباط با سرور برقرار نشد.')
+                );
             } finally {
+                window.clearTimeout(requestTimeout);
                 isSubmitting = false;
                 submitButton.disabled = false;
+                submitButton.removeAttribute('aria-busy');
                 submitButton.classList.remove('opacity-60', 'cursor-not-allowed');
                 submitButton.querySelector('[data-send-icon]')?.classList.remove('hidden');
                 submitButton.querySelector('[data-send-spinner]')?.classList.add('hidden');
