@@ -139,11 +139,22 @@ class MessageController extends Controller
          * Authorize the recipient before changing read state. This prevents
          * an IDOR request from having any side effect.
          */
-        Message::query()
+        $unreadMessages = Message::query()
             ->where('sender_id', $recipient->id)
             ->where('receiver_id', $authUser->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+            ->whereNull('read_at');
+
+        /*
+         * A private incoming message is rendered as a locked placeholder for
+         * non-premium users. Do not acknowledge it until its content can
+         * actually be displayed; otherwise unread badges and sender receipts
+         * would incorrectly claim that the message was seen.
+         */
+        if (! $authUser->isPremium()) {
+            $unreadMessages->where('status', '!=', 'private');
+        }
+
+        $unreadMessages->update(['read_at' => now()]);
 
         $messages = Message::query()
             ->where(

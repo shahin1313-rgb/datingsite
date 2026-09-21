@@ -65,11 +65,30 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('messages', function (Blueprint $table): void {
-            $table->boolean('is_read')->default(false);
-            $table->boolean('is_seen')->default(false);
-            $table->timestamp('seen_at')->nullable();
-        });
+        $missingLegacyColumns = array_values(array_filter([
+            Schema::hasColumn('messages', 'is_read') ? null : 'is_read',
+            Schema::hasColumn('messages', 'is_seen') ? null : 'is_seen',
+            Schema::hasColumn('messages', 'seen_at') ? null : 'seen_at',
+        ]));
+
+        if ($missingLegacyColumns !== []) {
+            Schema::table(
+                'messages',
+                function (Blueprint $table) use ($missingLegacyColumns): void {
+                    if (in_array('is_read', $missingLegacyColumns, true)) {
+                        $table->boolean('is_read')->default(false);
+                    }
+
+                    if (in_array('is_seen', $missingLegacyColumns, true)) {
+                        $table->boolean('is_seen')->default(false);
+                    }
+
+                    if (in_array('seen_at', $missingLegacyColumns, true)) {
+                        $table->timestamp('seen_at')->nullable();
+                    }
+                }
+            );
+        }
 
         DB::table('messages')
             ->whereNotNull('read_at')

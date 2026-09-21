@@ -58,6 +58,63 @@ class MessageReadStatePaginationTest extends TestCase
             );
     }
 
+    public function test_locked_private_message_is_not_read_by_non_premium_viewer(): void
+    {
+        $viewer = User::factory()->create();
+        $contact = User::factory()->create();
+
+        $privateMessage = Message::create([
+            'sender_id' => $contact->id,
+            'receiver_id' => $viewer->id,
+            'message' => 'پیام خصوصی',
+            'status' => 'private',
+        ]);
+
+        $visibleMessage = Message::create([
+            'sender_id' => $contact->id,
+            'receiver_id' => $viewer->id,
+            'message' => 'پیام قابل مشاهده',
+            'status' => 'sent',
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('messages.show', $contact))
+            ->assertOk();
+
+        $this->assertNull($privateMessage->fresh()->read_at);
+        $this->assertNotNull($visibleMessage->fresh()->read_at);
+
+        $this->actingAs($viewer)
+            ->get(route('messages.index'))
+            ->assertOk()
+            ->assertViewHas(
+                'unreadCounts',
+                fn (array $counts): bool =>
+                    ($counts[$contact->id] ?? null) === 1
+            );
+    }
+
+    public function test_private_message_is_read_when_premium_viewer_can_display_it(): void
+    {
+        $viewer = User::factory()->create([
+            'premium_until' => now()->addDay(),
+        ]);
+        $contact = User::factory()->create();
+
+        $privateMessage = Message::create([
+            'sender_id' => $contact->id,
+            'receiver_id' => $viewer->id,
+            'message' => 'پیام خصوصی',
+            'status' => 'private',
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('messages.show', $contact))
+            ->assertOk();
+
+        $this->assertNotNull($privateMessage->fresh()->read_at);
+    }
+
     public function test_conversation_history_is_paginated_latest_first(): void
     {
         $viewer = User::factory()->create();
