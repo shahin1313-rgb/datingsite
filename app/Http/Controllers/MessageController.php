@@ -6,6 +6,7 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MessageController extends Controller
 {
@@ -204,60 +205,96 @@ class MessageController extends Controller
             (int) $validated['receiver_id']
         );
 
-        $messagesCount = Message::query()
-            ->where(
-                function (Builder $query) use (
-                    $sender,
-                    $receiver
-                ): void {
-                    $query
-                        ->where('sender_id', $sender->id)
-                        ->where('receiver_id', $receiver->id);
-                }
-            )
-            ->orWhere(
-                function (Builder $query) use (
-                    $sender,
-                    $receiver
-                ): void {
-                    $query
-                        ->where('sender_id', $receiver->id)
-                        ->where('receiver_id', $sender->id);
-                }
-            )
-            ->count();
+        $result = DB::transaction(function () use (
+            $sender,
+            $receiver,
+            $validated
+        ): array {
+            /*
+             * The user rows are the stable lock for this pair. Messages do
+             * not provide a row to lock before the first message exists.
+             * Always lock in id order so opposite-direction requests cannot
+             * acquire the same two locks in a different order and deadlock.
+             */
+            $participants = User::query()
+                ->whereKey([$sender->id, $receiver->id])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy(fn (User $user): int => (int) $user->id);
 
-        if ($messagesCount === 0) {
+            $lockedSender = $participants->get((int) $sender->id);
+            $lockedReceiver = $participants->get((int) $receiver->id);
+
+            abort_unless($lockedSender && $lockedReceiver, 404);
+
+            $conversationExists = Message::query()
+                ->where(
+                    function (Builder $query) use (
+                        $lockedSender,
+                        $lockedReceiver
+                    ): void {
+                        $query
+                            ->where('sender_id', $lockedSender->id)
+                            ->where('receiver_id', $lockedReceiver->id);
+                    }
+                )
+                ->orWhere(
+                    function (Builder $query) use (
+                        $lockedSender,
+                        $lockedReceiver
+                    ): void {
+                        $query
+                            ->where('sender_id', $lockedReceiver->id)
+                            ->where('receiver_id', $lockedSender->id);
+                    }
+                )
+                ->exists();
+
+            if (! $conversationExists) {
+                Message::create([
+                    'sender_id' => $lockedSender->id,
+                    'receiver_id' => $lockedReceiver->id,
+                    'message' => $validated['message'],
+                    'status' => 'private',
+                ]);
+
+                return [
+                    'status' => 200,
+                    'body' => [
+                        'success' => true,
+                        'type' => 'FIRST_MESSAGE_PRIVATE',
+                    ],
+                ];
+            }
+
+            if (
+                ! $lockedSender->isPremium()
+                && ! $lockedReceiver->isPremium()
+            ) {
+                return [
+                    'status' => 402,
+                    'body' => [
+                        'error' => 'PREMIUM_REQUIRED',
+                        'receiver_id' => $lockedReceiver->id,
+                    ],
+                ];
+            }
+
             Message::create([
-                'sender_id' => $sender->id,
-                'receiver_id' => $receiver->id,
+                'sender_id' => $lockedSender->id,
+                'receiver_id' => $lockedReceiver->id,
                 'message' => $validated['message'],
-                'status' => 'private',
+                'status' => 'sent',
             ]);
 
-            return response()->json([
-                'success' => true,
-                'type' => 'FIRST_MESSAGE_PRIVATE',
-            ]);
-        }
+            return [
+                'status' => 200,
+                'body' => ['success' => true],
+            ];
+        }, 3);
 
-        if (! $sender->isPremium() && ! $receiver->isPremium()) {
-            return response()->json([
-                'error' => 'PREMIUM_REQUIRED',
-                'receiver_id' => $receiver->id,
-            ], 402);
-        }
-
-        Message::create([
-            'sender_id' => $sender->id,
-            'receiver_id' => $receiver->id,
-            'message' => $validated['message'],
-            'status' => 'sent',
-        ]);
-
-        return response()->json([
-            'success' => true,
-        ]);
+        return response()->json($result['body'], $result['status']);
     }
 
     private function discoverableRecipient(
