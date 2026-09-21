@@ -38,7 +38,7 @@ class LoginController extends Controller
                 ->route('login')
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'حساب کاربری شما مسدود شده است.',
+                    'email' => __('auth.banned'),
                 ]);
         }
 
@@ -52,7 +52,7 @@ class LoginController extends Controller
                 ->route('admin.login')
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'حساب‌های مدیریتی باید از صفحه ورود مدیریت وارد شوند.',
+                    'email' => __('auth.admin_login_required'),
                 ]);
         }
 
